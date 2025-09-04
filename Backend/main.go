@@ -23,21 +23,31 @@ func main() {
 	// Apply the CORS middleware to the router
 	router.Use(cors.New(config))
 
-	// API routes
-	router.GET("/api/players", api.GetPlayers)
-	router.POST("/api/players", api.CreatePlayer)
-	router.GET("/api/players/:id", api.GetPlayer)
-	router.PUT("/api/players/:id", api.UpdatePlayer)
-	router.DELETE("/api/players/:id", api.DeletePlayer)
-	
-	router.GET("/api/matches", api.GetMatches)
-	router.POST("/api/matches", api.CreateMatch)
-	router.GET("/api/matches/:id", api.GetMatch)
-	
-	router.GET("/api/leaderboard", api.GetLeaderboard)
-	router.GET("/api/stats", api.GetStats)
+	// Auth routes
+	router.GET("/api/auth/login", api.LoginHandler)
+	router.GET("/api/auth/callback", api.CallbackHandler)
+	router.POST("/api/auth/logout", api.LogoutHandler)
+	router.GET("/api/auth/me", api.AuthMiddleware(), api.MeHandler)
 
-	// Health check endpoint
+	// Protected API routes
+	protected := router.Group("/api")
+	protected.Use(api.AuthMiddleware())
+	{
+		protected.GET("/players", api.GetPlayers)
+		protected.POST("/players", api.CreatePlayer)
+		protected.GET("/players/:id", api.GetPlayer)
+		protected.PUT("/players/:id", api.UpdatePlayer)
+		protected.DELETE("/players/:id", api.DeletePlayer)
+		
+		protected.GET("/matches", api.GetMatches)
+		protected.POST("/matches", api.CreateMatch)
+		protected.GET("/matches/:id", api.GetMatch)
+		
+		protected.GET("/leaderboard", api.GetLeaderboard)
+		protected.GET("/stats", api.GetStats)
+	}
+
+	// Health check endpoint (public)
 	router.GET("/api/health", api.HealthCheck)
 
 	router.Run(":8081")

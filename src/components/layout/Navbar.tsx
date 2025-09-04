@@ -4,8 +4,10 @@ import { Trophy, Gamepad2, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import MatchSubmissionModal from "@/components/match/MatchSubmissionModal";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
+  const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
@@ -15,9 +17,7 @@ const Navbar = () => {
   ];
 
   const handleSignOut = () => {
-    // TODO: Backend - Implement sign out functionality
-    console.log("Signing out...");
-    // This would typically clear auth tokens and redirect to login
+    logout();
   };
 
   return (
@@ -61,8 +61,16 @@ const Navbar = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="flex items-center space-x-2">
-                  <User size={18} />
-                  <span className="font-medium">Account</span>
+                  {user?.image_url ? (
+                    <img 
+                      src={user.image_url} 
+                      alt={`${user.login}'s avatar`}
+                      className="w-6 h-6 rounded-full"
+                    />
+                  ) : (
+                    <User size={18} />
+                  )}
+                  <span className="font-medium">{user?.first_name || 'Account'}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">

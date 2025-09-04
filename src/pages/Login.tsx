@@ -2,13 +2,28 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Trophy, Gamepad2, Target, Zap } from "lucide-react";
 import heroImage from "@/assets/hero-image.jpg";
+import { useAuth } from "@/contexts/AuthContext";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
-  const handleIntraLogin = () => {
-    // TODO: Implement 42 Intra OAuth
-    console.log("Redirecting to 42 Intra OAuth...");
-    // For demo purposes, redirect to dashboard
-    window.location.href = "/";
+  const { user, login } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (user) {
+      navigate('/', { replace: true });
+    }
+  }, [user, navigate]);
+
+  const handleIntraLogin = async () => {
+    try {
+      await login();
+    } catch (error) {
+      console.error('Error during login:', error);
+      alert('Failed to initiate login. Please try again.');
+    }
   };
 
   return (

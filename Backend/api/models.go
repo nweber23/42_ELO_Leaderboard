@@ -1,15 +1,32 @@
 package api
 
+import "time"
+
 type Player struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	ELO      int    `json:"elo"`
-	Wins     int    `json:"wins"`
-	Losses   int    `json:"losses"`
-	Draws    int    `json:"draws"`
-	Rank     int    `json:"rank"`
-	Created  string `json:"created"`
-	LastGame string `json:"last_game"`
+	ID              int       `json:"id"`
+	Login           string    `json:"login"`
+	Name            string    `json:"name"`
+	FirstName       string    `json:"first_name"`
+	LastName        string    `json:"last_name"`
+	Email           string    `json:"email"`
+	ImageURL        string    `json:"image_url"`
+	Campus          string    `json:"campus"`
+	TableTennisELO  int       `json:"table_tennis_elo"`
+	FoosballELO     int       `json:"foosball_elo"`
+	ELO             int       `json:"elo"` // Keep for backward compatibility
+	Wins            int       `json:"wins"`
+	Losses          int       `json:"losses"`
+	Draws           int       `json:"draws"`
+	GamesPlayed     int       `json:"games_played"`
+	GamesWon        int       `json:"games_won"`
+	GamesLost       int       `json:"games_lost"`
+	WinRate         float64   `json:"win_rate"`
+	Rank            int       `json:"rank"`
+	LastActive      time.Time `json:"last_active"`
+	CreatedAt       time.Time `json:"created_at"`
+	UpdatedAt       time.Time `json:"updated_at"`
+	Created         string    `json:"created"`  // Keep for backward compatibility
+	LastGame        string    `json:"last_game"` // Keep for backward compatibility
 }
 
 type Match struct {

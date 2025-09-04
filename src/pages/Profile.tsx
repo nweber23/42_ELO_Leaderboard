@@ -4,8 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Profile = () => {
+  const { user } = useAuth();
   const [userStats, setUserStats] = useState<any>(null);
   const [recentMatches, setRecentMatches] = useState<any[]>([]);
   const [achievements, setAchievements] = useState<any[]>([]);
@@ -26,29 +28,36 @@ const Profile = () => {
         // const achievementsResponse = await fetch('/api/user/achievements');
         // const userAchievements = await achievementsResponse.json();
 
-        // Placeholder data - replace with actual API calls
-        setUserStats({
-          username: "Loading...",
-          totalMatches: 0,
-          totalWins: 0,
-          winRate: 0,
-          currentStreak: 0,
-          bestStreak: 0,
-          foosball: {
-            rating: 1200,
-            rank: 0,
-            matches: 0,
-            wins: 0,
-            losses: 0,
-          },
-          tabletennis: {
-            rating: 1200,
-            rank: 0,
-            matches: 0,
-            wins: 0,
-            losses: 0,
-          },
-        });
+        // Use user data from authentication
+        if (user) {
+          setUserStats({
+            username: user.login,
+            firstName: user.first_name,
+            lastName: user.last_name,
+            email: user.email,
+            imageUrl: user.image_url,
+            campus: user.campus,
+            totalMatches: 0,
+            totalWins: 0,
+            winRate: 0,
+            currentStreak: 0,
+            bestStreak: 0,
+            foosball: {
+              rating: 1200,
+              rank: 0,
+              matches: 0,
+              wins: 0,
+              losses: 0,
+            },
+            tabletennis: {
+              rating: 1200,
+              rank: 0,
+              matches: 0,
+              wins: 0,
+              losses: 0,
+            },
+          });
+        }
 
         setRecentMatches([]);
         setAchievements([]);
@@ -80,12 +89,23 @@ const Profile = () => {
             {/* Profile Header */}
             <div className="text-center animate-slide-in-up">
               <div className="flex justify-center mb-4">
-                <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center shadow-glow">
-                  <User className="w-10 h-10 text-primary-foreground" />
-                </div>
+                {userStats.imageUrl ? (
+                  <img 
+                    src={userStats.imageUrl} 
+                    alt={`${userStats.username}'s avatar`}
+                    className="w-20 h-20 rounded-full shadow-glow border-2 border-primary"
+                  />
+                ) : (
+                  <div className="w-20 h-20 bg-primary rounded-full flex items-center justify-center shadow-glow">
+                    <User className="w-10 h-10 text-primary-foreground" />
+                  </div>
+                )}
               </div>
-              <h1 className="text-4xl font-bold text-foreground mb-2">{userStats.username}</h1>
-              <p className="text-muted-foreground text-lg">42 Heilbronn Student</p>
+              <h1 className="text-4xl font-bold text-foreground mb-2">
+                {userStats.firstName} {userStats.lastName}
+              </h1>
+              <p className="text-muted-foreground text-lg">@{userStats.username}</p>
+              <p className="text-muted-foreground">42 {userStats.campus} Student</p>
             </div>
 
             {/* Overall Stats */}
