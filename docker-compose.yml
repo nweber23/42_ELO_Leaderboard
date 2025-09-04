@@ -1,0 +1,34 @@
+services:
+  frontend:
+    build: ./Frontend/
+    container_name: elo-leaderboard-frontend
+    networks:
+      - elo-leaderboard-network
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+
+  backend:
+    build: ./Backend/
+    container_name: elo-leaderboard-backend
+    networks:
+      - elo-leaderboard-network
+    ports:
+      - "8081:8081"
+
+  nginx:
+    build: ./Nginx/
+    container_name: elo-leaderboard-nginx
+    ports:
+      - "80:80"
+    networks:
+      - elo-leaderboard-network
+    depends_on:
+      - frontend
+      - backend
+  
+networks:
+  elo-leaderboard-network:
+    driver: bridge
