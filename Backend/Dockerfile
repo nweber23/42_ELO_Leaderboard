@@ -5,8 +5,11 @@ WORKDIR /app
 COPY go.mod ./
 COPY . .
 
+# Ensure Go modules are used
+ENV GO111MODULE=on
+
 RUN go mod tidy
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
+RUN CGO_ENABLED=0 GOOS=linux go build -o main .
 
 FROM alpine:latest
 

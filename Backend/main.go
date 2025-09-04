@@ -3,9 +3,6 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-contrib/cors"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
-	_ "elo-leaderboard-backend/docs"
 	api "elo-leaderboard-backend/api"
 )
 
@@ -42,9 +39,6 @@ func main() {
 
 	// Health check endpoint
 	router.GET("/api/health", api.HealthCheck)
-
-	// Swagger documentation endpoint
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	router.Run(":8081")
 }
