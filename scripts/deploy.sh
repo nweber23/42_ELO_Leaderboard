@@ -79,7 +79,7 @@ max_attempts=30
 attempt=1
 
 while [ $attempt -le $max_attempts ]; do
-    if curl -f http://localhost:8081/api/health >/dev/null 2>&1; then
+    if curl -f http://localhost/api/health >/dev/null 2>&1; then
         echo -e "${GREEN}✅ Backend is healthy${NC}"
         break
     else
