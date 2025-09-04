@@ -21,9 +21,9 @@ export default function Home() {
         playersApi.getAll(),
       ]);
       
-      setLeaderboard(leaderboardRes.data);
+      setLeaderboard(leaderboardRes.data || []);
       setStats(statsRes.data);
-      setPlayers(playersRes.data);
+      setPlayers(playersRes.data || []);
       setError(null);
     } catch (err) {
       console.error('Error fetching data:', err);

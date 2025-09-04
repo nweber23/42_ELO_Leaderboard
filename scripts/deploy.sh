@@ -61,6 +61,10 @@ fi
 echo -e "${YELLOW}🛑 Stopping existing containers...${NC}"
 docker-compose -f docker-compose.prod.yml down 2>/dev/null || true
 
+# Clean up any orphaned containers
+echo -e "${YELLOW}🧹 Cleaning up orphaned containers...${NC}"
+docker container prune -f 2>/dev/null || true
+
 # Build and start containers
 echo -e "${YELLOW}🏗️  Building and starting containers...${NC}"
 docker-compose -f docker-compose.prod.yml up --build -d

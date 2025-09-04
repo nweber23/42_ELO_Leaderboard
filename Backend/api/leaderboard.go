@@ -14,30 +14,32 @@ import (
 // @Success 200 {array} LeaderboardEntry
 // @Router /api/leaderboard [get]
 func GetLeaderboard(c *gin.Context) {
-	// Create leaderboard entries
-	var leaderboard []LeaderboardEntry
+	// Create leaderboard entries - initialize as empty slice, not nil
+	leaderboard := make([]LeaderboardEntry, 0)
 
-	// Sort players by ELO descending
-	sortedPlayers := make([]Player, len(players))
-	copy(sortedPlayers, players)
-	sort.Slice(sortedPlayers, func(i, j int) bool {
-		return sortedPlayers[i].ELO > sortedPlayers[j].ELO
-	})
+	if len(players) > 0 {
+		// Sort players by ELO descending
+		sortedPlayers := make([]Player, len(players))
+		copy(sortedPlayers, players)
+		sort.Slice(sortedPlayers, func(i, j int) bool {
+			return sortedPlayers[i].ELO > sortedPlayers[j].ELO
+		})
 
-	for i, player := range sortedPlayers {
-		totalGames := player.Wins + player.Losses + player.Draws
-		var winRate float64
-		if totalGames > 0 {
-			winRate = float64(player.Wins) / float64(totalGames) * 100
+		for i, player := range sortedPlayers {
+			totalGames := player.Wins + player.Losses + player.Draws
+			var winRate float64
+			if totalGames > 0 {
+				winRate = float64(player.Wins) / float64(totalGames) * 100
+			}
+
+			entry := LeaderboardEntry{
+				Rank:    i + 1,
+				Player:  player,
+				Games:   totalGames,
+				WinRate: winRate,
+			}
+			leaderboard = append(leaderboard, entry)
 		}
-
-		entry := LeaderboardEntry{
-			Rank:    i + 1,
-			Player:  player,
-			Games:   totalGames,
-			WinRate: winRate,
-		}
-		leaderboard = append(leaderboard, entry)
 	}
 
 	c.JSON(http.StatusOK, leaderboard)

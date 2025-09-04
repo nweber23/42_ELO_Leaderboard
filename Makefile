@@ -15,10 +15,15 @@ deploy:
 	./scripts/deploy.sh
 
 prod-up:
+	docker-compose -f docker-compose.prod.yml down 2>/dev/null || true
 	docker-compose -f docker-compose.prod.yml up --build -d
 
 prod-down:
 	docker-compose -f docker-compose.prod.yml down
+
+prod-restart:
+	docker-compose -f docker-compose.prod.yml down
+	docker-compose -f docker-compose.prod.yml up -d
 
 prod-build:
 	docker-compose -f docker-compose.prod.yml build
