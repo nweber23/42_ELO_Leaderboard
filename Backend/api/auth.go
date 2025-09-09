@@ -122,7 +122,7 @@ func CallbackHandler(c *gin.Context) {
 	}
 
 	// Create or update player in database
-	player := CreateOrUpdatePlayerFromIntra(user, campusName)
+	_ = CreateOrUpdatePlayerFromIntra(user, campusName)
 
 	// Generate JWT token
 	jwtToken, err := generateJWTToken(user, campusName)

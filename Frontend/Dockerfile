@@ -1,44 +1,28 @@
-FROM node:20-alpine AS base
+# Use Node.js 20 alpine as base image
+FROM node:20-alpine AS builder
 
-FROM base AS deps
-RUN apk add --no-cache libc6-compat
+# Install dependencies
 WORKDIR /app
+COPY package*.json ./
+RUN npm install --legacy-peer-deps
 
-COPY package.json package-lock.json* ./
-RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
-
-FROM base AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+# Copy source code and build
 COPY . .
-
-ENV NEXT_TELEMETRY_DISABLED=1
-
 RUN npm run build
 
-FROM base AS runner
-WORKDIR /app
+# Production image with nginx
+FROM nginx:alpine
+WORKDIR /usr/share/nginx/html
 
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
+# Remove default nginx static assets
+RUN rm -rf ./*
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+# Copy built assets
+COPY --from=builder /app/dist .
 
-# Copy public directory (create empty one if doesn't exist)
-COPY --from=builder --chown=nextjs:nodejs /app/public ./public
-
-RUN mkdir .next
-RUN chown nextjs:nodejs .next
-
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-USER nextjs
+# Copy nginx config
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 3000
 
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-
-CMD ["node", "server.js"]
+CMD ["nginx", "-g", "daemon off;"]

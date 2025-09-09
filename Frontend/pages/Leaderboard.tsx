@@ -4,30 +4,24 @@ import { Trophy, Medal, TrendingUp, Target, Zap } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-
-interface Player {
-  rank: number;
-  username: string;
-  rating: number;
-  wins: number;
-  losses: number;
-  streak: number;
-  change: string;
-}
+import { leaderboardApi, type LeaderboardEntry } from "@/lib/api";
 
 const Leaderboard = () => {
-  const [foosballPlayers, setFoosballPlayers] = useState<Player[]>([]);
-  const [tableTennisPlayers, setTableTennisPlayers] = useState<Player[]>([]);
+  const [foosballPlayers, setFoosballPlayers] = useState<LeaderboardEntry[]>([]);
+  const [tableTennisPlayers, setTableTennisPlayers] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // TODO: Backend - Fetch leaderboard data from database
     const fetchLeaderboardData = async () => {
       try {
         console.log("Fetching leaderboard data...");
-        // Placeholder data - replace with actual API call
-        setFoosballPlayers([]);
-        setTableTennisPlayers([]);
+        const [foosballData, tableTennisData] = await Promise.all([
+          leaderboardApi.get("foosball"),
+          leaderboardApi.get("table_tennis")
+        ]);
+        
+        setFoosballPlayers(foosballData);
+        setTableTennisPlayers(tableTennisData);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching leaderboard:", error);
@@ -69,7 +63,7 @@ const Leaderboard = () => {
     }
   };
 
-  const PlayerRow = ({ player }: { player: Player }) => (
+  const PlayerRow = ({ player }: { player: LeaderboardEntry }) => (
     <div className="flex items-center justify-between p-4 bg-card border border-border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer animate-slide-in-up">
       <div className="flex items-center space-x-4">
         <div className="flex items-center justify-center w-10 h-10">
@@ -77,7 +71,7 @@ const Leaderboard = () => {
         </div>
 
         <div>
-          <h3 className="font-semibold text-foreground">{player.username}</h3>
+          <h3 className="font-semibold text-foreground">{player.name}</h3>
           <p className="text-sm text-muted-foreground">
             {player.wins}W / {player.losses}L
           </p>
@@ -86,20 +80,17 @@ const Leaderboard = () => {
 
       <div className="flex items-center space-x-6">
         <div className="text-center">
-          <p className="text-lg font-bold text-foreground">{player.rating}</p>
+          <p className="text-lg font-bold text-foreground">{player.elo_rating}</p>
           <p className="text-xs text-muted-foreground">ELO</p>
         </div>
 
         <div className="text-center">
-          {getStreakDisplay(player.streak)}
+          {getStreakDisplay(0)}
         </div>
 
         <div className="text-center min-w-[60px]">
-          <Badge
-            variant={player.change.startsWith('+') ? 'default' : 'secondary'}
-            className={player.change.startsWith('+') ? 'bg-success text-success-foreground' : 'bg-destructive text-destructive-foreground'}
-          >
-            {player.change}
+          <Badge variant="secondary">
+            -
           </Badge>
         </div>
       </div>

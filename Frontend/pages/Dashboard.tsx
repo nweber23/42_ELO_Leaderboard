@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import MatchSubmissionModal from "@/components/match/MatchSubmissionModal";
+import { leaderboardApi, matchesApi, statsApi, type Match, type LeaderboardEntry } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface UserStats {
   totalMatches: number;
@@ -22,13 +24,8 @@ interface RecentMatch {
   time: string;
 }
 
-interface TopPlayer {
-  name: string;
-  rating: number;
-  wins: number;
-}
-
 const Dashboard = () => {
+  const { user } = useAuth();
   const [userStats, setUserStats] = useState<UserStats>({
     totalMatches: 0,
     winRate: 0,
@@ -36,27 +33,70 @@ const Dashboard = () => {
     eloRating: 1200, // Initial ELO rating
   });
   const [recentMatches, setRecentMatches] = useState<RecentMatch[]>([]);
-  const [foosballTopPlayers, setFoosballTopPlayers] = useState<TopPlayer[]>([]);
-  const [tableTennisTopPlayers, setTableTennisTopPlayers] = useState<TopPlayer[]>([]);
+  const [foosballTopPlayers, setFoosballTopPlayers] = useState<LeaderboardEntry[]>([]);
+  const [tableTennisTopPlayers, setTableTennisTopPlayers] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    // TODO: Backend - Fetch user stats and recent data
     const fetchDashboardData = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
       try {
         console.log("Fetching dashboard data...");
-        // Placeholder - replace with actual API calls
+        
+        // Fetch all matches to calculate user stats
+        const [allMatches, foosballLeaderboard, tableTennisLeaderboard] = await Promise.all([
+          matchesApi.getAll(),
+          leaderboardApi.get("foosball"),
+          leaderboardApi.get("table_tennis")
+        ]);
+
+        // Calculate user stats from matches
+        const userMatches = allMatches.filter(
+          (match: Match) => match.player1_id === user.user_id || match.player2_id === user.user_id
+        );
+        
+        const wins = userMatches.filter((match: Match) => match.winner_id === user.user_id).length;
+        const totalMatches = userMatches.length;
+        const winRate = totalMatches > 0 ? (wins / totalMatches) * 100 : 0;
+        
+        // Find user's ELO rating from leaderboards
+        const userInFoosball = foosballLeaderboard.find((player: LeaderboardEntry) => player.name === user.login);
+        const userInTableTennis = tableTennisLeaderboard.find((player: LeaderboardEntry) => player.name === user.login);
+        const eloRating = userInFoosball?.elo_rating || userInTableTennis?.elo_rating || 1200;
+
         setUserStats({
-          totalMatches: 0,
-          winRate: 0,
-          currentStreak: 0,
-          eloRating: 1200,
+          totalMatches,
+          winRate,
+          currentStreak: 0, // TODO: Calculate streak
+          eloRating,
         });
-        setRecentMatches([]);
-        setFoosballTopPlayers([]);
-        setTableTennisTopPlayers([]);
+
+        // Convert recent matches to display format
+        const recentMatchesFormatted = userMatches.slice(0, 5).map((match: Match) => {
+          const isPlayer1 = match.player1_id === user.user_id;
+          const opponentName = isPlayer1 ? match.player2_name : match.player1_name;
+          const won = match.winner_id === user.user_id;
+          const userScore = isPlayer1 ? match.player1_score : match.player2_score;
+          const opponentScore = isPlayer1 ? match.player2_score : match.player1_score;
+
+          return {
+            opponent: opponentName,
+            sport: match.sport,
+            result: won ? "Won" as const : "Lost" as const,
+            score: `${userScore}-${opponentScore}`,
+            time: new Date(match.created_at).toLocaleDateString(),
+          };
+        });
+
+        setRecentMatches(recentMatchesFormatted);
+        setFoosballTopPlayers(foosballLeaderboard);
+        setTableTennisTopPlayers(tableTennisLeaderboard);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
@@ -65,7 +105,7 @@ const Dashboard = () => {
     };
 
     fetchDashboardData();
-  }, []);
+  }, [user]);
 
   const quickStats = [
     {
@@ -211,13 +251,13 @@ const Dashboard = () => {
                       </h4>
                       <div className="space-y-2">
                         {foosballTopPlayers.slice(0, 3).map((player, index) => (
-                          <div key={player.name} className="flex items-center justify-between p-2 bg-muted rounded">
+                          <div key={player.id} className="flex items-center justify-between p-2 bg-muted rounded">
                             <div className="flex items-center space-x-2">
                               <span className="text-sm font-bold text-primary">#{index + 1}</span>
                               <span className="text-sm text-foreground">{player.name}</span>
                             </div>
                             <div className="text-right">
-                              <p className="text-sm font-medium text-foreground">{player.rating}</p>
+                              <p className="text-sm font-medium text-foreground">{player.elo_rating}</p>
                               <p className="text-xs text-muted-foreground">{player.wins} wins</p>
                             </div>
                           </div>
@@ -233,13 +273,13 @@ const Dashboard = () => {
                       </h4>
                       <div className="space-y-2">
                         {tableTennisTopPlayers.slice(0, 3).map((player, index) => (
-                          <div key={player.name} className="flex items-center justify-between p-2 bg-muted rounded">
+                          <div key={player.id} className="flex items-center justify-between p-2 bg-muted rounded">
                             <div className="flex items-center space-x-2">
                               <span className="text-sm font-bold text-primary">#{index + 1}</span>
                               <span className="text-sm text-foreground">{player.name}</span>
                             </div>
                             <div className="text-right">
-                              <p className="text-sm font-medium text-foreground">{player.rating}</p>
+                              <p className="text-sm font-medium text-foreground">{player.elo_rating}</p>
                               <p className="text-xs text-muted-foreground">{player.wins} wins</p>
                             </div>
                           </div>

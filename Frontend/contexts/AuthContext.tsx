@@ -1,14 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-
-interface User {
-  user_id: number;
-  login: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  image_url: string;
-  campus: string;
-}
+import { authApi, type User } from '@/lib/api';
 
 interface AuthContextType {
   user: User | null;
@@ -38,16 +29,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('/api/auth/me', {
-        credentials: 'include'
-      });
-      
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
-      } else {
-        setUser(null);
-      }
+      const userData = await authApi.getMe();
+      setUser(userData);
     } catch (error) {
       console.error('Error checking auth status:', error);
       setUser(null);
@@ -58,12 +41,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async () => {
     try {
-      const response = await fetch('/api/auth/login');
-      if (!response.ok) {
-        throw new Error('Failed to get auth URL');
-      }
-      
-      const data = await response.json();
+      const data = await authApi.login();
       window.location.href = data.auth_url;
     } catch (error) {
       console.error('Error during login:', error);
@@ -73,10 +51,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include'
-      });
+      await authApi.logout();
       setUser(null);
       window.location.href = '/login';
     } catch (error) {
