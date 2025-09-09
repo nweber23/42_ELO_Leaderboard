@@ -20,7 +20,15 @@ type IntraUser struct {
 	Email      string `json:"email"`
 	FirstName  string `json:"first_name"`
 	LastName   string `json:"last_name"`
-	ImageURL   string `json:"image"`
+	Image      struct {
+		Link     string `json:"link"`
+		Versions struct {
+			Large  string `json:"large"`
+			Medium string `json:"medium"`
+			Small  string `json:"small"`
+			Micro  string `json:"micro"`
+		} `json:"versions"`
+	} `json:"image"`
 	Campus     []struct {
 		ID   int    `json:"id"`
 		Name string `json:"name"`
@@ -141,7 +149,7 @@ func CallbackHandler(c *gin.Context) {
 	// Redirect to frontend
 	frontendURL := os.Getenv("FRONTEND_URL")
 	if frontendURL == "" {
-		frontendURL = "http://localhost:8080"
+		frontendURL = "http://42logtime.com"
 	}
 	
 	c.Redirect(http.StatusTemporaryRedirect, frontendURL+"?auth=success")
@@ -208,7 +216,7 @@ func generateJWTToken(user IntraUser, campus string) (string, error) {
 		Email:     user.Email,
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
-		ImageURL:  user.ImageURL,
+		ImageURL:  user.Image.Link,
 		Campus:    campus,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)), // 7 days
@@ -234,7 +242,7 @@ func CreateOrUpdatePlayerFromIntra(user IntraUser, campus string) *Player {
 		FirstName:   user.FirstName,
 		LastName:    user.LastName,
 		Email:       user.Email,
-		ImageURL:    user.ImageURL,
+		ImageURL:    user.Image.Link,
 		Campus:      campus,
 		TableTennisELO: 1000,
 		FoosballELO:    1000,
