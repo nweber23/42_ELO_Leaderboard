@@ -18,6 +18,8 @@ services:
     container_name: elo-leaderboard-backend
     networks:
       - elo-leaderboard-network
+    env_file:
+      - .env
     restart: unless-stopped
 
   nginx:

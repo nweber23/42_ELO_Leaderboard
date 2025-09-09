@@ -97,9 +97,13 @@ func CallbackHandler(c *gin.Context) {
 		return
 	}
 
+	// Log the raw response for debugging
+	fmt.Printf("Raw API response: %s\n", string(body))
+	
 	var user IntraUser
 	if err := json.Unmarshal(body, &user); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse user info"})
+		fmt.Printf("JSON unmarshal error: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse user info", "details": err.Error()})
 		return
 	}
 
