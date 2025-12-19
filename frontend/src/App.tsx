@@ -58,7 +58,7 @@ function App() {
       <div className="app">
         <nav className="navbar">
           <div className="nav-content">
-            <Link to="/" className="nav-logo">🏓 42 ELO Leaderboard</Link>
+            <Link to="/" className="nav-logo">42 ELO Leaderboard</Link>
             <div className="nav-links">
               <Link to="/leaderboard/table_tennis">Table Tennis</Link>
               <Link to="/leaderboard/table_football">Table Football</Link>
