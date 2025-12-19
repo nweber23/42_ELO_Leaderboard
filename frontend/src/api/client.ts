@@ -96,6 +96,10 @@ export const reactionAPI = {
     const { data } = await client.get(`/matches/${matchId}/reactions`);
     return data;
   },
+
+  remove: async (matchId: number, emoji: string): Promise<void> => {
+    await client.delete(`/matches/${matchId}/reactions/${emoji}`);
+  },
 };
 
 // Comment API
@@ -108,6 +112,10 @@ export const commentAPI = {
   list: async (matchId: number): Promise<Comment[]> => {
     const { data } = await client.get(`/matches/${matchId}/comments`);
     return data;
+  },
+
+  delete: async (matchId: number, commentId: number): Promise<void> => {
+    await client.delete(`/matches/${matchId}/comments/${commentId}`);
   },
 };
 

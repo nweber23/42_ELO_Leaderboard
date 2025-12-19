@@ -93,10 +93,12 @@ func main() {
 		// Reactions
 		protected.POST("/matches/:id/reactions", matchHandler.AddReaction)
 		protected.GET("/matches/:id/reactions", matchHandler.GetReactions)
+		protected.DELETE("/matches/:id/reactions/:emoji", matchHandler.RemoveReaction)
 
 		// Comments
 		protected.POST("/matches/:id/comments", matchHandler.AddComment)
 		protected.GET("/matches/:id/comments", matchHandler.GetComments)
+		protected.DELETE("/matches/:id/comments/:commentId", matchHandler.DeleteComment)
 	}
 
 	// Health check

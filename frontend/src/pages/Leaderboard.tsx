@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { leaderboardAPI } from '../api/client';
 import type { LeaderboardEntry } from '../types';
 import { SPORT_LABELS } from '../types';
@@ -49,7 +49,9 @@ function Leaderboard({ sport: propSport }: LeaderboardProps) {
               <td className="rank">{entry.rank}</td>
               <td className="player">
                 <img src={entry.user.avatar_url} alt={entry.user.display_name} className="avatar" />
-                <span>{entry.user.display_name}</span>
+                <Link to={`/players/${entry.user.id}`} style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: '500' }}>
+                  {entry.user.display_name}
+                </Link>
               </td>
               <td className="elo">{entry.elo}</td>
               <td>{entry.matches_played}</td>

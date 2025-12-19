@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
-import { matchAPI } from '../api/client';
+import { Link } from 'react-router-dom';
+import { matchAPI, usersAPI } from '../api/client';
 import type { Match, User } from '../types';
 import { SPORT_LABELS } from '../types';
+import Reactions from '../components/Reactions';
+import Comments from '../components/Comments';
 
 interface MatchesProps {
   user: User;
@@ -9,6 +12,7 @@ interface MatchesProps {
 
 function Matches({ user }: MatchesProps) {
   const [matches, setMatches] = useState<Match[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed'>('all');
 
@@ -19,6 +23,10 @@ function Matches({ user }: MatchesProps) {
       .catch(console.error)
       .finally(() => setLoading(false));
   };
+
+  useEffect(() => {
+    usersAPI.getAll().then(setUsers).catch(console.error);
+  }, []);
 
   useEffect(() => {
     loadMatches();
@@ -79,6 +87,9 @@ function Matches({ user }: MatchesProps) {
           const isOpponent = match.player2_id === user.id || match.player1_id === user.id;
           const canRespond = isPending && match.submitted_by !== user.id && isOpponent;
           const sportLabel = SPORT_LABELS[match.sport as keyof typeof SPORT_LABELS];
+          
+          const player1 = users.find(u => u.id === match.player1_id);
+          const player2 = users.find(u => u.id === match.player2_id);
 
           return (
             <div key={match.id} className={`match-card ${match.status}`}>
@@ -89,12 +100,20 @@ function Matches({ user }: MatchesProps) {
               
               <div className="match-details">
                 <div className="scores">
-                  Player 1: {match.player1_score} - Player 2: {match.player2_score}
+                  {player1 ? (
+                    <Link to={`/players/${player1.id}`} style={{ color: 'var(--text-primary)', fontWeight: '500', textDecoration: 'none' }}>
+                      {player1.display_name}
+                    </Link>
+                  ) : 'Player 1'}: {match.player1_score} - {player2 ? (
+                    <Link to={`/players/${player2.id}`} style={{ color: 'var(--text-primary)', fontWeight: '500', textDecoration: 'none' }}>
+                      {player2.display_name}
+                    </Link>
+                  ) : 'Player 2'}: {match.player2_score}
                 </div>
                 {match.status === 'confirmed' && match.player1_elo_delta !== undefined && (
                   <div className="elo-changes">
-                    ELO Changes: P1 {match.player1_elo_delta > 0 ? '+' : ''}{match.player1_elo_delta}, 
-                    P2 {match.player2_elo_delta! > 0 ? '+' : ''}{match.player2_elo_delta}
+                    ELO Changes: {player1?.display_name || 'P1'} {match.player1_elo_delta > 0 ? '+' : ''}{match.player1_elo_delta}, 
+                    {player2?.display_name || 'P2'} {match.player2_elo_delta! > 0 ? '+' : ''}{match.player2_elo_delta}
                   </div>
                 )}
               </div>
@@ -108,6 +127,13 @@ function Matches({ user }: MatchesProps) {
                     ✗ Deny
                   </button>
                 </div>
+              )}
+              
+              {match.status === 'confirmed' && (
+                <>
+                  <Reactions matchId={match.id} userId={user.id} />
+                  <Comments matchId={match.id} userId={user.id} />
+                </>
               )}
             </div>
           );

@@ -588,12 +588,20 @@ body {
 .reaction-button.active {
   background: var(--accent);
   border-color: var(--accent);
+}
+
+.reaction-button.active span {
   color: white;
 }
 
 .reaction-count {
   font-size: 13px;
   font-weight: 600;
+  color: var(--text-primary);
+}
+
+.reaction-button.active .reaction-count {
+  color: white;
 }
 
 .add-reaction {
@@ -656,6 +664,23 @@ body {
   font-size: 14px;
   color: var(--text-secondary);
   line-height: 1.5;
+  margin-top: 8px;
+}
+
+.comment-delete {
+  background: transparent;
+  border: none;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 16px;
+  opacity: 0.5;
+  transition: all 0.15s ease;
+  border-radius: var(--radius-sm);
+}
+
+.comment-delete:hover {
+  opacity: 1;
+  background: rgba(255, 59, 48, 0.1);
 }
 
 .comment-form {

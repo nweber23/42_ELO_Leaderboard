@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"net/http"
 	"strconv"
 
@@ -277,4 +278,58 @@ func (h *MatchHandler) GetComments(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, comments)
+}
+
+// RemoveReaction removes a user's reaction from a match
+func (h *MatchHandler) RemoveReaction(c *gin.Context) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	matchID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid match ID"})
+		return
+	}
+
+	emoji := c.Param("emoji")
+	if emoji == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "emoji is required"})
+		return
+	}
+
+	if err := h.reactionRepo.Delete(matchID, userID, emoji); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "reaction removed"})
+}
+
+// DeleteComment deletes a comment
+func (h *MatchHandler) DeleteComment(c *gin.Context) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	commentID, err := strconv.Atoi(c.Param("commentId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid comment ID"})
+		return
+	}
+
+	if err := h.commentRepo.Delete(commentID, userID); err != nil {
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusForbidden, gin.H{"error": "cannot delete comment"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "comment deleted"})
 }

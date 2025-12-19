@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Leaderboard from './pages/Leaderboard';
 import Matches from './pages/Matches';
 import SubmitMatch from './pages/SubmitMatch';
+import PlayerProfile from './pages/PlayerProfile';
 import './App.css';
 
 function App() {
@@ -84,6 +85,7 @@ function App() {
             <Route path="/leaderboard/:sport" element={<Leaderboard />} />
             <Route path="/matches" element={user ? <Matches user={user} /> : <Login onLogin={setUser} />} />
             <Route path="/submit" element={user ? <SubmitMatch user={user} /> : <Login onLogin={setUser} />} />
+            <Route path="/players/:id" element={<PlayerProfile />} />
             <Route path="/login" element={<Login onLogin={setUser} />} />
           </Routes>
         </main>
