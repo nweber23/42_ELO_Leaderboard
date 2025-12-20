@@ -1,0 +1,31 @@
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.pill--pending {
+  border-color: color-mix(in oklab, var(--warning) 40%, var(--border));
+  background: color-mix(in oklab, var(--warning) 16%, var(--surface));
+  color: color-mix(in oklab, var(--warning) 72%, white);
+}
+
+.pill--confirmed {
+  border-color: color-mix(in oklab, var(--accent-2) 40%, var(--border));
+  background: color-mix(in oklab, var(--accent-2) 16%, var(--surface));
+  color: color-mix(in oklab, var(--accent-2) 72%, white);
+}
+
+.pill--denied {
+  border-color: color-mix(in oklab, var(--danger) 40%, var(--border));
+  background: color-mix(in oklab, var(--danger) 16%, var(--surface));
+  color: color-mix(in oklab, var(--danger) 72%, white);
+}

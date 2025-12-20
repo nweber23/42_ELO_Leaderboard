@@ -1,0 +1,25 @@
+.page { display: grid; gap: var(--space-6); }
+
+.page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: var(--space-4);
+}
+
+.page__title {
+  margin: 0;
+  font-size: 28px;
+  letter-spacing: -0.04em;
+}
+
+.page__subtitle {
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--muted);
+  max-width: 64ch;
+}
+
+.page__actions { display: flex; gap: 10px; align-items: center; }
+
+.page__body { display: grid; gap: var(--space-6); }

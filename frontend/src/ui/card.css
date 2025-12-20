@@ -1,0 +1,56 @@
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+}
+
+.card__header {
+  padding: var(--space-6);
+  padding-bottom: var(--space-4);
+}
+
+.card__title {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+}
+
+.card__description {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.card__content {
+  padding: 0 var(--space-6) var(--space-6);
+}
+
+.card__footer {
+  padding: var(--space-4) var(--space-6) var(--space-6);
+  border-top: 1px solid var(--border);
+}
+
+.metric {
+  display: grid;
+  gap: 4px;
+}
+
+.metric__label {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.metric__value {
+  font-size: 28px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+}
+
+.metric__hint {
+  font-size: 13px;
+  color: var(--faint);
+}

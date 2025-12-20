@@ -1,0 +1,76 @@
+:root {
+  /* Typography */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
+    "Apple Color Emoji", "Segoe UI Emoji";
+
+  /* Spacing (4px grid) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* Radii */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+
+  /* Elevation (subtle, no heavy borders/gradients) */
+  --shadow-1: 0 1px 0 rgba(0, 0, 0, 0.04), 0 8px 16px rgba(0, 0, 0, 0.06);
+  --shadow-2: 0 1px 0 rgba(0, 0, 0, 0.05), 0 16px 32px rgba(0, 0, 0, 0.10);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-1: 120ms;
+  --dur-2: 180ms;
+  --dur-3: 240ms;
+}
+
+:root,
+:root[data-theme="light"] {
+  /* Neutral base */
+  --bg: #0b0f17;
+  --surface: rgba(255, 255, 255, 0.06);
+  --surface-2: rgba(255, 255, 255, 0.09);
+  --surface-3: rgba(255, 255, 255, 0.12);
+  --text: rgba(255, 255, 255, 0.92);
+  --muted: rgba(255, 255, 255, 0.66);
+  --faint: rgba(255, 255, 255, 0.42);
+  --border: rgba(255, 255, 255, 0.10);
+
+  /* Accents (1 primary + 1 secondary max) */
+  --accent: #4f7cff;
+  --accent-2: #20c997;
+
+  /* Semantic */
+  --danger: #ff5a6a;
+  --warning: #ffb020;
+}
+
+/* data-theme="dark" intentionally inherits the default palette above */
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    /* Light mode defaults if user OS prefers light */
+    --bg: #f7f8fb;
+    --surface: #ffffff;
+    --surface-2: #f2f4f9;
+    --surface-3: #e9edf7;
+    --text: rgba(8, 12, 22, 0.92);
+    --muted: rgba(8, 12, 22, 0.62);
+    --faint: rgba(8, 12, 22, 0.42);
+    --border: rgba(8, 12, 22, 0.10);
+
+    --accent: #2f6bff;
+    --accent-2: #0ea37f;
+
+    --danger: #e23b4a;
+    --warning: #d97a00;
+  }
+}

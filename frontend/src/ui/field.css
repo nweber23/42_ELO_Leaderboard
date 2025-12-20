@@ -1,0 +1,40 @@
+.field { display: grid; gap: 8px; }
+
+.field__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.field__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.field__hint {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.field__error {
+  font-size: 13px;
+  color: var(--danger);
+}
+
+.input, .select {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  outline: none;
+  transition: border-color var(--dur-1) var(--ease-out), background var(--dur-1) var(--ease-out);
+}
+
+.input:focus, .select:focus {
+  border-color: color-mix(in oklab, var(--accent) 65%, transparent);
+  background: color-mix(in oklab, var(--surface-2) 75%, var(--accent));
+}
