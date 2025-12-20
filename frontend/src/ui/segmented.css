@@ -1,0 +1,29 @@
+.seg {
+  display: inline-flex;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.seg__item {
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: var(--muted);
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 650;
+  transition: background var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out);
+}
+
+.seg__item:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.seg__item--active {
+  background: var(--surface-3);
+  color: var(--text);
+  border-color: var(--border);
+}

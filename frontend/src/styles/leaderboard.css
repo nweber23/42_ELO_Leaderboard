@@ -1,0 +1,143 @@
+.lb {
+  width: 100%;
+}
+
+.lb__loading {
+  padding: var(--space-8) var(--space-6);
+  color: var(--muted);
+}
+
+.lb__head, .lb__row {
+  display: grid;
+  grid-template-columns: 72px minmax(220px, 1.6fr) 120px 120px 120px 120px;
+  gap: 0;
+  align-items: center;
+}
+
+.lb__head {
+  position: sticky;
+  top: 72px;
+  z-index: 2;
+  background: color-mix(in oklab, var(--surface) 92%, transparent);
+  border-bottom: 1px solid var(--border);
+}
+
+.lb__headcell {
+  padding: 12px var(--space-6);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.lb__row {
+  border-bottom: 1px solid var(--border);
+}
+
+.lb__row:hover {
+  background: color-mix(in oklab, var(--surface-2) 70%, transparent);
+}
+
+.lb__cell {
+  padding: 14px var(--space-6);
+}
+
+.lb__right {
+  text-align: right;
+}
+
+.lb__rank {
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--muted);
+}
+
+.lb__player {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lb__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+
+.lb__name {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.lb__name:hover {
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, var(--accent) 40%, transparent);
+  text-underline-offset: 4px;
+}
+
+.lb__meta {
+  font-size: 12px;
+}
+
+.lb__elo {
+  font-weight: 750;
+  color: color-mix(in oklab, var(--accent) 78%, white);
+}
+
+.lb__empty {
+  padding: var(--space-8) var(--space-6);
+  color: var(--muted);
+}
+
+@media (max-width: 920px) {
+  .lb__head, .lb__row {
+    grid-template-columns: 56px minmax(180px, 1.7fr) 90px 90px 90px 90px;
+  }
+}
+
+@media (max-width: 720px) {
+  .lb__head { display: none; }
+
+  .lb__row {
+    grid-template-columns: 1fr;
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .lb__cell {
+    padding: 0;
+  }
+
+  .lb__rank {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 28px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    font-size: 13px;
+  }
+
+  .lb__player {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+  }
+
+  .lb__elo {
+    justify-self: end;
+    font-size: 16px;
+  }
+
+  .lb__row {
+    border-bottom: 0;
+  }
+
+  .lb__row + .lb__row {
+    border-top: 1px solid var(--border);
+  }
+}

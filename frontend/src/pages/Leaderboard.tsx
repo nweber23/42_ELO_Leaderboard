@@ -3,6 +3,10 @@ import { useParams, Link } from 'react-router-dom';
 import { leaderboardAPI } from '../api/client';
 import type { LeaderboardEntry } from '../types';
 import { SPORT_LABELS } from '../types';
+import { Page } from '../layout/Page';
+import { Card, CardContent } from '../ui/Card';
+import { SegmentedNav } from '../ui/Segmented';
+import '../styles/leaderboard.css';
 
 interface LeaderboardProps {
   sport?: string;
@@ -11,7 +15,7 @@ interface LeaderboardProps {
 function Leaderboard({ sport: propSport }: LeaderboardProps) {
   const { sport: paramSport } = useParams();
   const sport = propSport || paramSport || 'table_tennis';
-  
+
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -23,49 +27,73 @@ function Leaderboard({ sport: propSport }: LeaderboardProps) {
   }, [sport]);
 
   if (loading) {
-    return <div className="loading">Loading leaderboard...</div>;
+    return (
+      <Page title="Leaderboards" subtitle="Rankings update after confirmed matches.">
+        <Card>
+          <CardContent>
+            <div className="lb__loading">Loading leaderboard…</div>
+          </CardContent>
+        </Card>
+      </Page>
+    );
   }
 
   const sportLabel = SPORT_LABELS[sport as keyof typeof SPORT_LABELS] || sport;
 
   return (
-    <div className="leaderboard-page">
-      <h1>{sportLabel} Leaderboard</h1>
-      
-      <table className="leaderboard-table">
-        <thead>
-          <tr>
-            <th>Rank</th>
-            <th>Player</th>
-            <th>ELO</th>
-            <th>Matches</th>
-            <th>W/L</th>
-            <th>Win Rate</th>
-          </tr>
-        </thead>
-        <tbody>
+    <Page
+      title={sportLabel}
+      subtitle="Compare players, open profiles, and track win rates."
+      actions={
+        <SegmentedNav
+          ariaLabel="Switch sport leaderboard"
+          items={[
+            { to: '/leaderboard/table_tennis', label: 'Table Tennis' },
+            { to: '/leaderboard/table_football', label: 'Table Football' },
+          ]}
+        />
+      }
+    >
+      <Card>
+        <div className="lb">
+          <div className="lb__head">
+            <div className="lb__headcell">Rank</div>
+            <div className="lb__headcell">Player</div>
+            <div className="lb__headcell lb__right">ELO</div>
+            <div className="lb__headcell lb__right">Matches</div>
+            <div className="lb__headcell lb__right">W/L</div>
+            <div className="lb__headcell lb__right">Win rate</div>
+          </div>
+
           {leaderboard.map((entry) => (
-            <tr key={entry.user.id}>
-              <td className="rank">{entry.rank}</td>
-              <td className="player">
-                <img src={entry.user.avatar_url} alt={entry.user.display_name} className="avatar" />
-                <Link to={`/players/${entry.user.id}`} style={{ color: 'var(--text-primary)', textDecoration: 'none', fontWeight: '500' }}>
-                  {entry.user.display_name}
-                </Link>
-              </td>
-              <td className="elo">{entry.elo}</td>
-              <td>{entry.matches_played}</td>
-              <td>{entry.wins} / {entry.losses}</td>
-              <td>{entry.win_rate.toFixed(1)}%</td>
-            </tr>
+            <div key={entry.user.id} className="lb__row">
+              <div className="lb__cell lb__rank">{entry.rank}</div>
+              <div className="lb__cell lb__player">
+                <img src={entry.user.avatar_url} alt={entry.user.display_name} className="lb__avatar" />
+                <div className="lb__playertext">
+                  <Link className="lb__name" to={`/players/${entry.user.id}`}>
+                    {entry.user.display_name}
+                  </Link>
+                  <div className="lb__meta muted">@{entry.user.login}</div>
+                </div>
+              </div>
+              <div className="lb__cell lb__right lb__elo">{entry.elo}</div>
+              <div className="lb__cell lb__right">{entry.matches_played}</div>
+              <div className="lb__cell lb__right">
+                {entry.wins} / {entry.losses}
+              </div>
+              <div className="lb__cell lb__right">{entry.win_rate.toFixed(1)}%</div>
+            </div>
           ))}
-        </tbody>
-      </table>
-      
-      {leaderboard.length === 0 && (
-        <p className="empty">No matches yet. Be the first to play!</p>
-      )}
-    </div>
+
+          {leaderboard.length === 0 && (
+            <div className="lb__empty">
+              No matches yet. Submit the first match to start the ranking.
+            </div>
+          )}
+        </div>
+      </Card>
+    </Page>
   );
 }
 

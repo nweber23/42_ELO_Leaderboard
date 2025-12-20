@@ -78,7 +78,7 @@ export function AppShell({
       <footer className="footer">
         <div className="container footer__inner">
           <span className="muted">
-            Built by{""}
+            Built by
             <a
               href="https://profile.intra.42.fr/users/nweber"
               target="_blank"
@@ -86,9 +86,8 @@ export function AppShell({
               className="footer__link"
               aria-label="Open @nweber 42 Intra profile"
             >
-              @nweber
+            @nweber
             </a>
-            .
           </span>
           <span className="faint">Fast · Clean · Fair</span>
         </div>
