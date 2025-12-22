@@ -1,36 +1,66 @@
 services:
-  frontend:
-    build: ./Frontend/
-    container_name: elo-leaderboard-frontend
-    networks:
-      - elo-leaderboard-network
-    ports:
-      - "3000:3000"
+  postgres:
+    image: postgres:15-alpine
+    container_name: elo_postgres
     environment:
-      - NODE_ENV=production
-      - NEXT_TELEMETRY_DISABLED=1
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - elo_network
 
   backend:
-    build: ./Backend/
-    container_name: elo-leaderboard-backend
-    networks:
-      - elo-leaderboard-network
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: elo_backend
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      FT_CLIENT_UID: ${FT_CLIENT_UID}
+      FT_CLIENT_SECRET: ${FT_CLIENT_SECRET}
+      FT_REDIRECT_URI: ${FT_REDIRECT_URI}
+      JWT_SECRET: ${JWT_SECRET}
+      PORT: ${PORT}
+      GIN_MODE: ${GIN_MODE}
+      DEFAULT_ELO: ${DEFAULT_ELO}
+      ELO_K_FACTOR: ${ELO_K_FACTOR}
     ports:
-      - "8081:8081"
-    env_file:
-      - .env
-
-  nginx:
-    build: ./Nginx/
-    container_name: elo-leaderboard-nginx
-    ports:
-      - "80:80"
-    networks:
-      - elo-leaderboard-network
+      - "8080:8080"
     depends_on:
-      - frontend
+      postgres:
+        condition: service_healthy
+    networks:
+      - elo_network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+    container_name: elo_frontend
+    ports:
+      - "3000:80"
+    depends_on:
       - backend
-  
+    networks:
+      - elo_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
 networks:
-  elo-leaderboard-network:
+  elo_network:
     driver: bridge

@@ -1,0 +1,118 @@
+import { useEffect, useMemo, useState } from 'react';
+import { authAPI } from '../api/client';
+import type { User } from '../types';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/Card';
+import { Button } from '../ui/Button';
+import { Toast } from '../ui/Toast';
+
+import '../styles/login.css';
+
+interface LoginProps {
+  onLogin: (user: User) => void;
+}
+
+function Login({ onLogin }: LoginProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [toastOpen, setToastOpen] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    const error = params.get('error');
+
+    if (error) {
+      setErrorMsg('Login failed. Please try again.');
+      setToastOpen(true);
+      window.history.replaceState({}, '', '/login');
+      return;
+    }
+
+    if (token) {
+      localStorage.setItem('token', token);
+      authAPI.me()
+        .then((user) => {
+          onLogin(user);
+          window.history.replaceState({}, '', '/');
+        })
+        .catch((err) => {
+          console.error('Failed to get user info:', err);
+          localStorage.removeItem('token');
+          setErrorMsg('Login failed. Please try again.');
+          setToastOpen(true);
+        });
+    }
+  }, [onLogin]);
+
+  const handleLogin = async () => {
+    try {
+      setIsLoading(true);
+      const { auth_url } = await authAPI.getLoginURL();
+      window.location.href = auth_url;
+    } catch (err) {
+      console.error('Failed to get login URL:', err);
+      setErrorMsg('Could not start login. Please check the backend and try again.');
+      setToastOpen(true);
+      setIsLoading(false);
+    }
+  };
+
+  const heroLines = useMemo(
+    () => [
+      'Track rankings for Table Tennis and Table Football.',
+      'Submit matches in seconds. Confirm results with one click.',
+      'React and comment on confirmed matches.',
+    ],
+    []
+  );
+
+  return (
+    <div className="login">
+      <div className="container login__grid">
+        <section className="login__hero">
+          <div className="login__badge">42 · Heilbronn</div>
+          <h1 className="login__title">A clean ELO workspace for daily play.</h1>
+          <p className="login__subtitle">
+            A focused leaderboard for the campus. Fast flows, clear stats, and match history you can trust.
+          </p>
+          <ul className="login__bullets">
+            {heroLines.map((t) => (
+              <li key={t}>{t}</li>
+            ))}
+          </ul>
+          <div className="login__hint">
+            Sign-in is handled via 42 Intra OAuth. Only Heilbronn campus users can access.
+          </div>
+        </section>
+
+        <aside className="login__panel">
+          <Card>
+            <CardHeader>
+              <CardTitle>Welcome back</CardTitle>
+              <CardDescription>Continue with your 42 account to view rankings and submit matches.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button onClick={handleLogin} isLoading={isLoading} size="lg" style={{ width: '100%' }}>
+                Continue with 42 Intra
+              </Button>
+
+              <div className="login__smallprint">
+                By continuing you agree to have your public 42 profile data stored for leaderboard features.
+              </div>
+            </CardContent>
+          </Card>
+        </aside>
+      </div>
+
+      <Toast
+        open={toastOpen}
+        tone="error"
+        title="Sign-in failed"
+        message={errorMsg ?? undefined}
+        onClose={() => setToastOpen(false)}
+      />
+    </div>
+  );
+}
+
+export default Login;

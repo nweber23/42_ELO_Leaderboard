@@ -1,0 +1,265 @@
+/* ============================================
+   App Shell Layout
+   ============================================ */
+
+.shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+/* ============================================
+   Top Bar / Header
+   ============================================ */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  height: 64px;
+}
+
+/* Brand */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  text-decoration: none;
+}
+
+.brand__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--accent-muted);
+  color: var(--accent-text);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-sm);
+}
+
+.brand__text {
+  display: none;
+}
+
+.brand__name {
+  font-size: var(--text-md);
+  font-weight: var(--weight-bold);
+  color: var(--text);
+  letter-spacing: var(--tracking-tight);
+}
+
+.brand__tag {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+/* Navigation */
+.nav {
+  display: none;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.nav__link {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--muted);
+  transition:
+    color var(--dur-base) var(--ease-out),
+    background var(--dur-base) var(--ease-out);
+}
+
+.nav__link:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+.nav__link--active {
+  color: var(--text);
+  background: var(--surface);
+}
+
+.nav__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--accent);
+  color: white;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  transition: background var(--dur-base) var(--ease-out);
+}
+
+.nav__cta:hover {
+  background: var(--accent-hover);
+  color: white;
+}
+
+/* User Chip */
+.topbar__right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.userchip {
+  display: none;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2);
+  padding-right: var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  text-decoration: none;
+  transition:
+    border-color var(--dur-base) var(--ease-out),
+    background var(--dur-base) var(--ease-out);
+}
+
+.userchip:hover {
+  border-color: var(--border-focus);
+  background: var(--surface-hover);
+}
+
+.userchip__avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+}
+
+.userchip__meta {
+  display: grid;
+  gap: 1px;
+}
+
+.userchip__name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.userchip__sub {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+/* ============================================
+   Main Content
+   ============================================ */
+
+.main {
+  padding: var(--space-8) 0 var(--space-16);
+}
+
+.main__inner {
+  min-height: 50vh;
+}
+
+/* ============================================
+   Footer
+   ============================================ */
+
+.footer {
+  border-top: 1px solid var(--border);
+  background: var(--bg-subtle);
+}
+
+.footer__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) 0;
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.footer__link {
+  color: var(--text-secondary);
+  padding: var(--space-1) var(--space-2);
+  margin-left: var(--space-1);
+  border-radius: var(--radius-sm);
+  transition:
+    color var(--dur-base) var(--ease-out),
+    background var(--dur-base) var(--ease-out);
+}
+
+.footer__link:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+
+@media (min-width: 768px) {
+  .brand__text {
+    display: block;
+  }
+
+  .nav {
+    display: flex;
+  }
+
+  .userchip {
+    display: flex;
+  }
+}
+
+@media (max-width: 767px) {
+  .topbar__inner {
+    height: 56px;
+  }
+
+  /* Mobile bottom navigation */
+  .nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: var(--z-sticky);
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    padding: var(--space-2) var(--space-4);
+    justify-content: space-around;
+  }
+
+  .nav__link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--space-2);
+    font-size: var(--text-xs);
+    flex: 1;
+    text-align: center;
+  }
+
+  .main {
+    padding-bottom: calc(var(--space-16) + 60px);
+  }
+
+  .footer {
+    display: none;
+  }
+}

@@ -1,0 +1,49 @@
+/* ============================================
+   Page Layout Component
+   ============================================ */
+
+.page {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.page__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.page__title {
+  margin: 0;
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--text);
+}
+
+.page__subtitle {
+  margin: 0;
+  font-size: var(--text-base);
+  color: var(--muted);
+  max-width: 60ch;
+  line-height: var(--leading-relaxed);
+}
+
+.page__actions {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.page__body {
+  display: grid;
+  gap: var(--space-6);
+}
+
+@media (min-width: 768px) {
+  .page__header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+}

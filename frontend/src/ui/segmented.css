@@ -1,0 +1,37 @@
+/* ============================================
+   Segmented Navigation
+   ============================================ */
+
+.seg {
+  display: inline-flex;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.seg__item {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid transparent;
+  transition:
+    background var(--dur-base) var(--ease-out),
+    color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+
+.seg__item:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+.seg__item--active {
+  color: var(--text);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-xs);
+}

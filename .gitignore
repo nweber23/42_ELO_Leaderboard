@@ -1,45 +1,39 @@
-# Backend
-Backend/docs/docs.go
-Backend/docs/swagger.json
-Backend/docs/swagger.yaml
-
-# Frontend
-Frontend/node_modules/
-Frontend/.next/
-Frontend/out/
-Frontend/.env*.local
-
-# Dependencies
-node_modules/
-
-# Build outputs
-dist/
-build/
-
-# Environment files
+# Environment variables
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*.local
 
-# Logs
-*.log
-logs/
+# Go
+backend/tmp/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
 
-# Docker
-.docker/
+# Frontend
+node_modules/
+frontend/dist/
+frontend/build/
+*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
 
 # OS
 .DS_Store
 Thumbs.db
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
+# Docker
+*.log
 
-# Temporary files
-*.tmp
-*.temp
+# Database
+*.db
+*.sqlite

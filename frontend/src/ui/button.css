@@ -1,0 +1,129 @@
+/* ============================================
+   Button Component
+   ============================================ */
+
+.btn {
+  --_bg: var(--accent);
+  --_fg: white;
+  --_bg-hover: var(--accent-hover);
+  --_border: transparent;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+
+  border: 1px solid var(--_border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  white-space: nowrap;
+
+  cursor: pointer;
+  user-select: none;
+  background: var(--_bg);
+  color: var(--_fg);
+
+  transition:
+    background var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--_bg-hover);
+}
+
+.btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ring-offset), 0 0 0 4px var(--ring);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Sizes */
+.btn--sm {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
+  border-radius: var(--radius-sm);
+}
+
+.btn--md {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+}
+
+.btn--lg {
+  padding: var(--space-4) var(--space-6);
+  font-size: var(--text-base);
+  border-radius: var(--radius-lg);
+}
+
+/* Variants */
+.btn--primary {
+  --_bg: var(--accent);
+  --_fg: white;
+  --_bg-hover: var(--accent-hover);
+}
+
+.btn--secondary {
+  --_bg: var(--surface);
+  --_fg: var(--text);
+  --_bg-hover: var(--surface-hover);
+  --_border: var(--border);
+}
+
+.btn--ghost {
+  --_bg: transparent;
+  --_fg: var(--text-secondary);
+  --_bg-hover: var(--surface-hover);
+  --_border: transparent;
+}
+
+.btn--ghost:hover:not(:disabled) {
+  color: var(--text);
+}
+
+.btn--danger {
+  --_bg: var(--danger);
+  --_fg: white;
+  --_bg-hover: var(--danger-text);
+}
+
+/* Spinner */
+.btn__spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  animation: btn-spin 0.7s linear infinite;
+}
+
+.btn--secondary .btn__spinner,
+.btn--ghost .btn__spinner {
+  border-color: var(--border);
+  border-top-color: var(--text);
+}
+
+.btn__label {
+  display: inline-flex;
+  align-items: center;
+}
+
+@keyframes btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
