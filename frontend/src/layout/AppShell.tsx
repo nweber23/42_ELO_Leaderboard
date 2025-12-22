@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useMemo } from "react";
 import type { User } from "../types";
 import "./app-shell.css";
@@ -11,9 +11,10 @@ export function AppShell({
   user: User | null;
   onLogout: () => void;
 }) {
+  const location = useLocation();
   const nav = useMemo(
     () => [
-      { name: "Leaderboards", to: "/leaderboard/table_tennis" },
+      { name: "Leaderboards", to: "/leaderboard/table_tennis", matchPath: "/leaderboard" },
       { name: "Matches", to: "/matches" },
       { name: "Submit", to: "/submit" },
     ],
@@ -32,15 +33,20 @@ export function AppShell({
           </NavLink>
 
           <nav className="nav" aria-label="Primary">
-            {nav.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) => (isActive ? "nav__link nav__link--active" : "nav__link")}
-              >
-                {item.name}
-              </NavLink>
-            ))}
+            {nav.map((item) => {
+              const isActive = item.matchPath
+                ? location.pathname.startsWith(item.matchPath)
+                : location.pathname === item.to || location.pathname.startsWith(item.to + '/');
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={isActive ? "nav__link nav__link--active" : "nav__link"}
+                >
+                  {item.name}
+                </NavLink>
+              );
+            })}
           </nav>
 
           <div className="topbar__right">
