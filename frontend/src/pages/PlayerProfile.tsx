@@ -51,32 +51,39 @@ function PlayerProfile() {
     };
   }, [id]);
 
+  const [statsFilter, setStatsFilter] = useState<string | null>(null);
+
   // Memoize expensive calculations - must be called unconditionally (before any returns)
+  const allConfirmedMatches = useMemo(() => {
+    return matches.filter((m: Match) => m.status === 'confirmed');
+  }, [matches]);
+
+  // Calculate stats based on the selected filter
   const stats = useMemo(() => {
     if (!player) {
       return {
-        confirmedMatches: [] as Match[],
-        ttMatches: [] as Match[],
-        tfMatches: [] as Match[],
-        wins: [] as Match[],
+        totalMatches: 0,
+        wins: 0,
         losses: 0,
         winRate: 0,
         currentStreak: 0,
       };
     }
 
-    const confirmedMatches = matches.filter((m: Match) => m.status === 'confirmed');
-    const ttMatches = confirmedMatches.filter((m: Match) => m.sport === 'table_tennis');
-    const tfMatches = confirmedMatches.filter((m: Match) => m.sport === 'table_football');
-    const wins = confirmedMatches.filter((m: Match) => m.winner_id === player.id);
-    const losses = confirmedMatches.length - wins.length;
-    const winRate = confirmedMatches.length > 0
-      ? Math.round((wins.length / confirmedMatches.length) * 100)
+    // Filter matches based on stats filter
+    const filteredMatches = statsFilter
+      ? allConfirmedMatches.filter((m: Match) => m.sport === statsFilter)
+      : allConfirmedMatches;
+
+    const wins = filteredMatches.filter((m: Match) => m.winner_id === player.id).length;
+    const losses = filteredMatches.length - wins;
+    const winRate = filteredMatches.length > 0
+      ? Math.round((wins / filteredMatches.length) * 100)
       : 0;
 
-    // Calculate current win streak
+    // Calculate current win streak for filtered sport
     let currentStreak = 0;
-    const sortedMatches = [...confirmedMatches].sort((a: Match, b: Match) =>
+    const sortedMatches = [...filteredMatches].sort((a: Match, b: Match) =>
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
     for (const match of sortedMatches) {
@@ -88,21 +95,19 @@ function PlayerProfile() {
     }
 
     return {
-      confirmedMatches,
-      ttMatches,
-      tfMatches,
+      totalMatches: filteredMatches.length,
       wins,
       losses,
       winRate,
       currentStreak,
     };
-  }, [matches, player]);
+  }, [allConfirmedMatches, player, statsFilter]);
 
   const filteredMatches = useMemo(() => {
     return sportFilter
-      ? stats.confirmedMatches.filter((m: Match) => m.sport === sportFilter)
-      : stats.confirmedMatches;
-  }, [stats.confirmedMatches, sportFilter]);
+      ? allConfirmedMatches.filter((m: Match) => m.sport === sportFilter)
+      : allConfirmedMatches;
+  }, [allConfirmedMatches, sportFilter]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -170,45 +175,56 @@ function PlayerProfile() {
         </CardContent>
       </Card>
 
-      {/* Stats Grid */}
-      <div className="profile__stats">
-        <Card className="profile__stat-card">
-          <CardContent>
-            <span className="profile__stat-value">{stats.confirmedMatches.length}</span>
-            <span className="profile__stat-label">Total Matches</span>
-          </CardContent>
-        </Card>
-        <Card className="profile__stat-card">
-          <CardContent>
-            <span className="profile__stat-value profile__stat-value--success">{stats.wins.length}</span>
-            <span className="profile__stat-label">Wins</span>
-          </CardContent>
-        </Card>
-        <Card className="profile__stat-card">
-          <CardContent>
-            <span className="profile__stat-value profile__stat-value--danger">{stats.losses}</span>
-            <span className="profile__stat-label">Losses</span>
-          </CardContent>
-        </Card>
-        <Card className="profile__stat-card">
-          <CardContent>
-            <span className="profile__stat-value">{stats.winRate}%</span>
-            <span className="profile__stat-label">Win Rate</span>
-          </CardContent>
-        </Card>
-        <Card className="profile__stat-card">
-          <CardContent>
-            <span className="profile__stat-value">{stats.currentStreak}</span>
-            <span className="profile__stat-label">Win Streak</span>
-          </CardContent>
-        </Card>
-        <Card className="profile__stat-card">
-          <CardContent>
-            <span className="profile__stat-value">{stats.ttMatches.length} / {stats.tfMatches.length}</span>
-            <span className="profile__stat-label">TT / TF</span>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Stats Section */}
+      <Card className="profile__stats-card">
+        <div className="profile__stats-header">
+          <h2 className="profile__section-title">Statistics</h2>
+          <div className="filters">
+            <button
+              className={!statsFilter ? 'active' : ''}
+              onClick={() => setStatsFilter(null)}
+            >
+              All
+            </button>
+            <button
+              className={statsFilter === 'table_tennis' ? 'active' : ''}
+              onClick={() => setStatsFilter('table_tennis')}
+            >
+              Table Tennis
+            </button>
+            <button
+              className={statsFilter === 'table_football' ? 'active' : ''}
+              onClick={() => setStatsFilter('table_football')}
+            >
+              Table Football
+            </button>
+          </div>
+        </div>
+        <CardContent>
+          <div className="profile__stats">
+            <div className="profile__stat-item">
+              <span className="profile__stat-value">{stats.totalMatches}</span>
+              <span className="profile__stat-label">Total Matches</span>
+            </div>
+            <div className="profile__stat-item">
+              <span className="profile__stat-value profile__stat-value--success">{stats.wins}</span>
+              <span className="profile__stat-label">Wins</span>
+            </div>
+            <div className="profile__stat-item">
+              <span className="profile__stat-value profile__stat-value--danger">{stats.losses}</span>
+              <span className="profile__stat-label">Losses</span>
+            </div>
+            <div className="profile__stat-item">
+              <span className="profile__stat-value">{stats.winRate}%</span>
+              <span className="profile__stat-label">Win Rate</span>
+            </div>
+            <div className="profile__stat-item">
+              <span className="profile__stat-value">{stats.currentStreak}</span>
+              <span className="profile__stat-label">Win Streak</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Match History */}
       <Card>
