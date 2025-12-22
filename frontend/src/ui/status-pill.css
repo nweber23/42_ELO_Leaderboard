@@ -27,3 +27,8 @@
   background: var(--danger-muted);
   color: var(--danger-text);
 }
+
+.pill--cancelled {
+  background: var(--neutral-muted, #6b7280);
+  color: var(--neutral-text, #374151);
+}

@@ -53,6 +53,15 @@ function Matches({ user }: MatchesProps) {
     }
   };
 
+  const handleCancel = async (matchId: number) => {
+    try {
+      await matchAPI.cancel(matchId);
+      loadMatches();
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Failed to cancel match');
+    }
+  };
+
   if (loading) {
     return (
       <Page title="Match History" subtitle="View and manage your matches">
@@ -100,6 +109,7 @@ function Matches({ user }: MatchesProps) {
             const isPending = match.status === 'pending';
             const isOpponent = match.player2_id === user.id || match.player1_id === user.id;
             const canRespond = isPending && match.submitted_by !== user.id && isOpponent;
+            const canCancel = isPending && match.submitted_by === user.id;
             const sportLabel = SPORT_LABELS[match.sport as keyof typeof SPORT_LABELS];
 
             const player1 = users.find(u => u.id === match.player1_id);
@@ -138,6 +148,14 @@ function Matches({ user }: MatchesProps) {
                     </button>
                     <button onClick={() => handleDeny(match.id)} className="deny">
                       ✗ Deny
+                    </button>
+                  </div>
+                )}
+
+                {canCancel && (
+                  <div className="match-actions">
+                    <button onClick={() => handleCancel(match.id)} className="cancel">
+                      ✗ Cancel
                     </button>
                   </div>
                 )}

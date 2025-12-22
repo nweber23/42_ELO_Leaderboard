@@ -13,6 +13,7 @@ const (
 	StatusPending   = "pending"
 	StatusConfirmed = "confirmed"
 	StatusDenied    = "denied"
+	StatusCancelled = "cancelled"
 )
 
 // User represents a 42 student

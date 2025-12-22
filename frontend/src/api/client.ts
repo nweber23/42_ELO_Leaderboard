@@ -60,6 +60,10 @@ export const matchAPI = {
     await client.post(`/matches/${matchId}/deny`);
   },
 
+  cancel: async (matchId: number): Promise<void> => {
+    await client.post(`/matches/${matchId}/cancel`);
+  },
+
   list: async (params?: {
     user_id?: number;
     sport?: string;

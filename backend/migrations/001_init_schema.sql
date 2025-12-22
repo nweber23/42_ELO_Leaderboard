@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS matches (
     player1_score INTEGER NOT NULL CHECK (player1_score >= 0),
     player2_score INTEGER NOT NULL CHECK (player2_score >= 0),
     winner_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'denied')),
+    status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'confirmed', 'denied', 'cancelled')),
     player1_elo_before INTEGER,
     player1_elo_after INTEGER,
     player1_elo_delta INTEGER,

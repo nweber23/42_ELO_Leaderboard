@@ -101,6 +101,28 @@ func (h *MatchHandler) DenyMatch(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "match denied"})
 }
 
+// CancelMatch handles match cancellation by the submitter
+func (h *MatchHandler) CancelMatch(c *gin.Context) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}
+
+	matchID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid match ID"})
+		return
+	}
+
+	if err := h.matchService.CancelMatch(matchID, userID); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "match cancelled"})
+}
+
 // GetMatches lists matches with filters
 func (h *MatchHandler) GetMatches(c *gin.Context) {
 	var userID *int

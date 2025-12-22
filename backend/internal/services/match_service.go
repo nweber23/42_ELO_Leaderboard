@@ -196,6 +196,27 @@ func (s *MatchService) DenyMatch(matchID, userID int) error {
 	return s.matchRepo.DenyMatch(matchID)
 }
 
+// CancelMatch cancels a pending match (only the submitter can cancel)
+func (s *MatchService) CancelMatch(matchID, userID int) error {
+	// Get the match
+	match, err := s.matchRepo.GetByID(matchID)
+	if err != nil {
+		return err
+	}
+
+	// Validate status
+	if match.Status != models.StatusPending {
+		return fmt.Errorf("match is not pending")
+	}
+
+	// Validate: only the submitter can cancel
+	if match.SubmittedBy != userID {
+		return fmt.Errorf("only the submitter can cancel this match")
+	}
+
+	return s.matchRepo.CancelMatch(matchID)
+}
+
 // GetLeaderboard generates leaderboard for a sport
 func (s *MatchService) GetLeaderboard(sport string) ([]models.LeaderboardEntry, error) {
 	// Get all users

@@ -89,6 +89,7 @@ func main() {
 		protected.GET("/matches/:id", matchHandler.GetMatch)
 		protected.POST("/matches/:id/confirm", matchHandler.ConfirmMatch)
 		protected.POST("/matches/:id/deny", matchHandler.DenyMatch)
+		protected.POST("/matches/:id/cancel", matchHandler.CancelMatch)
 
 		// Reactions
 		protected.POST("/matches/:id/reactions", matchHandler.AddReaction)

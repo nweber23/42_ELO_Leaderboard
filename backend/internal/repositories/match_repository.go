@@ -196,6 +196,13 @@ func (r *MatchRepository) DenyMatch(matchID int) error {
 	return err
 }
 
+// CancelMatch cancels a pending match (by submitter)
+func (r *MatchRepository) CancelMatch(matchID int) error {
+	query := `UPDATE matches SET status = $1, updated_at = $2 WHERE id = $3`
+	_, err := r.db.Exec(query, models.StatusCancelled, time.Now(), matchID)
+	return err
+}
+
 // GetMatches retrieves matches with filters
 func (r *MatchRepository) GetMatches(userID *int, sport *string, status *string, limit int, offset int) ([]models.Match, error) {
 	query := `
