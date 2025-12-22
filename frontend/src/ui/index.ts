@@ -4,3 +4,4 @@ export * from "./Field";
 export * from "./StatusPill";
 export * from "./Toast";
 export * from "./Segmented";
+export * from "./Spinner";

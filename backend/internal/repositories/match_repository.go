@@ -26,34 +26,37 @@ func (r *MatchRepository) Create(tx *sql.Tx, match *models.Match) error {
 		RETURNING id, created_at, updated_at
 	`
 
-	var err error
-	if tx != nil {
-		err = tx.QueryRow(
-			query,
-			match.Sport,
-			match.Player1ID,
-			match.Player2ID,
-			match.Player1Score,
-			match.Player2Score,
-			match.WinnerID,
-			match.Status,
-			match.SubmittedBy,
-		).Scan(&match.ID, &match.CreatedAt, &match.UpdatedAt)
-	} else {
-		err = r.db.QueryRow(
-			query,
-			match.Sport,
-			match.Player1ID,
-			match.Player2ID,
-			match.Player1Score,
-			match.Player2Score,
-			match.WinnerID,
-			match.Status,
-			match.SubmittedBy,
-		).Scan(&match.ID, &match.CreatedAt, &match.UpdatedAt)
+	var scanner interface {
+		Scan(dest ...interface{}) error
 	}
 
-	return err
+	if tx != nil {
+		scanner = tx.QueryRow(
+			query,
+			match.Sport,
+			match.Player1ID,
+			match.Player2ID,
+			match.Player1Score,
+			match.Player2Score,
+			match.WinnerID,
+			match.Status,
+			match.SubmittedBy,
+		)
+	} else {
+		scanner = r.db.QueryRow(
+			query,
+			match.Sport,
+			match.Player1ID,
+			match.Player2ID,
+			match.Player1Score,
+			match.Player2Score,
+			match.WinnerID,
+			match.Status,
+			match.SubmittedBy,
+		)
+	}
+
+	return scanner.Scan(&match.ID, &match.CreatedAt, &match.UpdatedAt)
 }
 
 // GetByID retrieves a match by ID

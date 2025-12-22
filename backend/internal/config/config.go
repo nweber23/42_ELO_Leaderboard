@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type Config struct {
@@ -13,6 +14,8 @@ type Config struct {
 	FTRedirectURI   string
 	JWTSecret       string
 	Port            string
+	AllowedOrigins  []string
+	FrontendURL     string
 	DefaultELO      int
 	ELOKFactor      int
 }
@@ -28,6 +31,9 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("invalid ELO_K_FACTOR: %w", err)
 	}
 
+	allowedOrigins := getEnvAsSlice("ALLOWED_ORIGINS", []string{"http://localhost:3000", "http://localhost:5173"}, ",")
+	frontendURL := getEnv("FRONTEND_URL", "http://localhost:3000")
+
 	cfg := &Config{
 		DatabaseURL:    getEnv("DATABASE_URL", ""),
 		FTClientUID:    getEnv("FT_CLIENT_UID", ""),
@@ -35,6 +41,8 @@ func Load() (*Config, error) {
 		FTRedirectURI:  getEnv("FT_REDIRECT_URI", ""),
 		JWTSecret:      getEnv("JWT_SECRET", ""),
 		Port:           getEnv("PORT", "8080"),
+		AllowedOrigins: allowedOrigins,
+		FrontendURL:    frontendURL,
 		DefaultELO:     defaultELO,
 		ELOKFactor:     kFactor,
 	}
@@ -65,9 +73,21 @@ func (c *Config) Validate() error {
 	return nil
 }
 
-func getEnv(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
+func getEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
 		return value
 	}
-	return defaultValue
+	return fallback
+}
+
+func getEnvAsSlice(name string, defaultVal []string, sep string) []string {
+	valStr := getEnv(name, "")
+
+	if valStr == "" {
+		return defaultVal
+	}
+
+	val := strings.Split(valStr, sep)
+
+	return val
 }

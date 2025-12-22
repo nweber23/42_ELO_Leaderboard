@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { commentAPI, usersAPI } from '../api/client';
 import type { Comment, User } from '../types';
+import { useToast } from '../state/useToast';
+import { Toast } from '../ui/Toast';
 
 interface CommentsProps {
   matchId: number;
@@ -15,6 +17,7 @@ function Comments({ matchId, userId }: CommentsProps) {
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const { toast, show, dismiss } = useToast();
 
   useEffect(() => {
     loadComments();
@@ -28,6 +31,7 @@ function Comments({ matchId, userId }: CommentsProps) {
       setComments(data || []);
     } catch (err) {
       console.error('Failed to load comments:', err);
+      show({ title: 'Error', message: 'Failed to load comments', tone: 'error' });
     } finally {
       setLoading(false);
     }
@@ -42,8 +46,13 @@ function Comments({ matchId, userId }: CommentsProps) {
       const comment = await commentAPI.add(matchId, newComment.trim());
       setComments([...comments, comment]);
       setNewComment('');
+      show({ title: 'Success', message: 'Comment added', tone: 'success' });
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Failed to add comment');
+      show({
+        title: 'Error',
+        message: err.response?.data?.error || 'Failed to add comment',
+        tone: 'error'
+      });
     } finally {
       setSubmitting(false);
     }
@@ -58,10 +67,15 @@ function Comments({ matchId, userId }: CommentsProps) {
 
     try {
       await commentAPI.delete(matchId, commentId);
+      show({ title: 'Success', message: 'Comment deleted', tone: 'success' });
     } catch (err: any) {
       // Revert on error
       setComments(originalComments);
-      alert(err.response?.data?.error || 'Failed to delete comment');
+      show({
+        title: 'Error',
+        message: err.response?.data?.error || 'Failed to delete comment',
+        tone: 'error'
+      });
     }
   };
 
@@ -87,7 +101,9 @@ function Comments({ matchId, userId }: CommentsProps) {
       </div>
 
       {loading ? (
-        <div className="comments-empty">Loading comments...</div>
+        <div className="spinner-container">
+          <div className="spinner"></div>
+        </div>
       ) : comments.length === 0 ? (
         <div className="comments-empty">No comments yet. Be the first!</div>
       ) : (
@@ -146,6 +162,7 @@ function Comments({ matchId, userId }: CommentsProps) {
           {newComment.length}/{MAX_COMMENT_LENGTH}
         </div>
       )}
+      <Toast {...toast} onClose={dismiss} />
     </div>
   );
 }

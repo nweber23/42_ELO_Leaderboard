@@ -19,6 +19,21 @@ client.interceptors.request.use((config) => {
   return config;
 });
 
+// Handle 401 errors
+client.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      // Only redirect if not already on login page to avoid loops
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Auth API
 export const authAPI = {
   getLoginURL: async (): Promise<{ auth_url: string }> => {

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 
@@ -35,7 +36,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		url.QueryEscape(h.cfg.FTRedirectURI),
 	)
 
-	c.JSON(http.StatusOK, gin.H{
+	utils.RespondWithJSON(c, http.StatusOK, gin.H{
 		"auth_url": authURL,
 	})
 }
@@ -44,37 +45,38 @@ func (h *AuthHandler) Login(c *gin.Context) {
 func (h *AuthHandler) Callback(c *gin.Context) {
 	code := c.Query("code")
 	if code == "" {
-		c.Redirect(http.StatusTemporaryRedirect, "http://localhost:3000/?error=no_code")
+		c.Redirect(http.StatusTemporaryRedirect, h.cfg.FrontendURL+"/?error=no_code")
 		return
 	}
 
 	// Exchange code for token
 	token, err := h.exchangeCodeForToken(code)
 	if err != nil {
-		c.Redirect(http.StatusTemporaryRedirect, "http://localhost:3000/?error=token_exchange_failed")
+		slog.Error("Token exchange failed", "error", err)
+		c.Redirect(http.StatusTemporaryRedirect, h.cfg.FrontendURL+"/?error=token_exchange_failed")
 		return
 	}
 
 	// Get user info from 42 API
 	userInfo, err := h.get42UserInfo(token)
 	if err != nil {
-		c.Redirect(http.StatusTemporaryRedirect, "http://localhost:3000/?error=user_info_failed")
+		slog.Error("Failed to get user info", "error", err)
+		c.Redirect(http.StatusTemporaryRedirect, h.cfg.FrontendURL+"/?error=user_info_failed")
 		return
 	}
 
 	// Validate campus - check if user has Heilbronn campus
 	var campusName string
-	fmt.Printf("User %s has %d campus entries\n", userInfo.Login, len(userInfo.Campus))
+	slog.Info("Checking user campus", "user", userInfo.Login, "campus_count", len(userInfo.Campus))
 	for _, campus := range userInfo.Campus {
-		fmt.Printf("Campus: %s (ID: %d)\n", campus.Name, campus.ID)
 		if campus.Name == "Heilbronn" {
 			campusName = "Heilbronn"
 			break
 		}
 	}
 	if campusName == "" {
-		fmt.Printf("No Heilbronn campus found for user %s, redirecting with error\n", userInfo.Login)
-		c.Redirect(http.StatusTemporaryRedirect, "http://localhost:3000/?error=invalid_campus")
+		slog.Warn("No Heilbronn campus found", "user", userInfo.Login)
+		c.Redirect(http.StatusTemporaryRedirect, h.cfg.FrontendURL+"/?error=invalid_campus")
 		return
 	}
 
@@ -88,47 +90,49 @@ func (h *AuthHandler) Callback(c *gin.Context) {
 	}
 
 	if err := h.userRepo.CreateOrUpdate(user); err != nil {
-		c.Redirect(http.StatusTemporaryRedirect, "http://localhost:3000/?error=user_creation_failed")
+		slog.Error("Failed to create/update user", "error", err)
+		c.Redirect(http.StatusTemporaryRedirect, h.cfg.FrontendURL+"/?error=user_creation_failed")
 		return
 	}
 
 	// Generate JWT
 	jwt, err := utils.GenerateJWT(user.ID, h.cfg.JWTSecret)
 	if err != nil {
-		c.Redirect(http.StatusTemporaryRedirect, "http://localhost:3000/?error=token_generation_failed")
+		slog.Error("Failed to generate JWT", "error", err)
+		c.Redirect(http.StatusTemporaryRedirect, h.cfg.FrontendURL+"/?error=token_generation_failed")
 		return
 	}
 
 	// Redirect to frontend with token
-	c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("http://localhost:3000/?token=%s", jwt))
+	c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s/?token=%s", h.cfg.FrontendURL, jwt))
 }
 
 // Me returns current user info
 func (h *AuthHandler) Me(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		utils.RespondWithError(c, http.StatusUnauthorized, "unauthorized", nil)
 		return
 	}
 
 	user, err := h.userRepo.GetByID(userID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+		utils.RespondWithError(c, http.StatusNotFound, "user not found", err)
 		return
 	}
 
-	c.JSON(http.StatusOK, user)
+	utils.RespondWithJSON(c, http.StatusOK, user)
 }
 
 // GetUsers returns all users
 func (h *AuthHandler) GetUsers(c *gin.Context) {
 	users, err := h.userRepo.GetAll()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusInternalServerError, err.Error(), err)
 		return
 	}
 
-	c.JSON(http.StatusOK, users)
+	utils.RespondWithJSON(c, http.StatusOK, users)
 }
 
 // exchangeCodeForToken exchanges authorization code for access token

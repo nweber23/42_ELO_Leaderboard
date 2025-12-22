@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { reactionAPI } from '../api/client';
 import type { Reaction } from '../types';
 import EmojiPicker from './EmojiPicker';
+import { useToast } from '../state/useToast';
+import { Toast } from '../ui/Toast';
 
 interface ReactionsProps {
   matchId: number;
@@ -11,6 +13,7 @@ interface ReactionsProps {
 function Reactions({ matchId, userId }: ReactionsProps) {
   const [reactions, setReactions] = useState<Reaction[]>([]);
   const [loading, setLoading] = useState(false);
+  const { toast, show, dismiss } = useToast();
 
   useEffect(() => {
     loadReactions();
@@ -22,6 +25,7 @@ function Reactions({ matchId, userId }: ReactionsProps) {
       setReactions(data || []);
     } catch (err) {
       console.error('Failed to load reactions:', err);
+      // Silent fail for loading reactions is usually fine, or show a small toast
     }
   };
 
@@ -41,6 +45,7 @@ function Reactions({ matchId, userId }: ReactionsProps) {
         console.error('Failed to remove reaction:', err);
         // Revert on error
         setReactions(reactions);
+        show({ title: 'Error', message: 'Failed to remove reaction', tone: 'error' });
       } finally {
         setLoading(false);
       }
@@ -68,6 +73,7 @@ function Reactions({ matchId, userId }: ReactionsProps) {
       console.error('Failed to add reaction:', err);
       // Revert on error
       setReactions(reactions);
+      show({ title: 'Error', message: 'Failed to add reaction', tone: 'error' });
     } finally {
       setLoading(false);
     }
@@ -98,6 +104,7 @@ function Reactions({ matchId, userId }: ReactionsProps) {
         ))}
         <EmojiPicker onSelect={handleReaction} disabled={loading} />
       </div>
+      <Toast {...toast} onClose={dismiss} />
     </div>
   );
 }

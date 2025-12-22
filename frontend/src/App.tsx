@@ -8,6 +8,7 @@ import Matches from './pages/Matches';
 import SubmitMatch from './pages/SubmitMatch';
 import PlayerProfile from './pages/PlayerProfile';
 import { AppShell } from './layout/AppShell';
+import { Spinner } from './ui';
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -50,7 +51,7 @@ function App() {
     setUser(null);
   };
 
-  if (loading) return <div className="container" style={{ padding: '64px 0' }}>Loading…</div>;
+  if (loading) return <Spinner />;
 
   return (
     <Router>

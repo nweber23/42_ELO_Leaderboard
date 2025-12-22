@@ -38,89 +38,89 @@ func NewMatchHandler(
 func (h *MatchHandler) SubmitMatch(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		utils.RespondWithError(c, http.StatusUnauthorized, "unauthorized", nil)
 		return
 	}
 
 	var req models.SubmitMatchRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), err)
 		return
 	}
 
 	match, err := h.matchService.SubmitMatch(&req, userID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, match)
+	utils.RespondWithJSON(c, http.StatusCreated, match)
 }
 
 // ConfirmMatch handles match confirmation
 func (h *MatchHandler) ConfirmMatch(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		utils.RespondWithError(c, http.StatusUnauthorized, "unauthorized", nil)
 		return
 	}
 
 	matchID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid match ID"})
+		utils.RespondWithError(c, http.StatusBadRequest, "invalid match ID", err)
 		return
 	}
 
 	if err := h.matchService.ConfirmMatch(matchID, userID); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "match confirmed"})
+	utils.RespondWithJSON(c, http.StatusOK, gin.H{"message": "match confirmed"})
 }
 
 // DenyMatch handles match denial
 func (h *MatchHandler) DenyMatch(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		utils.RespondWithError(c, http.StatusUnauthorized, "unauthorized", nil)
 		return
 	}
 
 	matchID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid match ID"})
+		utils.RespondWithError(c, http.StatusBadRequest, "invalid match ID", err)
 		return
 	}
 
 	if err := h.matchService.DenyMatch(matchID, userID); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "match denied"})
+	utils.RespondWithJSON(c, http.StatusOK, gin.H{"message": "match denied"})
 }
 
 // CancelMatch handles match cancellation by the submitter
 func (h *MatchHandler) CancelMatch(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		utils.RespondWithError(c, http.StatusUnauthorized, "unauthorized", nil)
 		return
 	}
 
 	matchID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid match ID"})
+		utils.RespondWithError(c, http.StatusBadRequest, "invalid match ID", err)
 		return
 	}
 
 	if err := h.matchService.CancelMatch(matchID, userID); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "match cancelled"})
+	utils.RespondWithJSON(c, http.StatusOK, gin.H{"message": "match cancelled"})
 }
 
 // GetMatches lists matches with filters
@@ -160,41 +160,41 @@ func (h *MatchHandler) GetMatches(c *gin.Context) {
 
 	matches, err := h.matchRepo.GetMatches(userID, sport, status, limit, offset)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusInternalServerError, err.Error(), err)
 		return
 	}
 
-	c.JSON(http.StatusOK, matches)
+	utils.RespondWithJSON(c, http.StatusOK, matches)
 }
 
 // GetMatch retrieves a single match
 func (h *MatchHandler) GetMatch(c *gin.Context) {
 	matchID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid match ID"})
+		utils.RespondWithError(c, http.StatusBadRequest, "invalid match ID", err)
 		return
 	}
 
 	match, err := h.matchRepo.GetByID(matchID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "match not found"})
+		utils.RespondWithError(c, http.StatusNotFound, "match not found", err)
 		return
 	}
 
-	c.JSON(http.StatusOK, match)
+	utils.RespondWithJSON(c, http.StatusOK, match)
 }
 
 // GetLeaderboard returns leaderboard for a sport
 func (h *MatchHandler) GetLeaderboard(c *gin.Context) {
 	sport := c.Param("sport")
 	if sport != models.SportTableTennis && sport != models.SportTableFootball {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid sport"})
+		utils.RespondWithError(c, http.StatusBadRequest, "invalid sport", nil)
 		return
 	}
 
 	leaderboard, err := h.matchService.GetLeaderboard(sport)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusInternalServerError, err.Error(), err)
 		return
 	}
 
@@ -205,7 +205,7 @@ func (h *MatchHandler) GetLeaderboard(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, leaderboard)
+	utils.RespondWithJSON(c, http.StatusOK, leaderboard)
 }
 
 // maskUserData replaces personal information with anonymous data
@@ -228,19 +228,19 @@ func maskUserData(user models.User) models.User {
 func (h *MatchHandler) AddReaction(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		utils.RespondWithError(c, http.StatusUnauthorized, "unauthorized", nil)
 		return
 	}
 
 	matchID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid match ID"})
+		utils.RespondWithError(c, http.StatusBadRequest, "invalid match ID", err)
 		return
 	}
 
 	var req models.AddReactionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), err)
 		return
 	}
 
@@ -251,47 +251,47 @@ func (h *MatchHandler) AddReaction(c *gin.Context) {
 	}
 
 	if err := h.reactionRepo.Add(reaction); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusInternalServerError, err.Error(), err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, reaction)
+	utils.RespondWithJSON(c, http.StatusCreated, reaction)
 }
 
 // GetReactions retrieves reactions for a match
 func (h *MatchHandler) GetReactions(c *gin.Context) {
 	matchID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid match ID"})
+		utils.RespondWithError(c, http.StatusBadRequest, "invalid match ID", err)
 		return
 	}
 
 	reactions, err := h.reactionRepo.GetByMatchID(matchID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusInternalServerError, err.Error(), err)
 		return
 	}
 
-	c.JSON(http.StatusOK, reactions)
+	utils.RespondWithJSON(c, http.StatusOK, reactions)
 }
 
 // AddComment adds a comment to a match
 func (h *MatchHandler) AddComment(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		utils.RespondWithError(c, http.StatusUnauthorized, "unauthorized", nil)
 		return
 	}
 
 	matchID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid match ID"})
+		utils.RespondWithError(c, http.StatusBadRequest, "invalid match ID", err)
 		return
 	}
 
 	var req models.AddCommentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), err)
 		return
 	}
 
@@ -302,80 +302,80 @@ func (h *MatchHandler) AddComment(c *gin.Context) {
 	}
 
 	if err := h.commentRepo.Add(comment); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusInternalServerError, err.Error(), err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, comment)
+	utils.RespondWithJSON(c, http.StatusCreated, comment)
 }
 
 // GetComments retrieves comments for a match
 func (h *MatchHandler) GetComments(c *gin.Context) {
 	matchID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid match ID"})
+		utils.RespondWithError(c, http.StatusBadRequest, "invalid match ID", err)
 		return
 	}
 
 	comments, err := h.commentRepo.GetByMatchID(matchID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusInternalServerError, err.Error(), err)
 		return
 	}
 
-	c.JSON(http.StatusOK, comments)
+	utils.RespondWithJSON(c, http.StatusOK, comments)
 }
 
 // RemoveReaction removes a user's reaction from a match
 func (h *MatchHandler) RemoveReaction(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		utils.RespondWithError(c, http.StatusUnauthorized, "unauthorized", nil)
 		return
 	}
 
 	matchID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid match ID"})
+		utils.RespondWithError(c, http.StatusBadRequest, "invalid match ID", err)
 		return
 	}
 
 	emoji := c.Param("emoji")
 	if emoji == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "emoji is required"})
+		utils.RespondWithError(c, http.StatusBadRequest, "emoji is required", nil)
 		return
 	}
 
 	if err := h.reactionRepo.Delete(matchID, userID, emoji); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusInternalServerError, err.Error(), err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "reaction removed"})
+	utils.RespondWithJSON(c, http.StatusOK, gin.H{"message": "reaction removed"})
 }
 
 // DeleteComment deletes a comment
 func (h *MatchHandler) DeleteComment(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		utils.RespondWithError(c, http.StatusUnauthorized, "unauthorized", nil)
 		return
 	}
 
 	commentID, err := strconv.Atoi(c.Param("commentId"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid comment ID"})
+		utils.RespondWithError(c, http.StatusBadRequest, "invalid comment ID", err)
 		return
 	}
 
 	if err := h.commentRepo.Delete(commentID, userID); err != nil {
 		if err == sql.ErrNoRows {
-			c.JSON(http.StatusForbidden, gin.H{"error": "cannot delete comment"})
+			utils.RespondWithError(c, http.StatusForbidden, "cannot delete comment", err)
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.RespondWithError(c, http.StatusInternalServerError, err.Error(), err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "comment deleted"})
+	utils.RespondWithJSON(c, http.StatusOK, gin.H{"message": "comment deleted"})
 }
