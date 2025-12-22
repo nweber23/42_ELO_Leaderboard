@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { matchAPI, usersAPI } from '../api/client';
 import type { Match, User } from '../types';
@@ -8,6 +8,7 @@ import { Card } from '../ui/Card';
 import { StatusPill } from '../ui/StatusPill';
 import Reactions from '../components/Reactions';
 import Comments from '../components/Comments';
+import { getErrorMessage } from '../utils/errorUtils';
 
 interface MatchesProps {
   user: User;
@@ -19,13 +20,14 @@ function Matches({ user }: MatchesProps) {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed'>('all');
 
-  const loadMatches = () => {
+  const loadMatches = useCallback(() => {
+    setLoading(true);
     const params = filter === 'all' ? {} : { status: filter };
     matchAPI.list(params)
       .then(data => setMatches(data || []))
       .catch(console.error)
       .finally(() => setLoading(false));
-  };
+  }, [filter]);
 
   useEffect(() => {
     usersAPI.getAll().then(setUsers).catch(console.error);
@@ -33,34 +35,34 @@ function Matches({ user }: MatchesProps) {
 
   useEffect(() => {
     loadMatches();
-  }, [filter]);
+  }, [loadMatches]);
 
-  const handleConfirm = async (matchId: number) => {
+  const handleConfirm = useCallback(async (matchId: number) => {
     try {
       await matchAPI.confirm(matchId);
       loadMatches();
-    } catch (err: any) {
-      alert(err.response?.data?.error || 'Failed to confirm match');
+    } catch (err: unknown) {
+      alert(getErrorMessage(err));
     }
-  };
+  }, [loadMatches]);
 
-  const handleDeny = async (matchId: number) => {
+  const handleDeny = useCallback(async (matchId: number) => {
     try {
       await matchAPI.deny(matchId);
       loadMatches();
-    } catch (err: any) {
-      alert(err.response?.data?.error || 'Failed to deny match');
+    } catch (err: unknown) {
+      alert(getErrorMessage(err));
     }
-  };
+  }, [loadMatches]);
 
-  const handleCancel = async (matchId: number) => {
+  const handleCancel = useCallback(async (matchId: number) => {
     try {
       await matchAPI.cancel(matchId);
       loadMatches();
-    } catch (err: any) {
-      alert(err.response?.data?.error || 'Failed to cancel match');
+    } catch (err: unknown) {
+      alert(getErrorMessage(err));
     }
-  };
+  }, [loadMatches]);
 
   if (loading) {
     return (

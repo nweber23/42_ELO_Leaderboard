@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { usersAPI, matchAPI } from '../api/client';
 import type { User, Match } from '../types';
@@ -15,27 +15,98 @@ function PlayerProfile() {
   const [loading, setLoading] = useState(true);
   const [sportFilter, setSportFilter] = useState<string | null>(null);
 
+  // Prevent state updates after unmount
+  const isMounted = useRef(true);
+
   useEffect(() => {
+    isMounted.current = true;
+
+    const loadPlayerData = async () => {
+      if (!id) return;
+
+      setLoading(true);
+      try {
+        const users = await usersAPI.getAll();
+        const foundPlayer = users.find(u => u.id === parseInt(id));
+        if (foundPlayer && isMounted.current) {
+          setPlayer(foundPlayer);
+          const allMatches = await matchAPI.list({ user_id: parseInt(id) });
+          if (isMounted.current) {
+            setMatches(allMatches || []);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load player:', err);
+      } finally {
+        if (isMounted.current) {
+          setLoading(false);
+        }
+      }
+    };
+
     loadPlayerData();
+
+    return () => {
+      isMounted.current = false;
+    };
   }, [id]);
 
-  const loadPlayerData = async () => {
-    if (!id) return;
-    
-    setLoading(true);
-    try {
-      const users = await usersAPI.getAll();
-      const foundPlayer = users.find(u => u.id === parseInt(id));
-      if (foundPlayer) {
-        setPlayer(foundPlayer);
-        const allMatches = await matchAPI.list({ user_id: parseInt(id) });
-        setMatches(allMatches || []);
-      }
-    } catch (err) {
-      console.error('Failed to load player:', err);
-    } finally {
-      setLoading(false);
+  // Memoize expensive calculations - must be called unconditionally (before any returns)
+  const stats = useMemo(() => {
+    if (!player) {
+      return {
+        confirmedMatches: [] as Match[],
+        ttMatches: [] as Match[],
+        tfMatches: [] as Match[],
+        wins: [] as Match[],
+        losses: 0,
+        winRate: 0,
+        currentStreak: 0,
+      };
     }
+
+    const confirmedMatches = matches.filter((m: Match) => m.status === 'confirmed');
+    const ttMatches = confirmedMatches.filter((m: Match) => m.sport === 'table_tennis');
+    const tfMatches = confirmedMatches.filter((m: Match) => m.sport === 'table_football');
+    const wins = confirmedMatches.filter((m: Match) => m.winner_id === player.id);
+    const losses = confirmedMatches.length - wins.length;
+    const winRate = confirmedMatches.length > 0
+      ? Math.round((wins.length / confirmedMatches.length) * 100)
+      : 0;
+
+    // Calculate current win streak
+    let currentStreak = 0;
+    const sortedMatches = [...confirmedMatches].sort((a: Match, b: Match) =>
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+    for (const match of sortedMatches) {
+      if (match.winner_id === player.id) {
+        currentStreak++;
+      } else {
+        break;
+      }
+    }
+
+    return {
+      confirmedMatches,
+      ttMatches,
+      tfMatches,
+      wins,
+      losses,
+      winRate,
+      currentStreak,
+    };
+  }, [matches, player]);
+
+  const filteredMatches = useMemo(() => {
+    return sportFilter
+      ? stats.confirmedMatches.filter((m: Match) => m.sport === sportFilter)
+      : stats.confirmedMatches;
+  }, [stats.confirmedMatches, sportFilter]);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
   if (loading) {
@@ -68,35 +139,6 @@ function PlayerProfile() {
       </Page>
     );
   }
-
-  const confirmedMatches = matches.filter(m => m.status === 'confirmed');
-  const ttMatches = confirmedMatches.filter(m => m.sport === 'table_tennis');
-  const tfMatches = confirmedMatches.filter(m => m.sport === 'table_football');
-  const wins = confirmedMatches.filter(m => m.winner_id === player.id);
-  const losses = confirmedMatches.length - wins.length;
-  const winRate = confirmedMatches.length > 0 ? Math.round((wins.length / confirmedMatches.length) * 100) : 0;
-
-  // Calculate current win streak
-  let currentStreak = 0;
-  const sortedMatches = [...confirmedMatches].sort((a, b) => 
-    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  );
-  for (const match of sortedMatches) {
-    if (match.winner_id === player.id) {
-      currentStreak++;
-    } else {
-      break;
-    }
-  }
-
-  const filteredMatches = sportFilter
-    ? confirmedMatches.filter(m => m.sport === sportFilter)
-    : confirmedMatches;
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
 
   return (
     <div className="profile">
@@ -132,37 +174,37 @@ function PlayerProfile() {
       <div className="profile__stats">
         <Card className="profile__stat-card">
           <CardContent>
-            <span className="profile__stat-value">{confirmedMatches.length}</span>
+            <span className="profile__stat-value">{stats.confirmedMatches.length}</span>
             <span className="profile__stat-label">Total Matches</span>
           </CardContent>
         </Card>
         <Card className="profile__stat-card">
           <CardContent>
-            <span className="profile__stat-value profile__stat-value--success">{wins.length}</span>
+            <span className="profile__stat-value profile__stat-value--success">{stats.wins.length}</span>
             <span className="profile__stat-label">Wins</span>
           </CardContent>
         </Card>
         <Card className="profile__stat-card">
           <CardContent>
-            <span className="profile__stat-value profile__stat-value--danger">{losses}</span>
+            <span className="profile__stat-value profile__stat-value--danger">{stats.losses}</span>
             <span className="profile__stat-label">Losses</span>
           </CardContent>
         </Card>
         <Card className="profile__stat-card">
           <CardContent>
-            <span className="profile__stat-value">{winRate}%</span>
+            <span className="profile__stat-value">{stats.winRate}%</span>
             <span className="profile__stat-label">Win Rate</span>
           </CardContent>
         </Card>
         <Card className="profile__stat-card">
           <CardContent>
-            <span className="profile__stat-value">{currentStreak}</span>
+            <span className="profile__stat-value">{stats.currentStreak}</span>
             <span className="profile__stat-label">Win Streak</span>
           </CardContent>
         </Card>
         <Card className="profile__stat-card">
           <CardContent>
-            <span className="profile__stat-value">{ttMatches.length} / {tfMatches.length}</span>
+            <span className="profile__stat-value">{stats.ttMatches.length} / {stats.tfMatches.length}</span>
             <span className="profile__stat-label">TT / TF</span>
           </CardContent>
         </Card>

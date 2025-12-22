@@ -7,6 +7,8 @@ import { Page } from '../layout/Page';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/Card';
 import { Field, Select, Input } from '../ui/Field';
 import { Button } from '../ui/Button';
+import { getErrorMessage } from '../utils/errorUtils';
+import { SCORE_MIN } from '../constants';
 
 interface SubmitMatchProps {
   user: User;
@@ -47,7 +49,7 @@ function SubmitMatch({ user }: SubmitMatchProps) {
       return;
     }
 
-    if (pScore < 0 || oScore < 0) {
+    if (pScore < SCORE_MIN || oScore < SCORE_MIN) {
       setError('Scores must be positive');
       return;
     }
@@ -62,8 +64,8 @@ function SubmitMatch({ user }: SubmitMatchProps) {
         opponent_score: oScore,
       });
       navigate('/matches');
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to submit match');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err));
     } finally {
       setSubmitting(false);
     }

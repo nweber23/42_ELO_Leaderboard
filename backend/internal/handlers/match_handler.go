@@ -295,10 +295,17 @@ func (h *MatchHandler) AddComment(c *gin.Context) {
 		return
 	}
 
+	// Sanitize comment content to prevent XSS and clean up whitespace
+	sanitizedContent := utils.SanitizeString(req.Content)
+	if len(sanitizedContent) == 0 {
+		utils.RespondWithError(c, http.StatusBadRequest, "comment cannot be empty", nil)
+		return
+	}
+
 	comment := &models.Comment{
 		MatchID: matchID,
 		UserID:  userID,
-		Content: req.Content,
+		Content: sanitizedContent,
 	}
 
 	if err := h.commentRepo.Add(comment); err != nil {

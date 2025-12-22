@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { leaderboardAPI } from '../api/client';
 import type { LeaderboardEntry } from '../types';
@@ -18,12 +18,37 @@ function Leaderboard({ sport: propSport }: LeaderboardProps) {
 
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Track mounted state to prevent state updates after unmount
+  const isMounted = useRef(true);
 
   useEffect(() => {
+    isMounted.current = true;
+    setLoading(true);
+    setError(null);
+
     leaderboardAPI.get(sport)
-      .then(data => setLeaderboard(data || []))
-      .catch(console.error)
-      .finally(() => setLoading(false));
+      .then(data => {
+        if (isMounted.current) {
+          setLeaderboard(data || []);
+        }
+      })
+      .catch(err => {
+        if (isMounted.current) {
+          console.error('Failed to load leaderboard:', err);
+          setError('Failed to load leaderboard');
+        }
+      })
+      .finally(() => {
+        if (isMounted.current) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted.current = false;
+    };
   }, [sport]);
 
   if (loading) {
@@ -32,6 +57,18 @@ function Leaderboard({ sport: propSport }: LeaderboardProps) {
         <Card>
           <CardContent>
             <div className="lb__loading">Loading leaderboard…</div>
+          </CardContent>
+        </Card>
+      </Page>
+    );
+  }
+
+  if (error) {
+    return (
+      <Page title="Leaderboards" subtitle="Rankings update after confirmed matches.">
+        <Card>
+          <CardContent>
+            <div className="lb__error">{error}</div>
           </CardContent>
         </Card>
       </Page>

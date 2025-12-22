@@ -199,6 +199,93 @@ func (r *MatchRepository) DenyMatch(matchID int) error {
 	return err
 }
 
+// GetLeaderboardEntries retrieves all users with their match statistics in a single optimized query
+// This eliminates the N+1 query problem by using aggregation
+func (r *MatchRepository) GetLeaderboardEntries(sport string) ([]models.LeaderboardEntry, error) {
+	// Single query that gets all users and their match statistics
+	query := `
+		WITH user_stats AS (
+			SELECT
+				u.id,
+				u.intra_id,
+				u.login,
+				u.display_name,
+				u.avatar_url,
+				u.campus,
+				u.table_tennis_elo,
+				u.table_football_elo,
+				u.created_at,
+				u.updated_at,
+				COALESCE(COUNT(m.id), 0) as matches_played,
+				COALESCE(SUM(CASE WHEN m.winner_id = u.id THEN 1 ELSE 0 END), 0) as wins
+			FROM users u
+			LEFT JOIN matches m ON (m.player1_id = u.id OR m.player2_id = u.id)
+				AND m.sport = $1
+				AND m.status = $2
+			GROUP BY u.id, u.intra_id, u.login, u.display_name, u.avatar_url, u.campus,
+				u.table_tennis_elo, u.table_football_elo, u.created_at, u.updated_at
+		)
+		SELECT
+			id, intra_id, login, display_name, avatar_url, campus,
+			table_tennis_elo, table_football_elo, created_at, updated_at,
+			matches_played, wins
+		FROM user_stats
+	`
+
+	rows, err := r.db.Query(query, sport, models.StatusConfirmed)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var entries []models.LeaderboardEntry
+	for rows.Next() {
+		var user models.User
+		var matchesPlayed, wins int
+
+		if err := rows.Scan(
+			&user.ID,
+			&user.IntraID,
+			&user.Login,
+			&user.DisplayName,
+			&user.AvatarURL,
+			&user.Campus,
+			&user.TableTennisELO,
+			&user.TableFootballELO,
+			&user.CreatedAt,
+			&user.UpdatedAt,
+			&matchesPlayed,
+			&wins,
+		); err != nil {
+			return nil, err
+		}
+
+		losses := matchesPlayed - wins
+		winRate := 0.0
+		if matchesPlayed > 0 {
+			winRate = float64(wins) / float64(matchesPlayed) * 100
+		}
+
+		var elo int
+		if sport == models.SportTableTennis {
+			elo = user.TableTennisELO
+		} else {
+			elo = user.TableFootballELO
+		}
+
+		entries = append(entries, models.LeaderboardEntry{
+			User:          user,
+			ELO:           elo,
+			MatchesPlayed: matchesPlayed,
+			Wins:          wins,
+			Losses:        losses,
+			WinRate:       winRate,
+		})
+	}
+
+	return entries, rows.Err()
+}
+
 // CancelMatch cancels a pending match (by submitter)
 func (r *MatchRepository) CancelMatch(matchID int) error {
 	query := `UPDATE matches SET status = $1, updated_at = $2 WHERE id = $3`

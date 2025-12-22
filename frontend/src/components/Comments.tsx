@@ -3,13 +3,13 @@ import { commentAPI, usersAPI } from '../api/client';
 import type { Comment, User } from '../types';
 import { useToast } from '../state/useToast';
 import { Toast } from '../ui/Toast';
+import { COMMENT_MAX_LENGTH } from '../constants';
+import { formatRelativeTime } from '../utils';
 
 interface CommentsProps {
   matchId: number;
   userId: number;
 }
-
-const MAX_COMMENT_LENGTH = 280;
 
 function Comments({ matchId, userId }: CommentsProps) {
   const [comments, setComments] = useState<Comment[]>([]);
@@ -79,21 +79,6 @@ function Comments({ matchId, userId }: CommentsProps) {
     }
   };
 
-  const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return 'just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
-  };
-
   return (
     <div className="comments-container">
       <div className="comments-header">
@@ -118,7 +103,7 @@ function Comments({ matchId, userId }: CommentsProps) {
                     {comment.user_id === userId ? 'You' : author?.display_name || `User ${comment.user_id}`}
                   </span>
                   <span className="comment-time">
-                    {formatTime(comment.created_at)}
+                    {formatRelativeTime(comment.created_at)}
                   </span>
                 </div>
                 {comment.user_id === userId && (
@@ -145,9 +130,9 @@ function Comments({ matchId, userId }: CommentsProps) {
           className="comment-input"
           placeholder="Add a comment..."
           value={newComment}
-          onChange={e => setNewComment(e.target.value.slice(0, MAX_COMMENT_LENGTH))}
+          onChange={e => setNewComment(e.target.value.slice(0, COMMENT_MAX_LENGTH))}
           disabled={submitting}
-          maxLength={MAX_COMMENT_LENGTH}
+          maxLength={COMMENT_MAX_LENGTH}
         />
         <button
           type="submit"
@@ -159,7 +144,7 @@ function Comments({ matchId, userId }: CommentsProps) {
       </form>
       {newComment.length > 0 && (
         <div style={{ fontSize: '12px', color: 'var(--text-tertiary)', marginTop: '4px' }}>
-          {newComment.length}/{MAX_COMMENT_LENGTH}
+          {newComment.length}/{COMMENT_MAX_LENGTH}
         </div>
       )}
       <Toast {...toast} onClose={dismiss} />

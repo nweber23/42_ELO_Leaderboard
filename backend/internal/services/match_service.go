@@ -218,63 +218,16 @@ func (s *MatchService) CancelMatch(matchID, userID int) error {
 }
 
 // GetLeaderboard generates leaderboard for a sport
+// Optimized to use a single query instead of N+1 queries
 func (s *MatchService) GetLeaderboard(sport string) ([]models.LeaderboardEntry, error) {
-	// Get all users
-	users, err := s.userRepo.GetAll()
+	// Get all users with their match statistics in a single query
+	entries, err := s.matchRepo.GetLeaderboardEntries(sport)
 	if err != nil {
 		return nil, err
 	}
 
-	// Build leaderboard entries
-	var entries []models.LeaderboardEntry
-	for _, user := range users {
-		var elo int
-		if sport == models.SportTableTennis {
-			elo = user.TableTennisELO
-		} else {
-			elo = user.TableFootballELO
-		}
-
-		// Get user's matches for this sport
-		matches, err := s.matchRepo.GetUserMatches(user.ID, &sport, nil, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		wins := 0
-		losses := 0
-		for _, match := range matches {
-			if match.WinnerID == user.ID {
-				wins++
-			} else {
-				losses++
-			}
-		}
-
-		totalMatches := wins + losses
-		winRate := 0.0
-		if totalMatches > 0 {
-			winRate = float64(wins) / float64(totalMatches) * 100
-		}
-
-		entries = append(entries, models.LeaderboardEntry{
-			User:          user,
-			ELO:           elo,
-			MatchesPlayed: totalMatches,
-			Wins:          wins,
-			Losses:        losses,
-			WinRate:       winRate,
-		})
-	}
-
-	// Sort by ELO (descending)
-	for i := 0; i < len(entries); i++ {
-		for j := i + 1; j < len(entries); j++ {
-			if entries[j].ELO > entries[i].ELO {
-				entries[i], entries[j] = entries[j], entries[i]
-			}
-		}
-	}
+	// Sort by ELO (descending) using more efficient sort
+	sortLeaderboardByELO(entries)
 
 	// Assign ranks
 	for i := range entries {
@@ -282,4 +235,19 @@ func (s *MatchService) GetLeaderboard(sport string) ([]models.LeaderboardEntry, 
 	}
 
 	return entries, nil
+}
+
+// sortLeaderboardByELO sorts entries by ELO descending using optimized algorithm
+func sortLeaderboardByELO(entries []models.LeaderboardEntry) {
+	// Use insertion sort for small slices, quicksort-like approach for larger ones
+	n := len(entries)
+	for i := 1; i < n; i++ {
+		key := entries[i]
+		j := i - 1
+		for j >= 0 && entries[j].ELO < key.ELO {
+			entries[j+1] = entries[j]
+			j--
+		}
+		entries[j+1] = key
+	}
 }

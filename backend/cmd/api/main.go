@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log/slog"
 	"os"
+	"time"
 
 	"github.com/42heilbronn/elo-leaderboard/internal/config"
 	"github.com/42heilbronn/elo-leaderboard/internal/handlers"
@@ -34,6 +35,12 @@ func main() {
 		os.Exit(1)
 	}
 	defer db.Close()
+
+	// Configure connection pool for better performance under load
+	db.SetMaxOpenConns(25)                  // Maximum number of open connections
+	db.SetMaxIdleConns(10)                  // Maximum number of idle connections
+	db.SetConnMaxLifetime(5 * time.Minute)  // Maximum connection lifetime
+	db.SetConnMaxIdleTime(1 * time.Minute)  // Maximum idle time before closing
 
 	// Test database connection
 	if err := db.Ping(); err != nil {
