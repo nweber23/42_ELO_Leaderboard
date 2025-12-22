@@ -28,10 +28,12 @@ The 42 Heilbronn ELO Leaderboard is a full-stack web application that enables st
 | 🔐 **42 OAuth** | Secure authentication via 42 Intra (Heilbronn campus only) |
 | 🎮 **Match System** | Submit results with opponent confirmation workflow |
 | 📊 **ELO Rankings** | Independent ratings for each sport (starting at 1000) |
+| 🔍 **Player Search** | Search players by display name or intra login |
 | 📈 **Statistics** | Win streaks, highest ELO, win rates, and more |
 | 📜 **Match History** | Filter by sport, opponent, and outcome |
 | 💬 **Social** | React with emojis and comment on matches |
 | 📱 **Responsive** | Mobile-friendly design for all devices |
+| 🛡️ **Error Handling** | Graceful error boundaries and user-friendly messages |
 
 ## 🛠️ Tech Stack
 
@@ -50,6 +52,8 @@ The 42 Heilbronn ELO Leaderboard is a full-stack web application that enables st
 - **PostgreSQL 15** database
 - Clean architecture pattern
 - 42 Intra OAuth + JWT auth
+- Database connection pooling
+- Input sanitization utilities
 
 </td>
 <td align="center" width="50%">
@@ -64,6 +68,8 @@ The 42 Heilbronn ELO Leaderboard is a full-stack web application that enables st
 - **React 18** + **TypeScript**
 - **Vite** for fast development
 - Axios for API calls
+- Custom hooks & utilities
+- Error boundaries for resilience
 - Custom CSS styling
 
 </td>
@@ -141,16 +147,22 @@ Fully containerized with multi-stage builds, automated migrations, and productio
 │   │   ├── middleware/   # Auth middleware
 │   │   ├── models/       # Data models
 │   │   ├── repositories/ # Database layer
-│   │   ├── services/     # Business logic
-│   │   └── utils/        # JWT utilities
+│   │   ├── services/     # Business logic (ELO calculations)
+│   │   └── utils/        # JWT, response, sanitization utilities
 │   └── migrations/       # SQL migrations
 ├── frontend/
 │   ├── src/
-│   │   ├── api/          # API client
-│   │   ├── components/   # Reusable components
-│   │   ├── pages/        # Page components
-│   │   ├── ui/           # UI primitives
-│   │   └── styles/       # Global styles
+│   │   ├── api/          # API client (Axios)
+│   │   ├── components/   # Reusable components (ErrorBoundary, Comments, Reactions)
+│   │   ├── constants/    # Shared validation constants
+│   │   ├── hooks/        # Custom React hooks (useUsers)
+│   │   ├── layout/       # App shell and page layouts
+│   │   ├── pages/        # Page components (Leaderboard, Matches, PlayerProfile)
+│   │   ├── state/        # State management (theme, toast)
+│   │   ├── types/        # TypeScript type definitions
+│   │   ├── ui/           # UI primitives (Button, Card, Field, Toast)
+│   │   ├── utils/        # Utility functions (date, error handling)
+│   │   └── styles/       # Global styles and CSS tokens
 │   └── nginx.conf        # Production server config
 └── docker-compose.yml
 ```
@@ -225,9 +237,11 @@ Submit Match → Pending → Opponent Confirms → ELO Updated
 
 - **OAuth 2.0** authentication via 42 Intra
 - **Campus validation** ensures only Heilbronn students can access
-- **JWT tokens** for stateless session management
-- **Input validation** on all endpoints
+- **JWT tokens** for stateless session management with secure secret validation
+- **Input sanitization** on all user-provided data
 - **SQL injection prevention** via prepared statements
+- **Database connection pooling** for efficient resource management
+- **Error boundaries** prevent cascading UI failures
 - **CORS** properly configured
 
 ## 🛠️ Development
@@ -274,6 +288,8 @@ docker-compose up --build
 | OAuth callback fails | Verify `FT_REDIRECT_URI` matches 42 app settings |
 | Database connection error | Check PostgreSQL container health and `DATABASE_URL` |
 | CORS errors | Update CORS settings in `backend/cmd/api/main.go` |
+| JWT errors | Ensure `JWT_SECRET` is at least 32 characters |
+| White screen / React error | Check browser console; ErrorBoundary will display recovery options |
 
 ## 📄 License
 
