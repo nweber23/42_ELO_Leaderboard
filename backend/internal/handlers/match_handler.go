@@ -9,6 +9,7 @@ import (
 	"github.com/42heilbronn/elo-leaderboard/internal/models"
 	"github.com/42heilbronn/elo-leaderboard/internal/repositories"
 	"github.com/42heilbronn/elo-leaderboard/internal/services"
+	"github.com/42heilbronn/elo-leaderboard/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -175,7 +176,30 @@ func (h *MatchHandler) GetLeaderboard(c *gin.Context) {
 		return
 	}
 
+	// Check if user is authenticated - if not, mask personal data for privacy
+	if !middleware.IsAuthenticated(c) {
+		for i := range leaderboard {
+			leaderboard[i].User = maskUserData(leaderboard[i].User)
+		}
+	}
+
 	c.JSON(http.StatusOK, leaderboard)
+}
+
+// maskUserData replaces personal information with anonymous data
+func maskUserData(user models.User) models.User {
+	return models.User{
+		ID:               user.ID,
+		IntraID:          0, // Hide real intra ID
+		Login:            utils.GenerateAnonymousLogin(user.ID),
+		DisplayName:      utils.GenerateAnonymousName(user.ID),
+		AvatarURL:        utils.DefaultAvatarURL(user.ID),
+		Campus:           user.Campus, // Keep campus for context
+		TableTennisELO:   user.TableTennisELO,
+		TableFootballELO: user.TableFootballELO,
+		CreatedAt:        user.CreatedAt,
+		UpdatedAt:        user.UpdatedAt,
+	}
 }
 
 // AddReaction adds a reaction to a match

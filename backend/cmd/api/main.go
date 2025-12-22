@@ -71,8 +71,8 @@ func main() {
 			auth.GET("/callback", authHandler.Callback)
 		}
 
-		// Public leaderboard
-		api.GET("/leaderboard/:sport", matchHandler.GetLeaderboard)
+		// Public leaderboard - with optional auth to show real data to logged-in users
+		api.GET("/leaderboard/:sport", middleware.OptionalAuthMiddleware(cfg.JWTSecret), matchHandler.GetLeaderboard)
 	}
 
 	// Protected routes

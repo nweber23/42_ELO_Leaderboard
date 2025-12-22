@@ -51,3 +51,52 @@ func GetUserID(c *gin.Context) (int, bool) {
 	id, ok := userID.(int)
 	return id, ok
 }
+
+// OptionalAuthMiddleware extracts user ID from token if present, but doesn't require it
+// This allows endpoints to behave differently for authenticated vs unauthenticated users
+func OptionalAuthMiddleware(jwtSecret string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Get token from Authorization header
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
+			// No auth header - continue as unauthenticated
+			c.Set("authenticated", false)
+			c.Next()
+			return
+		}
+
+		// Extract token
+		parts := strings.Split(authHeader, " ")
+		if len(parts) != 2 || parts[0] != "Bearer" {
+			// Invalid format - continue as unauthenticated
+			c.Set("authenticated", false)
+			c.Next()
+			return
+		}
+
+		tokenString := parts[1]
+
+		// Validate token
+		claims, err := utils.ValidateJWT(tokenString, jwtSecret)
+		if err != nil {
+			// Invalid token - continue as unauthenticated
+			c.Set("authenticated", false)
+			c.Next()
+			return
+		}
+
+		// Store user ID in context
+		c.Set("user_id", claims.UserID)
+		c.Set("authenticated", true)
+		c.Next()
+	}
+}
+
+// IsAuthenticated checks if the request is authenticated
+func IsAuthenticated(c *gin.Context) bool {
+	authenticated, exists := c.Get("authenticated")
+	if !exists {
+		return false
+	}
+	return authenticated.(bool)
+}
