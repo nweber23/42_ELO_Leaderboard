@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { leaderboardAPI } from '../api/client';
 import type { LeaderboardEntry } from '../types';
@@ -19,6 +19,7 @@ function Leaderboard({ sport: propSport }: LeaderboardProps) {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Track mounted state to prevent state updates after unmount
   const isMounted = useRef(true);
@@ -50,6 +51,18 @@ function Leaderboard({ sport: propSport }: LeaderboardProps) {
       isMounted.current = false;
     };
   }, [sport]);
+
+  // Filter leaderboard based on search query (by login or display name)
+  const filteredLeaderboard = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return leaderboard;
+    }
+    const query = searchQuery.toLowerCase().trim();
+    return leaderboard.filter(entry =>
+      entry.user.login.toLowerCase().includes(query) ||
+      entry.user.display_name.toLowerCase().includes(query)
+    );
+  }, [leaderboard, searchQuery]);
 
   if (loading) {
     return (
@@ -93,6 +106,27 @@ function Leaderboard({ sport: propSport }: LeaderboardProps) {
     >
       <Card>
         <div className="lb">
+          {/* Search input */}
+          <div className="lb__search">
+            <input
+              type="text"
+              className="lb__search-input"
+              placeholder="Search by name or @login..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              aria-label="Search players"
+            />
+            {searchQuery && (
+              <button
+                className="lb__search-clear"
+                onClick={() => setSearchQuery('')}
+                aria-label="Clear search"
+              >
+                ×
+              </button>
+            )}
+          </div>
+
           <div className="lb__head">
             <div className="lb__headcell">Rank</div>
             <div className="lb__headcell">Player</div>
@@ -103,7 +137,7 @@ function Leaderboard({ sport: propSport }: LeaderboardProps) {
           </div>
 
           <div className="lb__body">
-            {leaderboard.map((entry) => (
+            {filteredLeaderboard.map((entry) => (
               <div key={entry.user.id} className="lb__row">
                 <div className="lb__cell lb__rank">{entry.rank}</div>
                 <div className="lb__cell lb__player">
@@ -125,7 +159,13 @@ function Leaderboard({ sport: propSport }: LeaderboardProps) {
             ))}
           </div>
 
-          {leaderboard.length === 0 && (
+          {filteredLeaderboard.length === 0 && searchQuery && (
+            <div className="lb__empty">
+              No players found matching "{searchQuery}"
+            </div>
+          )}
+
+          {leaderboard.length === 0 && !searchQuery && (
             <div className="lb__empty">
               No matches yet. Submit the first match to start the ranking.
             </div>
