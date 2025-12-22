@@ -1,12 +1,33 @@
 /* ============================================
-   Card Component
+   Card Component — Glassmorphism 2.0
    ============================================ */
 
 .card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  position: relative;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--glass-shadow);
   overflow: hidden;
+}
+
+/* Top highlight edge */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--glass-highlight) 20%,
+    var(--glass-highlight) 80%,
+    transparent 100%
+  );
+  pointer-events: none;
 }
 
 .card__header {
@@ -16,7 +37,7 @@
 
 .card__title {
   margin: 0;
-  font-size: var(--text-lg);
+  font-size: var(--text-xl);
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-tight);
   color: var(--text);
@@ -36,7 +57,36 @@
 .card__footer {
   padding: var(--space-4) var(--space-6);
   border-top: 1px solid var(--border);
-  background: var(--bg-subtle);
+  background: var(--surface);
+}
+
+/* Solid variant for when glass doesn't work well */
+.card--solid {
+  background: var(--surface-solid);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Subtle variant */
+.card--subtle {
+  background: var(--surface);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Interactive card */
+.card--interactive {
+  cursor: pointer;
+  transition:
+    transform var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+
+.card--interactive:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-highlight);
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
 }
 
 /* ============================================

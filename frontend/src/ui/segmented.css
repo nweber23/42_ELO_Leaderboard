@@ -1,19 +1,23 @@
 /* ============================================
-   Segmented Navigation
+   Segmented Navigation — Glassmorphism 2.0
    ============================================ */
 
 .seg {
   display: inline-flex;
   gap: var(--space-1);
   padding: var(--space-1);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-inner);
 }
 
 .seg__item {
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-md);
+  position: relative;
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-lg);
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   color: var(--muted);
@@ -22,6 +26,7 @@
   transition:
     background var(--dur-base) var(--ease-out),
     color var(--dur-base) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out),
     box-shadow var(--dur-base) var(--ease-out);
 }
 
@@ -30,8 +35,24 @@
   background: var(--surface-hover);
 }
 
+.seg__item:active {
+  transform: scale(0.98);
+}
+
 .seg__item--active {
   color: var(--text);
   background: var(--surface-raised);
-  box-shadow: var(--shadow-xs);
+  border-color: var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.seg__item--active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20%;
+  right: 20%;
+  height: 1px;
+  background: var(--glass-highlight);
+  border-radius: 1px;
 }

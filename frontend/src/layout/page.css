@@ -1,10 +1,11 @@
 /* ============================================
-   Page Layout Component
+   Page Layout Component — Glassmorphism 2.0
    ============================================ */
 
 .page {
   display: grid;
-  gap: var(--space-6);
+  gap: var(--space-8);
+  animation: slide-up var(--dur-slower) var(--ease-out);
 }
 
 .page__header {
@@ -15,15 +16,19 @@
 
 .page__title {
   margin: 0;
-  font-size: var(--text-2xl);
+  font-size: var(--text-3xl);
   font-weight: var(--weight-bold);
   letter-spacing: var(--tracking-tight);
   color: var(--text);
+  background: linear-gradient(135deg, var(--text) 0%, var(--text-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .page__subtitle {
   margin: 0;
-  font-size: var(--text-base);
+  font-size: var(--text-md);
   color: var(--muted);
   max-width: 60ch;
   line-height: var(--leading-relaxed);
@@ -45,5 +50,9 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: flex-start;
+  }
+
+  .page__title {
+    font-size: var(--text-3xl);
   }
 }

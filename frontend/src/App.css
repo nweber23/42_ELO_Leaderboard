@@ -1,6 +1,6 @@
 /* ============================================
    App-Level Component Styles
-   42 ELO Leaderboard
+   42 ELO Leaderboard — Glassmorphism 2.0
    ============================================ */
 
 /* ============================================
@@ -9,13 +9,17 @@
 
 .matches-page {
   display: grid;
-  gap: var(--space-6);
+  gap: var(--space-8);
 }
 
 .matches-page h1 {
-  font-size: var(--text-2xl);
+  font-size: var(--text-3xl);
   font-weight: var(--weight-bold);
   letter-spacing: var(--tracking-tight);
+  background: linear-gradient(135deg, var(--text) 0%, var(--text-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .matches-list {
@@ -24,17 +28,37 @@
 }
 
 .match-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-5);
-  transition: border-color var(--dur-base) var(--ease-out),
-              box-shadow var(--dur-base) var(--ease-out);
+  position: relative;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-6);
+  box-shadow: var(--glass-shadow);
+  overflow: hidden;
+  transition:
+    border-color var(--dur-base) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+
+/* Top highlight */
+.match-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--glass-highlight), transparent);
+  pointer-events: none;
 }
 
 .match-card:hover {
-  border-color: var(--border-focus);
-  box-shadow: var(--shadow-md);
+  border-color: var(--border-highlight);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
 }
 
 .match-header {
@@ -53,27 +77,57 @@
 .status {
   display: inline-flex;
   align-items: center;
+  gap: var(--space-2);
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-full);
   font-size: var(--text-xs);
   font-weight: var(--weight-semibold);
   text-transform: uppercase;
   letter-spacing: var(--tracking-caps);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Status dot */
+.status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .status.pending {
   background: var(--warning-muted);
   color: var(--warning-text);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.status.pending::before {
+  background: var(--warning);
+  box-shadow: 0 0 8px var(--warning-muted);
 }
 
 .status.confirmed {
   background: var(--success-muted);
   color: var(--success-text);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.status.confirmed::before {
+  background: var(--success);
+  box-shadow: 0 0 8px var(--success-muted);
 }
 
 .status.denied {
   background: var(--danger-muted);
   color: var(--danger-text);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.status.denied::before {
+  background: var(--danger);
+  box-shadow: 0 0 8px var(--danger-muted);
 }
 
 .match-details {
@@ -81,7 +135,7 @@
 }
 
 .scores {
-  font-size: var(--text-md);
+  font-size: var(--text-lg);
   font-weight: var(--weight-semibold);
   color: var(--text);
   margin-bottom: var(--space-2);
@@ -104,8 +158,8 @@
 .match-actions {
   display: flex;
   gap: var(--space-3);
-  margin-top: var(--space-4);
-  padding-top: var(--space-4);
+  margin-top: var(--space-5);
+  padding-top: var(--space-5);
   border-top: 1px solid var(--border);
 }
 
@@ -116,30 +170,45 @@
   justify-content: center;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
-  transition: all var(--dur-base) var(--ease-out);
+  transition:
+    all var(--dur-base) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.match-actions button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.match-actions button:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
 }
 
 .match-actions .confirm {
   background: var(--success);
   color: white;
+  box-shadow: 0 2px 12px var(--success-muted);
 }
 
-.match-actions .confirm:hover {
+.match-actions .confirm:hover:not(:disabled) {
   background: var(--success-text);
+  box-shadow: 0 4px 20px var(--success-muted);
 }
 
 .match-actions .deny {
-  background: var(--surface-hover);
+  background: var(--surface);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: var(--text-secondary);
   border: 1px solid var(--border);
 }
 
-.match-actions .deny:hover {
-  background: var(--surface-active);
+.match-actions .deny:hover:not(:disabled) {
+  background: var(--surface-hover);
   color: var(--text);
+  border-color: var(--border-focus);
 }
 
 /* ============================================
@@ -150,14 +219,17 @@
   display: inline-flex;
   gap: var(--space-1);
   padding: var(--space-1);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-inner);
 }
 
 .filters button {
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-lg);
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
   color: var(--muted);
@@ -173,7 +245,8 @@
 .filters button.active {
   color: var(--text);
   background: var(--surface-raised);
-  box-shadow: var(--shadow-xs);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
 }
 
 /* ============================================
@@ -186,19 +259,40 @@
 }
 
 .submit-match-page h1 {
-  font-size: var(--text-2xl);
+  font-size: var(--text-3xl);
   font-weight: var(--weight-bold);
   letter-spacing: var(--tracking-tight);
   margin-bottom: var(--space-6);
+  background: linear-gradient(135deg, var(--text) 0%, var(--text-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .match-form {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  padding: var(--space-6);
+  position: relative;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-8);
   display: grid;
-  gap: var(--space-5);
+  gap: var(--space-6);
+  box-shadow: var(--glass-shadow);
+  overflow: hidden;
+}
+
+/* Top highlight */
+.match-form::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--glass-highlight), transparent);
+  pointer-events: none;
 }
 
 .form-group {
@@ -216,28 +310,34 @@
 .form-input {
   width: 100%;
   padding: var(--space-3) var(--space-4);
-  background: var(--bg);
+  background: var(--surface);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   font-size: var(--text-base);
   color: var(--text);
-  transition: border-color var(--dur-base) var(--ease-out),
-              box-shadow var(--dur-base) var(--ease-out);
+  transition:
+    border-color var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    background var(--dur-base) var(--ease-out);
 }
 
 .form-select:hover,
 .form-input:hover {
   border-color: var(--border-focus);
+  background: var(--surface-hover);
 }
 
 .form-select:focus,
 .form-input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--ring);
+  box-shadow: 0 0 0 3px var(--ring), var(--shadow-sm);
+  background: var(--surface-hover);
 }
 
 .form-select option {
-  background: var(--surface);
+  background: var(--surface-solid);
   color: var(--text);
 }
 
@@ -258,22 +358,32 @@
   padding: var(--space-4);
   background: var(--accent);
   color: white;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   font-size: var(--text-base);
   font-weight: var(--weight-semibold);
-  transition: background var(--dur-base) var(--ease-out);
   margin-top: var(--space-2);
+  box-shadow: 0 2px 16px var(--accent-glow);
+  transition:
+    background var(--dur-base) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
 }
 
 .submit-button:hover:not(:disabled) {
   background: var(--accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 24px var(--accent-glow);
+}
+
+.submit-button:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
 }
 
 .error-message {
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-4);
   background: var(--danger-muted);
-  border: 1px solid var(--danger);
-  border-radius: var(--radius-md);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--radius-lg);
   font-size: var(--text-sm);
   color: var(--danger-text);
 }
@@ -306,12 +416,12 @@
 }
 
 /* ============================================
-   Reactions
+   Reactions — Glassmorphism 2.0
    ============================================ */
 
 .reactions-container {
-  margin-top: var(--space-4);
-  padding-top: var(--space-4);
+  margin-top: var(--space-5);
+  padding-top: var(--space-5);
   border-top: 1px solid var(--border);
 }
 
@@ -324,23 +434,33 @@
 .reaction-button {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
-  background: var(--surface-hover);
+  background: var(--surface);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
   font-size: var(--text-sm);
-  transition: all var(--dur-base) var(--ease-out);
+  transition:
+    all var(--dur-base) var(--ease-out),
+    transform var(--dur-fast) var(--ease-spring);
 }
 
 .reaction-button:hover {
-  background: var(--surface-active);
+  background: var(--surface-hover);
+  border-color: var(--border-focus);
   transform: scale(1.05);
+}
+
+.reaction-button:active {
+  transform: scale(0.95);
 }
 
 .reaction-button.active {
   background: var(--accent-muted);
   border-color: var(--accent);
+  box-shadow: 0 0 12px var(--accent-glow);
 }
 
 .reaction-count {
@@ -367,10 +487,11 @@
   border-color: var(--accent);
   color: var(--accent-text);
   border-style: solid;
+  background: var(--accent-muted);
 }
 
 /* ============================================
-   Emoji Picker
+   Emoji Picker — Glassmorphism 2.0
    ============================================ */
 
 .emoji-picker-trigger {
@@ -391,6 +512,7 @@
   border-color: var(--accent);
   color: var(--accent-text);
   border-style: solid;
+  background: var(--accent-muted);
 }
 
 .emoji-picker-trigger:disabled {
@@ -409,12 +531,14 @@
 
 /* Popup */
 .emoji-picker-popup {
-  width: 352px;
-  max-height: 420px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-xl);
+  width: 360px;
+  max-height: 440px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl), var(--shadow-glow);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -429,12 +553,15 @@
 .emoji-picker-search input {
   width: 100%;
   padding: var(--space-2) var(--space-3);
-  background: var(--surface-hover);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   font-size: var(--text-sm);
   color: var(--text);
   outline: none;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
 }
 
 .emoji-picker-search input::placeholder {
@@ -443,6 +570,7 @@
 
 .emoji-picker-search input:focus {
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--ring);
 }
 
 /* Category tabs */
@@ -451,7 +579,7 @@
   gap: var(--space-1);
   padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--border);
-  background: var(--surface-hover);
+  background: var(--surface);
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -462,14 +590,14 @@
 
 .emoji-category-tab {
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: transparent;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   font-size: var(--text-base);
   cursor: pointer;
   opacity: 0.6;
@@ -478,12 +606,12 @@
 
 .emoji-category-tab:hover {
   opacity: 1;
-  background: var(--surface);
+  background: var(--surface-hover);
 }
 
 .emoji-category-tab.active {
   opacity: 1;
-  background: var(--surface);
+  background: var(--surface-raised);
   box-shadow: var(--shadow-sm);
 }
 
@@ -505,26 +633,32 @@
   gap: var(--space-1);
   padding: 0 var(--space-3) var(--space-3);
   overflow-y: auto;
-  max-height: 260px;
+  max-height: 280px;
 }
 
 .emoji-picker-item {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: transparent;
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   font-size: 22px;
   cursor: pointer;
-  transition: all var(--dur-fast) var(--ease-out);
+  transition:
+    all var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-spring);
 }
 
 .emoji-picker-item:hover {
   background: var(--surface-hover);
-  transform: scale(1.15);
+  transform: scale(1.2);
+}
+
+.emoji-picker-item:active {
+  transform: scale(0.9);
 }
 
 .emoji-picker-empty {
@@ -536,12 +670,12 @@
 }
 
 /* ============================================
-   Comments
+   Comments — Glassmorphism 2.0
    ============================================ */
 
 .comments-container {
-  margin-top: var(--space-4);
-  padding-top: var(--space-4);
+  margin-top: var(--space-5);
+  padding-top: var(--space-5);
   border-top: 1px solid var(--border);
 }
 
@@ -549,19 +683,27 @@
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
   color: var(--text);
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--space-4);
 }
 
 .comments-list {
   display: grid;
   gap: var(--space-3);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-5);
 }
 
 .comment {
-  padding: var(--space-3);
-  background: var(--surface-hover);
-  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  background: var(--surface);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  transition: border-color var(--dur-base) var(--ease-out);
+}
+
+.comment:hover {
+  border-color: var(--border-focus);
 }
 
 .comment-author {
@@ -585,7 +727,7 @@
 
 .comment-delete {
   padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   font-size: var(--text-base);
   opacity: 0.5;
   transition: all var(--dur-base) var(--ease-out);
@@ -594,34 +736,39 @@
 .comment-delete:hover {
   opacity: 1;
   background: var(--danger-muted);
+  color: var(--danger-text);
 }
 
 .comments-empty {
   text-align: center;
-  padding: var(--space-6);
+  padding: var(--space-8);
   color: var(--muted);
   font-size: var(--text-sm);
 }
 
 .comment-form {
   display: flex;
-  gap: var(--space-2);
+  gap: var(--space-3);
 }
 
 .comment-input {
   flex: 1;
-  padding: var(--space-3);
-  background: var(--surface-hover);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-xl);
   font-size: var(--text-sm);
   color: var(--text);
-  transition: all var(--dur-base) var(--ease-out);
+  transition:
+    all var(--dur-base) var(--ease-out);
 }
 
 .comment-input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--ring);
+  box-shadow: 0 0 0 3px var(--ring), var(--shadow-sm);
+  background: var(--surface-hover);
 }
 
 .comment-input::placeholder {
@@ -629,17 +776,27 @@
 }
 
 .comment-submit {
-  padding: var(--space-3) var(--space-5);
+  padding: var(--space-3) var(--space-6);
   background: var(--accent);
   color: white;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-xl);
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
-  transition: background var(--dur-base) var(--ease-out);
+  box-shadow: 0 2px 12px var(--accent-glow);
+  transition:
+    background var(--dur-base) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
 }
 
 .comment-submit:hover:not(:disabled) {
   background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px var(--accent-glow);
+}
+
+.comment-submit:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
 }
 
 /* ============================================
@@ -650,7 +807,7 @@
   .match-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: var(--space-2);
+    gap: var(--space-3);
   }
 
   .match-actions {

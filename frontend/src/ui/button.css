@@ -1,5 +1,5 @@
 /* ============================================
-   Button Component
+   Button Component — Glassmorphism 2.0
    ============================================ */
 
 .btn {
@@ -7,15 +7,17 @@
   --_fg: white;
   --_bg-hover: var(--accent-hover);
   --_border: transparent;
+  --_glow: var(--accent-glow);
 
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
 
   border: 1px solid var(--_border);
-  border-radius: var(--radius-md);
-  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-5);
 
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
@@ -36,10 +38,13 @@
 
 .btn:hover:not(:disabled) {
   background: var(--_bg-hover);
+  box-shadow: 0 4px 20px var(--_glow);
+  transform: translateY(-1px);
 }
 
 .btn:active:not(:disabled) {
-  transform: scale(0.98);
+  transform: translateY(0) scale(0.98);
+  box-shadow: none;
 }
 
 .btn:focus-visible {
@@ -54,20 +59,20 @@
 
 /* Sizes */
 .btn--sm {
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-4);
   font-size: var(--text-xs);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
 }
 
 .btn--md {
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-3) var(--space-5);
   font-size: var(--text-sm);
 }
 
 .btn--lg {
-  padding: var(--space-4) var(--space-6);
+  padding: var(--space-4) var(--space-8);
   font-size: var(--text-base);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
 }
 
 /* Variants */
@@ -75,6 +80,7 @@
   --_bg: var(--accent);
   --_fg: white;
   --_bg-hover: var(--accent-hover);
+  --_glow: var(--accent-glow);
 }
 
 .btn--secondary {
@@ -82,6 +88,13 @@
   --_fg: var(--text);
   --_bg-hover: var(--surface-hover);
   --_border: var(--border);
+  --_glow: transparent;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.btn--secondary:hover:not(:disabled) {
+  border-color: var(--border-focus);
 }
 
 .btn--ghost {
@@ -89,16 +102,41 @@
   --_fg: var(--text-secondary);
   --_bg-hover: var(--surface-hover);
   --_border: transparent;
+  --_glow: transparent;
 }
 
 .btn--ghost:hover:not(:disabled) {
   color: var(--text);
+  transform: none;
 }
 
 .btn--danger {
   --_bg: var(--danger);
   --_fg: white;
   --_bg-hover: var(--danger-text);
+  --_glow: var(--danger-muted);
+}
+
+.btn--success {
+  --_bg: var(--success);
+  --_fg: white;
+  --_bg-hover: var(--success-text);
+  --_glow: var(--success-muted);
+}
+
+/* Glass variant */
+.btn--glass {
+  --_bg: var(--glass-bg);
+  --_fg: var(--text);
+  --_bg-hover: var(--surface-hover);
+  --_border: var(--glass-border);
+  --_glow: transparent;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.btn--glass:hover:not(:disabled) {
+  border-color: var(--border-highlight);
 }
 
 /* Spinner */
@@ -112,7 +150,8 @@
 }
 
 .btn--secondary .btn__spinner,
-.btn--ghost .btn__spinner {
+.btn--ghost .btn__spinner,
+.btn--glass .btn__spinner {
   border-color: var(--border);
   border-top-color: var(--text);
 }

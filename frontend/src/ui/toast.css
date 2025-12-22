@@ -1,5 +1,5 @@
 /* ============================================
-   Toast Component
+   Toast Component — Glassmorphism 2.0
    ============================================ */
 
 .toast {
@@ -13,36 +13,53 @@
   gap: var(--space-3);
   align-items: start;
 
-  max-width: min(400px, calc(100vw - var(--space-8)));
-  padding: var(--space-4);
-  border-radius: var(--radius-lg);
+  max-width: min(420px, calc(100vw - var(--space-8)));
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-xl);
 
-  background: var(--surface-raised);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-lg);
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-xl), var(--shadow-glow);
 
-  animation: toast-slide-in var(--dur-slow) var(--ease-out);
+  animation: toast-slide-in var(--dur-slow) var(--ease-spring);
+}
+
+/* Top highlight */
+.toast::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20%;
+  right: 20%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--glass-highlight), transparent);
+  pointer-events: none;
 }
 
 .toast__dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border-radius: var(--radius-full);
-  margin-top: 6px;
-  background: var(--accent);
+  margin-top: 4px;
   flex-shrink: 0;
+  box-shadow: 0 0 12px currentColor;
 }
 
 .toast__dot--info {
   background: var(--accent);
+  color: var(--accent-glow);
 }
 
 .toast__dot--success {
   background: var(--success);
+  color: var(--success-muted);
 }
 
 .toast__dot--error {
   background: var(--danger);
+  color: var(--danger-muted);
 }
 
 .toast__body {
@@ -59,17 +76,17 @@
   margin-top: var(--space-1);
   font-size: var(--text-sm);
   line-height: var(--leading-relaxed);
-  color: var(--muted);
+  color: var(--text-secondary);
 }
 
 .toast__close {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   padding: 0;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   font-size: var(--text-lg);
   color: var(--muted);
   transition: all var(--dur-base) var(--ease-out);
@@ -82,11 +99,11 @@
 
 @keyframes toast-slide-in {
   from {
-    transform: translateY(var(--space-4));
+    transform: translateY(var(--space-6)) scale(0.95);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
 }
