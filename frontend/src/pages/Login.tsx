@@ -17,7 +17,6 @@ function Login({ onLogin }: LoginProps) {
   const [toastOpen, setToastOpen] = useState(false);
 
   useEffect(() => {
-    // Handle OAuth callback with token from URL
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
     const error = params.get('error');
@@ -31,7 +30,6 @@ function Login({ onLogin }: LoginProps) {
 
     if (token) {
       localStorage.setItem('token', token);
-      // Fetch user info with the token
       authAPI.me()
         .then((user) => {
           onLogin(user);
@@ -90,11 +88,11 @@ function Login({ onLogin }: LoginProps) {
         <aside className="login__panel">
           <Card>
             <CardHeader>
-              <CardTitle>Sign in</CardTitle>
+              <CardTitle>Welcome back</CardTitle>
               <CardDescription>Continue with your 42 account to view rankings and submit matches.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button onClick={handleLogin} isLoading={isLoading} size="lg">
+              <Button onClick={handleLogin} isLoading={isLoading} size="lg" style={{ width: '100%' }}>
                 Continue with 42 Intra
               </Button>
 

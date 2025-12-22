@@ -65,26 +65,28 @@ function Leaderboard({ sport: propSport }: LeaderboardProps) {
             <div className="lb__headcell lb__right">Win rate</div>
           </div>
 
-          {leaderboard.map((entry) => (
-            <div key={entry.user.id} className="lb__row">
-              <div className="lb__cell lb__rank">{entry.rank}</div>
-              <div className="lb__cell lb__player">
-                <img src={entry.user.avatar_url} alt={entry.user.display_name} className="lb__avatar" />
-                <div className="lb__playertext">
-                  <Link className="lb__name" to={`/players/${entry.user.id}`}>
-                    {entry.user.display_name}
-                  </Link>
-                  <div className="lb__meta muted">@{entry.user.login}</div>
+          <div className="lb__body">
+            {leaderboard.map((entry) => (
+              <div key={entry.user.id} className="lb__row">
+                <div className="lb__cell lb__rank">{entry.rank}</div>
+                <div className="lb__cell lb__player">
+                  <img src={entry.user.avatar_url} alt={entry.user.display_name} className="lb__avatar" />
+                  <div className="lb__playertext">
+                    <Link className="lb__name" to={`/players/${entry.user.id}`}>
+                      {entry.user.display_name}
+                    </Link>
+                    <div className="lb__meta muted">@{entry.user.login}</div>
+                  </div>
                 </div>
+                <div className="lb__cell lb__right lb__elo">{entry.elo}</div>
+                <div className="lb__cell lb__right">{entry.matches_played}</div>
+                <div className="lb__cell lb__right">
+                  {entry.wins} / {entry.losses}
+                </div>
+                <div className="lb__cell lb__right">{entry.win_rate.toFixed(1)}%</div>
               </div>
-              <div className="lb__cell lb__right lb__elo">{entry.elo}</div>
-              <div className="lb__cell lb__right">{entry.matches_played}</div>
-              <div className="lb__cell lb__right">
-                {entry.wins} / {entry.losses}
-              </div>
-              <div className="lb__cell lb__right">{entry.win_rate.toFixed(1)}%</div>
-            </div>
-          ))}
+            ))}
+          </div>
 
           {leaderboard.length === 0 && (
             <div className="lb__empty">

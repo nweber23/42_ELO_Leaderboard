@@ -3,6 +3,10 @@ import { useParams, Link } from 'react-router-dom';
 import { usersAPI, matchAPI } from '../api/client';
 import type { User, Match } from '../types';
 import { SPORT_LABELS } from '../types';
+import { Page } from '../layout/Page';
+import { Card, CardContent } from '../ui/Card';
+import { Button } from '../ui/Button';
+import './PlayerProfile.css';
 
 function PlayerProfile() {
   const { id } = useParams<{ id: string }>();
@@ -24,8 +28,6 @@ function PlayerProfile() {
       const foundPlayer = users.find(u => u.id === parseInt(id));
       if (foundPlayer) {
         setPlayer(foundPlayer);
-        
-        // Load player's matches
         const allMatches = await matchAPI.list({ user_id: parseInt(id) });
         setMatches(allMatches || []);
       }
@@ -37,145 +39,139 @@ function PlayerProfile() {
   };
 
   if (loading) {
-    return <div className="loading">Loading profile...</div>;
+    return (
+      <Page title="Player Profile">
+        <Card>
+          <CardContent>
+            <div className="loading">Loading profile...</div>
+          </CardContent>
+        </Card>
+      </Page>
+    );
   }
 
   if (!player) {
     return (
-      <div className="empty">
-        <p>Player not found</p>
-        <Link to="/leaderboard/table_tennis" style={{ color: 'var(--accent)', marginTop: '16px', display: 'inline-block' }}>
-          Back to Leaderboard
-        </Link>
-      </div>
+      <Page title="Player Not Found">
+        <Card>
+          <CardContent>
+            <div className="empty">
+              <p>Player not found</p>
+              <Link to="/leaderboard/table_tennis">
+                <Button variant="secondary" style={{ marginTop: 'var(--space-4)' }}>
+                  Back to Leaderboard
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </Page>
     );
   }
 
-  // Calculate statistics
   const confirmedMatches = matches.filter(m => m.status === 'confirmed');
   const ttMatches = confirmedMatches.filter(m => m.sport === 'table_tennis');
   const tfMatches = confirmedMatches.filter(m => m.sport === 'table_football');
-  
   const wins = confirmedMatches.filter(m => m.winner_id === player.id);
+  const losses = confirmedMatches.length - wins.length;
+  const winRate = confirmedMatches.length > 0 ? Math.round((wins.length / confirmedMatches.length) * 100) : 0;
 
-  // Calculate streaks
+  // Calculate current win streak
   let currentStreak = 0;
-  let longestStreak = 0;
-  let tempStreak = 0;
-  
   const sortedMatches = [...confirmedMatches].sort((a, b) => 
     new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
-
-  sortedMatches.forEach(match => {
+  for (const match of sortedMatches) {
     if (match.winner_id === player.id) {
-      tempStreak++;
-      if (tempStreak > longestStreak) longestStreak = tempStreak;
+      currentStreak++;
     } else {
-      if (currentStreak === 0 && tempStreak > 0) {
-        currentStreak = 0;
-      }
-      tempStreak = 0;
+      break;
     }
-  });
-
-  if (sortedMatches.length > 0 && sortedMatches[0].winner_id === player.id) {
-    currentStreak = tempStreak;
   }
 
-  // Most played rival
-  const opponents = confirmedMatches.reduce((acc, m) => {
-    const oppId = m.player1_id === player.id ? m.player2_id : m.player1_id;
-    acc[oppId] = (acc[oppId] || 0) + 1;
-    return acc;
-  }, {} as Record<number, number>);
-
-  const mostPlayedRivalId = Object.entries(opponents).sort((a, b) => b[1] - a[1])[0]?.[0];
-  const rivalMatchCount = mostPlayedRivalId ? opponents[parseInt(mostPlayedRivalId)] : 0;
-
-  // Filter matches
   const filteredMatches = sportFilter
     ? confirmedMatches.filter(m => m.sport === sportFilter)
     : confirmedMatches;
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
   return (
-    <div>
-      <Link to="/leaderboard/table_tennis" style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '24px', display: 'inline-block' }}>
+    <div className="profile">
+      <Link to="/leaderboard/table_tennis" className="profile__back">
         ← Back to Leaderboard
       </Link>
 
-      {/* Player Header */}
-      <div style={{ background: 'var(--bg-secondary)', padding: '32px', borderRadius: 'var(--radius-lg)', marginBottom: '24px', boxShadow: 'var(--shadow-md)', border: '1px solid var(--border-subtle)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '24px' }}>
-          <img src={player.avatar_url} alt={player.display_name} className="avatar" style={{ width: '80px', height: '80px' }} />
-          <div>
-            <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '8px', color: 'var(--text-primary)' }}>
-              {player.display_name}
-            </h1>
-            <div style={{ fontSize: '15px', color: 'var(--text-secondary)' }}>
-              @{player.login} · {player.campus}
+      {/* Header Card */}
+      <Card className="profile__header-card">
+        <CardContent>
+          <div className="profile__header">
+            <img src={player.avatar_url} alt={player.display_name} className="profile__avatar" />
+            <div className="profile__info">
+              <h1 className="profile__name">{player.display_name}</h1>
+              <p className="profile__meta">@{player.login} · {player.campus}</p>
             </div>
           </div>
-        </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-          <div>
-            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '4px' }}>TABLE TENNIS ELO</div>
-            <div style={{ fontSize: '28px', fontWeight: '700', color: 'var(--accent)' }}>{player.table_tennis_elo}</div>
+          <div className="profile__elo-grid">
+            <div className="profile__elo-item">
+              <span className="profile__elo-label">Table Tennis</span>
+              <span className="profile__elo-value">{player.table_tennis_elo}</span>
+            </div>
+            <div className="profile__elo-item">
+              <span className="profile__elo-label">Table Football</span>
+              <span className="profile__elo-value">{player.table_football_elo}</span>
+            </div>
           </div>
-          <div>
-            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '4px' }}>TABLE FOOTBALL ELO</div>
-            <div style={{ fontSize: '28px', fontWeight: '700', color: 'var(--accent)' }}>{player.table_football_elo}</div>
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      {/* Statistics */}
-      <div style={{ background: 'var(--bg-secondary)', padding: '24px', borderRadius: 'var(--radius-lg)', marginBottom: '24px', boxShadow: 'var(--shadow-md)', border: '1px solid var(--border-subtle)' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '20px', color: 'var(--text-primary)' }}>Statistics</h2>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '20px' }}>
-          <div>
-            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Win Streak</div>
-            <div style={{ fontSize: '24px', fontWeight: '600', color: 'var(--text-primary)' }}>{currentStreak}</div>
-          </div>
-          <div>
-            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Longest Streak</div>
-            <div style={{ fontSize: '24px', fontWeight: '600', color: 'var(--text-primary)' }}>{longestStreak}</div>
-          </div>
-          <div>
-            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Table Tennis</div>
-            <div style={{ fontSize: '24px', fontWeight: '600', color: 'var(--text-primary)' }}>{ttMatches.length} matches</div>
-          </div>
-          <div>
-            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Table Football</div>
-            <div style={{ fontSize: '24px', fontWeight: '600', color: 'var(--text-primary)' }}>{tfMatches.length} matches</div>
-          </div>
-          <div>
-            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Win Rate</div>
-            <div style={{ fontSize: '24px', fontWeight: '600', color: 'var(--success)' }}>
-              {confirmedMatches.length > 0 ? Math.round((wins.length / confirmedMatches.length) * 100) : 0}%
-            </div>
-          </div>
-          <div>
-            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '4px' }}>Most Played Rival</div>
-            <div style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)' }}>
-              {rivalMatchCount > 0 ? `${rivalMatchCount} matches` : 'None'}
-            </div>
-          </div>
-        </div>
+      {/* Stats Grid */}
+      <div className="profile__stats">
+        <Card className="profile__stat-card">
+          <CardContent>
+            <span className="profile__stat-value">{confirmedMatches.length}</span>
+            <span className="profile__stat-label">Total Matches</span>
+          </CardContent>
+        </Card>
+        <Card className="profile__stat-card">
+          <CardContent>
+            <span className="profile__stat-value profile__stat-value--success">{wins.length}</span>
+            <span className="profile__stat-label">Wins</span>
+          </CardContent>
+        </Card>
+        <Card className="profile__stat-card">
+          <CardContent>
+            <span className="profile__stat-value profile__stat-value--danger">{losses}</span>
+            <span className="profile__stat-label">Losses</span>
+          </CardContent>
+        </Card>
+        <Card className="profile__stat-card">
+          <CardContent>
+            <span className="profile__stat-value">{winRate}%</span>
+            <span className="profile__stat-label">Win Rate</span>
+          </CardContent>
+        </Card>
+        <Card className="profile__stat-card">
+          <CardContent>
+            <span className="profile__stat-value">{currentStreak}</span>
+            <span className="profile__stat-label">Win Streak</span>
+          </CardContent>
+        </Card>
+        <Card className="profile__stat-card">
+          <CardContent>
+            <span className="profile__stat-value">{ttMatches.length} / {tfMatches.length}</span>
+            <span className="profile__stat-label">TT / TF</span>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Match History */}
-      <div style={{ background: 'var(--bg-secondary)', padding: '24px', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-md)', border: '1px solid var(--border-subtle)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ fontSize: '20px', fontWeight: '600', color: 'var(--text-primary)' }}>Match History</h2>
-          
+      <Card>
+        <div className="profile__history-header">
+          <h2 className="profile__section-title">Match History</h2>
           <div className="filters">
             <button
               className={!sportFilter ? 'active' : ''}
@@ -197,46 +193,45 @@ function PlayerProfile() {
             </button>
           </div>
         </div>
+        <CardContent>
+          {filteredMatches.length === 0 ? (
+            <div className="empty">No matches found</div>
+          ) : (
+            <div className="profile__matches">
+              {filteredMatches.slice(0, 20).map(match => {
+                const isWin = match.winner_id === player.id;
+                const isPlayer1 = match.player1_id === player.id;
+                const myScore = isPlayer1 ? match.player1_score : match.player2_score;
+                const oppScore = isPlayer1 ? match.player2_score : match.player1_score;
+                const eloDelta = isPlayer1 ? match.player1_elo_delta : match.player2_elo_delta;
 
-        {filteredMatches.length === 0 ? (
-          <div className="empty">No matches found</div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {filteredMatches.map(match => {
-              const isWin = match.winner_id === player.id;
-              const isPlayer1 = match.player1_id === player.id;
-              const myScore = isPlayer1 ? match.player1_score : match.player2_score;
-              const oppScore = isPlayer1 ? match.player2_score : match.player1_score;
-              const eloDelta = isPlayer1 ? match.player1_elo_delta : match.player2_elo_delta;
-
-              return (
-                <div key={match.id} style={{ padding: '16px', background: 'var(--bg-primary)', borderRadius: 'var(--radius-md)', border: `2px solid ${isWin ? 'var(--success)' : 'var(--error)'}` }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '8px' }}>
-                    <div>
-                      <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '4px' }}>
-                        {SPORT_LABELS[match.sport as keyof typeof SPORT_LABELS]} · {formatDate(match.created_at)}
-                      </div>
-                      <div style={{ fontSize: '18px', fontWeight: '600', color: 'var(--text-primary)' }}>
-                        {isWin ? '🏆 Victory' : '⚔️ Defeat'}
-                      </div>
+                return (
+                  <div key={match.id} className={`profile__match ${isWin ? 'profile__match--win' : 'profile__match--loss'}`}>
+                    <div className="profile__match-result">
+                      <span className="profile__match-icon">{isWin ? '🏆' : '⚔️'}</span>
+                      <span className="profile__match-outcome">{isWin ? 'Victory' : 'Defeat'}</span>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '24px', fontWeight: '700', color: 'var(--text-primary)' }}>
-                        {myScore} - {oppScore}
-                      </div>
+                    <div className="profile__match-details">
+                      <span className="profile__match-sport">
+                        {SPORT_LABELS[match.sport as keyof typeof SPORT_LABELS]}
+                      </span>
+                      <span className="profile__match-date">{formatDate(match.created_at)}</span>
+                    </div>
+                    <div className="profile__match-score">
+                      <span className="profile__match-score-value">{myScore} - {oppScore}</span>
                       {eloDelta !== undefined && (
-                        <div style={{ fontSize: '13px', color: eloDelta > 0 ? 'var(--success)' : 'var(--error)' }}>
-                          {eloDelta > 0 ? '+' : ''}{eloDelta} ELO
-                        </div>
+                        <span className={`profile__match-elo ${eloDelta > 0 ? 'profile__match-elo--positive' : 'profile__match-elo--negative'}`}>
+                          {eloDelta > 0 ? '+' : ''}{eloDelta}
+                        </span>
                       )}
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

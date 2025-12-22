@@ -2,8 +2,11 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import { initTheme } from './state/theme'
-import './App.css'
+
+// Import styles in correct order: tokens first, then global, then components
+import './styles/tokens.css'
 import './styles/global.css'
+import './App.css'
 
 initTheme()
 

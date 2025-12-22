@@ -1,55 +1,141 @@
 @import "./tokens.css";
 
-* { box-sizing: border-box; }
+/* ============================================
+   Global Reset & Base
+   ============================================ */
 
-html, body {
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
   height: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
-  margin: 0;
+  min-height: 100%;
   font-family: var(--font-sans);
-  background: var(--bg);
+  font-size: var(--text-base);
+  font-weight: var(--weight-normal);
+  line-height: var(--leading-normal);
   color: var(--text);
-  line-height: 1.35;
+  background: var(--bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+#root {
+  min-height: 100vh;
+  isolation: isolate;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--leading-tight);
+}
+
+p {
+  line-height: var(--leading-relaxed);
 }
 
 a {
   color: inherit;
   text-decoration: none;
+  transition: color var(--dur-fast) var(--ease-out);
 }
 
+a:hover {
+  color: var(--accent);
+}
+
+/* Interactive elements */
 button, input, select, textarea {
   font: inherit;
+  color: inherit;
+  background: transparent;
+  border: none;
+  outline: none;
 }
 
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Focus states - accessible ring */
 :focus-visible {
-  outline: 2px solid color-mix(in oklab, var(--accent) 70%, white);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
+/* Selection */
 ::selection {
-  background: color-mix(in oklab, var(--accent) 35%, transparent);
+  background: var(--accent-muted);
+  color: var(--text);
 }
+
+/* Images */
+img, svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Lists */
+ul, ol {
+  list-style: none;
+}
+
+/* Tables */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* ============================================
+   Layout Utilities
+   ============================================ */
 
 .container {
   width: 100%;
-  max-width: 1120px;
+  max-width: var(--container-max);
   margin: 0 auto;
-  padding: 0 var(--space-4);
+  padding-inline: var(--space-4);
 }
 
-@media (min-width: 900px) {
+@media (min-width: 768px) {
   .container {
-    padding: 0 var(--space-6);
+    padding-inline: var(--space-6);
   }
 }
 
-/* Utilities */
+/* ============================================
+   Text Utilities
+   ============================================ */
+
+.text-primary { color: var(--text); }
+.text-secondary { color: var(--text-secondary); }
 .muted { color: var(--muted); }
 .faint { color: var(--faint); }
+.text-accent { color: var(--accent-text); }
+.text-success { color: var(--success-text); }
+.text-warning { color: var(--warning-text); }
+.text-danger { color: var(--danger-text); }
+
+/* ============================================
+   Display Utilities
+   ============================================ */
 
 .visually-hidden {
   position: absolute;
@@ -59,5 +145,38 @@ button, input, select, textarea {
   margin: -1px;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
   border: 0;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+
+/* Number input arrows hidden */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }

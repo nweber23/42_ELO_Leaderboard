@@ -14,8 +14,8 @@ export function AppShell({
   const nav = useMemo(
     () => [
       { name: "Leaderboards", to: "/leaderboard/table_tennis" },
-      { name: "Match history", to: "/matches" },
-      { name: "Submit match", to: "/submit" },
+      { name: "Matches", to: "/matches" },
+      { name: "Submit", to: "/submit" },
     ],
     []
   );
@@ -24,15 +24,12 @@ export function AppShell({
     <div className="shell">
       <header className="topbar">
         <div className="container topbar__inner">
-          <div className="brand">
-            <div className="brand__mark" aria-hidden>
-              42
-            </div>
+          <NavLink to="/" className="brand">
             <div className="brand__text">
               <div className="brand__name">ELO Leaderboard</div>
-              <div className="brand__tag muted">Table Tennis · Table Football</div>
+              <div className="brand__tag">Table Tennis · Table Football</div>
             </div>
-          </div>
+          </NavLink>
 
           <nav className="nav" aria-label="Primary">
             {nav.map((item) => (
@@ -53,10 +50,10 @@ export function AppShell({
                   <img className="userchip__avatar" src={user.avatar_url} alt={user.display_name} />
                   <div className="userchip__meta">
                     <div className="userchip__name">{user.display_name}</div>
-                    <div className="userchip__sub muted">TT {user.table_tennis_elo} · TF {user.table_football_elo}</div>
+                    <div className="userchip__sub">TT {user.table_tennis_elo} · TF {user.table_football_elo}</div>
                   </div>
                 </NavLink>
-                <Button variant="ghost" onClick={onLogout} aria-label="Logout">
+                <Button variant="ghost" size="sm" onClick={onLogout}>
                   Logout
                 </Button>
               </>
@@ -77,16 +74,15 @@ export function AppShell({
 
       <footer className="footer">
         <div className="container footer__inner">
-          <span className="muted">
+          <span>
             Built by
             <a
               href="https://profile.intra.42.fr/users/nweber"
               target="_blank"
               rel="noreferrer noopener"
               className="footer__link"
-              aria-label="Open @nweber 42 Intra profile"
             >
-            @nweber
+              @nweber
             </a>
           </span>
           <span className="faint">Fast · Clean · Fair</span>

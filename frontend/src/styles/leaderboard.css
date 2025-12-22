@@ -1,109 +1,180 @@
+/* ============================================
+   Leaderboard Table
+   ============================================ */
+
 .lb {
   width: 100%;
 }
 
-.lb__loading {
-  padding: var(--space-8) var(--space-6);
-  color: var(--muted);
+.lb__body {
+  width: 100%;
 }
 
-.lb__head, .lb__row {
+.lb__loading {
+  padding: var(--space-12);
+  text-align: center;
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+/* Table Header & Rows */
+.lb__head,
+.lb__row {
   display: grid;
-  grid-template-columns: 72px minmax(220px, 1.6fr) 120px 120px 120px 120px;
-  gap: 0;
+  grid-template-columns: 60px minmax(200px, 1.5fr) 100px 100px 100px 100px;
   align-items: center;
 }
 
 .lb__head {
-  position: sticky;
-  top: 72px;
-  z-index: 2;
-  background: color-mix(in oklab, var(--surface) 92%, transparent);
+  background: var(--surface);
   border-bottom: 1px solid var(--border);
 }
 
 .lb__headcell {
-  padding: 12px var(--space-6);
-  font-size: 12px;
-  letter-spacing: 0.08em;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
   color: var(--muted);
 }
 
 .lb__row {
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background var(--dur-base) var(--ease-out);
+}
+
+.lb__row:last-child {
+  border-bottom: none;
 }
 
 .lb__row:hover {
-  background: color-mix(in oklab, var(--surface-2) 70%, transparent);
+  background: var(--surface-hover);
 }
 
 .lb__cell {
-  padding: 14px var(--space-6);
+  padding: var(--space-4);
 }
 
 .lb__right {
   text-align: right;
 }
 
+/* Rank Badge */
 .lb__rank {
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
   color: var(--muted);
 }
 
+/* Gold, Silver, Bronze - rows inside lb__body */
+.lb__body .lb__row:nth-child(1) .lb__rank {
+  color: var(--gold);
+}
+
+.lb__body .lb__row:nth-child(2) .lb__rank {
+  color: var(--silver);
+}
+
+.lb__body .lb__row:nth-child(3) .lb__rank {
+  color: var(--bronze);
+}
+
+/* Player Info */
 .lb__player {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .lb__avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+}
+
+.lb__playertext {
+  min-width: 0;
 }
 
 .lb__name {
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
   color: var(--text);
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .lb__name:hover {
-  text-decoration: underline;
-  text-decoration-color: color-mix(in oklab, var(--accent) 40%, transparent);
-  text-underline-offset: 4px;
+  color: var(--accent-text);
 }
 
 .lb__meta {
-  font-size: 12px;
-}
-
-.lb__elo {
-  font-weight: 750;
-  color: color-mix(in oklab, var(--accent) 78%, white);
-}
-
-.lb__empty {
-  padding: var(--space-8) var(--space-6);
+  font-size: var(--text-xs);
   color: var(--muted);
+  margin-top: 2px;
 }
 
-@media (max-width: 920px) {
-  .lb__head, .lb__row {
-    grid-template-columns: 56px minmax(180px, 1.7fr) 90px 90px 90px 90px;
+/* ELO Value */
+.lb__elo {
+  font-size: var(--text-md);
+  font-weight: var(--weight-bold);
+  color: var(--accent-text);
+}
+
+/* Empty State */
+.lb__empty {
+  padding: var(--space-12);
+  text-align: center;
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+/* ============================================
+   Responsive - Tablet
+   ============================================ */
+
+@media (max-width: 900px) {
+  .lb__head,
+  .lb__row {
+    grid-template-columns: 50px minmax(160px, 1.5fr) 80px 80px 80px 80px;
+  }
+
+  .lb__cell {
+    padding: var(--space-3);
+  }
+
+  .lb__avatar {
+    width: 36px;
+    height: 36px;
   }
 }
 
-@media (max-width: 720px) {
-  .lb__head { display: none; }
+/* ============================================
+   Responsive - Mobile
+   ============================================ */
+
+@media (max-width: 640px) {
+  .lb__head {
+    display: none;
+  }
 
   .lb__row {
-    grid-template-columns: 1fr;
-    padding: 12px;
-    gap: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .lb__row:last-child {
+    border-bottom: none;
   }
 
   .lb__cell {
@@ -111,33 +182,36 @@
   }
 
   .lb__rank {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
-    width: 34px;
-    height: 28px;
-    border-radius: 999px;
-    border: 1px solid var(--border);
-    background: var(--surface-2);
-    font-size: 13px;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    background: var(--surface-hover);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-bold);
+    flex-shrink: 0;
   }
 
   .lb__player {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
+    flex: 1;
+    min-width: 0;
+    gap: var(--space-2);
+  }
+
+  .lb__avatar {
+    width: 32px;
+    height: 32px;
   }
 
   .lb__elo {
-    justify-self: end;
-    font-size: 16px;
+    text-align: right;
+    margin-left: auto;
   }
 
-  .lb__row {
-    border-bottom: 0;
-  }
-
-  .lb__row + .lb__row {
-    border-top: 1px solid var(--border);
+  /* Hide extra columns on mobile - show only rank, player, elo */
+  .lb__cell.lb__right:not(.lb__elo) {
+    display: none;
   }
 }

@@ -3,6 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { matchAPI, usersAPI } from '../api/client';
 import type { User } from '../types';
 import { SPORTS, SPORT_LABELS } from '../types';
+import { Page } from '../layout/Page';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/Card';
+import { Field, Select, Input } from '../ui/Field';
+import { Button } from '../ui/Button';
 
 interface SubmitMatchProps {
   user: User;
@@ -12,17 +16,15 @@ function SubmitMatch({ user }: SubmitMatchProps) {
   const navigate = useNavigate();
   const [sport, setSport] = useState<'table_tennis' | 'table_football'>('table_tennis');
   const [opponentId, setOpponentId] = useState<number>(0);
-  const [playerScore, setPlayerScore] = useState<number>(0);
-  const [opponentScore, setOpponentScore] = useState<number>(0);
+  const [playerScore, setPlayerScore] = useState<string>('');
+  const [opponentScore, setOpponentScore] = useState<string>('');
   const [players, setPlayers] = useState<User[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
-    // Load all users
     usersAPI.getAll()
       .then(users => {
-        // Filter out current user
         setPlayers(users.filter(u => u.id !== user.id));
       })
       .catch(console.error);
@@ -32,17 +34,20 @@ function SubmitMatch({ user }: SubmitMatchProps) {
     e.preventDefault();
     setError('');
 
+    const pScore = Number(playerScore);
+    const oScore = Number(opponentScore);
+
     if (opponentId === 0) {
       setError('Please select an opponent');
       return;
     }
 
-    if (playerScore === opponentScore) {
+    if (pScore === oScore) {
       setError('Scores cannot be tied');
       return;
     }
 
-    if (playerScore < 0 || opponentScore < 0) {
+    if (pScore < 0 || oScore < 0) {
       setError('Scores must be positive');
       return;
     }
@@ -53,10 +58,9 @@ function SubmitMatch({ user }: SubmitMatchProps) {
       await matchAPI.submit({
         sport,
         opponent_id: opponentId,
-        player_score: playerScore,
-        opponent_score: opponentScore,
+        player_score: pScore,
+        opponent_score: oScore,
       });
-      alert('Match submitted successfully! Waiting for opponent confirmation.');
       navigate('/matches');
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to submit match');
@@ -66,76 +70,74 @@ function SubmitMatch({ user }: SubmitMatchProps) {
   };
 
   return (
-    <div className="submit-match-page">
-      <h1>Submit Match Result</h1>
+    <Page title="Submit Match" subtitle="Record a new match result">
+      <Card>
+        <CardHeader>
+          <CardTitle>Match Details</CardTitle>
+          <CardDescription>
+            Your opponent will need to confirm this match before it affects ELO ratings.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 'var(--space-5)' }}>
+            <Field label="Sport">
+              <Select
+                value={sport}
+                onChange={(e) => setSport(e.target.value as 'table_tennis' | 'table_football')}
+              >
+                <option value={SPORTS.TABLE_TENNIS}>{SPORT_LABELS.table_tennis}</option>
+                <option value={SPORTS.TABLE_FOOTBALL}>{SPORT_LABELS.table_football}</option>
+              </Select>
+            </Field>
 
-      <form onSubmit={handleSubmit} className="match-form">
-        <div className="form-group">
-          <label>Sport</label>
-          <select 
-            value={sport} 
-            onChange={(e) => setSport(e.target.value as 'table_tennis' | 'table_football')}
-            className="form-select"
-          >
-            <option value={SPORTS.TABLE_TENNIS}>{SPORT_LABELS.table_tennis}</option>
-            <option value={SPORTS.TABLE_FOOTBALL}>{SPORT_LABELS.table_football}</option>
-          </select>
-        </div>
+            <Field label="Opponent">
+              <Select
+                value={opponentId}
+                onChange={(e) => setOpponentId(Number(e.target.value))}
+                required
+              >
+                <option value={0}>Select opponent...</option>
+                {players.map((player) => (
+                  <option key={player.id} value={player.id}>
+                    {player.display_name} (@{player.login})
+                  </option>
+                ))}
+              </Select>
+            </Field>
 
-        <div className="form-group">
-          <label>Opponent</label>
-          <select 
-            value={opponentId} 
-            onChange={(e) => setOpponentId(Number(e.target.value))}
-            className="form-select"
-            required
-          >
-            <option value={0}>Select opponent...</option>
-            {players.map((player) => (
-              <option key={player.id} value={player.id}>
-                {player.display_name} ({player.login})
-              </option>
-            ))}
-          </select>
-        </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+              <Field label="Your Score">
+                <Input
+                  type="number"
+                  value={playerScore}
+                  onChange={(e) => setPlayerScore(e.target.value)}
+                  min="0"
+                  placeholder="0"
+                  required
+                />
+              </Field>
 
-        <div className="form-row">
-          <div className="form-group">
-            <label>Your Score</label>
-            <input
-              type="number"
-              value={playerScore}
-              onChange={(e) => setPlayerScore(Number(e.target.value))}
-              min="0"
-              className="form-input"
-              required
-            />
-          </div>
+              <Field label="Opponent Score">
+                <Input
+                  type="number"
+                  value={opponentScore}
+                  onChange={(e) => setOpponentScore(e.target.value)}
+                  min="0"
+                  placeholder="0"
+                  required
+                />
+              </Field>
+            </div>
 
-          <div className="form-group">
-            <label>Opponent Score</label>
-            <input
-              type="number"
-              value={opponentScore}
-              onChange={(e) => setOpponentScore(Number(e.target.value))}
-              min="0"
-              className="form-input"
-              required
-            />
-          </div>
-        </div>
+            {error && <div className="error-message">{error}</div>}
 
-        {error && <div className="error-message">{error}</div>}
-
-        <button type="submit" className="submit-button" disabled={submitting}>
-          {submitting ? 'Submitting...' : 'Submit Match'}
-        </button>
-
-        <p className="info">
-          Your opponent will need to confirm this match before it affects ELO ratings.
-        </p>
-      </form>
-    </div>
+            <Button type="submit" size="lg" isLoading={submitting}>
+              Submit Match
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </Page>
   );
 }
 
