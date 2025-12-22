@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { reactionAPI } from '../api/client';
 import type { Reaction } from '../types';
+import EmojiPicker from './EmojiPicker';
 
 interface ReactionsProps {
   matchId: number;
   userId: number;
 }
-
-const EMOJI_OPTIONS = ['🔥', '💪', '🎯', '👏', '😮', '🎉'];
 
 function Reactions({ matchId, userId }: ReactionsProps) {
   const [reactions, setReactions] = useState<Reaction[]>([]);
@@ -34,7 +33,7 @@ function Reactions({ matchId, userId }: ReactionsProps) {
     if (existingReaction) {
       // Remove reaction - optimistic update
       setReactions(reactions.filter(r => r.id !== existingReaction.id));
-      
+
       setLoading(true);
       try {
         await reactionAPI.remove(matchId, emoji);
@@ -97,17 +96,7 @@ function Reactions({ matchId, userId }: ReactionsProps) {
             <span className="reaction-count">{count}</span>
           </button>
         ))}
-        {EMOJI_OPTIONS.filter(e => !reactionCounts[e]).slice(0, 3).map(emoji => (
-          <button
-            key={emoji}
-            className="add-reaction"
-            onClick={() => handleReaction(emoji)}
-            disabled={loading}
-            title="Add reaction"
-          >
-            {emoji}
-          </button>
-        ))}
+        <EmojiPicker onSelect={handleReaction} disabled={loading} />
       </div>
     </div>
   );
