@@ -30,9 +30,13 @@ The 42 Heilbronn ELO Leaderboard is a full-stack web application that enables st
 | 📊 **ELO Rankings** | Independent ratings for each sport (starting at 1000) |
 | 🔍 **Player Search** | Search players by display name or intra login |
 | 📈 **Statistics** | Win streaks, highest ELO, win rates, and more |
-| 📜 **Match History** | Filter by sport, opponent, and outcome |
+| 📜 **Match History** | Filter by sport, opponent, date range, and outcome |
 | 💬 **Social** | React with emojis and comment on matches |
+| 📊 **Statistics Dashboard** | Charts for ELO history, win rates, and trends |
+| 🎯 **ELO Prediction** | See predicted rating change before match submission |
+| 👨‍💼 **Admin Panel** | Manage users, revert matches, ban players |
 | 📱 **Responsive** | Mobile-friendly design for all devices |
+| ⚡ **Performance** | Gzip compression, caching, code splitting, lazy loading |
 | 🛡️ **Error Handling** | Graceful error boundaries and user-friendly messages |
 
 ## 🛠️ Tech Stack
@@ -52,6 +56,12 @@ The 42 Heilbronn ELO Leaderboard is a full-stack web application that enables st
 - **PostgreSQL 15** database
 - Clean architecture pattern
 - 42 Intra OAuth + JWT auth
+- In-memory caching with TTL
+- Gzip response compression
+- Rate limiting middleware
+- Input sanitization utilities
+- Clean architecture pattern
+- 42 Intra OAuth + JWT auth
 - Database connection pooling
 - Input sanitization utilities
 
@@ -67,8 +77,12 @@ The 42 Heilbronn ELO Leaderboard is a full-stack web application that enables st
 
 - **React 18** + **TypeScript**
 - **Vite** for fast development
+- React.lazy code splitting
 - Axios for API calls
 - Custom hooks & utilities
+- Lazy image loading
+- Error boundaries for resilience
+- Glassmorphism 2.0 CSS designlities
 - Error boundaries for resilience
 - Custom CSS styling
 
@@ -132,36 +146,52 @@ Fully containerized with multi-stage builds, automated migrations, and productio
 │   Port: 3000    │     │   Port: 8080    │     │   Port: 5432    │
 │                 │     │                 │     │                 │
 └─────────────────┘     └─────────────────┘     └─────────────────┘
-       Nginx              REST API              Database
-```
-
 ### Project Structure
 
 ```
 42_ELO_Leaderboard/
 ├── backend/
-│   ├── cmd/api/          # Application entrypoint
+│   ├── cmd/api/              # Application entrypoint
 │   ├── internal/
-│   │   ├── config/       # Configuration management
-│   │   ├── handlers/     # HTTP request handlers
-│   │   ├── middleware/   # Auth middleware
-│   │   ├── models/       # Data models
-│   │   ├── repositories/ # Database layer
-│   │   ├── services/     # Business logic (ELO calculations)
-│   │   └── utils/        # JWT, response, sanitization utilities
-│   └── migrations/       # SQL migrations
+│   │   ├── cache/            # In-memory caching with TTL
+│   │   ├── config/           # Configuration management
+│   │   ├── handlers/         # HTTP handlers (auth, match, admin)
+│   │   ├── middleware/       # Auth, rate limiting, ban middleware
+│   │   ├── models/           # Data models
+│   │   ├── repositories/     # Database layer (user, match, admin, comment, reaction)
+│   │   ├── services/         # Business logic (ELO calculations, leaderboard caching)
+│   │   └── utils/            # JWT, response, sanitization, privacy utilities
+│   └── migrations/           # SQL migrations (init, indexes, admin)
 ├── frontend/
 │   ├── src/
-│   │   ├── api/          # API client (Axios)
-│   │   ├── components/   # Reusable components (ErrorBoundary, Comments, Reactions)
-│   │   ├── constants/    # Shared validation constants
-│   │   ├── hooks/        # Custom React hooks (useUsers)
-│   │   ├── layout/       # App shell and page layouts
-│   │   ├── pages/        # Page components (Leaderboard, Matches, PlayerProfile)
-│   │   ├── state/        # State management (theme, toast)
-│   │   ├── types/        # TypeScript type definitions
-│   │   ├── ui/           # UI primitives (Button, Card, Field, Toast)
-│   │   ├── utils/        # Utility functions (date, error handling)
+│   │   ├── api/              # API client (Axios)
+│   │   ├── components/       # Reusable components
+│   │   │   ├── Comments.tsx      # Match comments
+│   │   │   ├── EmojiPicker.tsx   # Emoji reaction picker
+│   │   │   ├── ErrorBoundary.tsx # Error handling
+│   │   │   ├── LazyImage.tsx     # Lazy-loaded images
+│   │   │   ├── Reactions.tsx     # Match reactions
+│   │   │   └── StatsDashboard.tsx # Statistics charts
+│   │   ├── constants/        # Shared validation constants
+│   │   ├── hooks/            # Custom React hooks
+│   │   │   ├── useUsers.ts       # User search hook
+│   │   │   └── usePerformance.ts # Debounce & intersection observer
+│   │   ├── layout/           # App shell and page layouts
+│   │   ├── pages/            # Page components
+│   │   │   ├── Admin.tsx         # Admin panel
+│   │   │   ├── Leaderboard.tsx   # Rankings with search
+│   │   │   ├── Matches.tsx       # Match history & filters
+│   │   │   ├── PlayerProfile.tsx # Player stats & history
+│   │   │   ├── SubmitMatch.tsx   # Match submission with ELO prediction
+│   │   │   └── Login.tsx         # OAuth login
+│   │   ├── state/            # State management (theme, toast)
+│   │   ├── styles/           # Global styles and CSS tokens
+│   │   ├── types/            # TypeScript type definitions
+│   │   ├── ui/               # UI primitives (Button, Card, Field, Spinner, etc.)
+│   │   └── utils/            # Utility functions (date, error handling)
+│   └── nginx.conf            # Production server config
+└── docker-compose.yml
+``` │   ├── utils/        # Utility functions (date, error handling)
 │   │   └── styles/       # Global styles and CSS tokens
 │   └── nginx.conf        # Production server config
 └── docker-compose.yml
@@ -190,27 +220,42 @@ Submit Match → Pending → Opponent Confirms → ELO Updated
                   ↓
               Opponent Denies → Match Rejected
 ```
-
-## 🗃️ Database Schema
-
-| Table | Description |
-|-------|-------------|
-| `users` | Player profiles with dual ELO ratings (one per sport) |
-| `matches` | Match records with scores, status, and ELO deltas |
-| `reactions` | Emoji reactions on matches |
-| `comments` | Text comments on matches |
-
-## 📡 API Reference
-
-### Public Endpoints
+### Protected Endpoints (JWT Required)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/api/auth/login` | Get 42 OAuth URL |
-| `GET` | `/api/auth/callback` | Handle OAuth callback |
-| `GET` | `/api/leaderboard/:sport` | Get sport leaderboard |
-| `GET` | `/health` | Health check |
+| `GET` | `/api/auth/me` | Get current user |
+| `POST` | `/api/matches` | Submit a match |
+| `POST` | `/api/matches/:id/confirm` | Confirm a match |
+| `POST` | `/api/matches/:id/deny` | Deny a match |
+| `POST` | `/api/matches/:id/cancel` | Cancel a match |
+| `GET` | `/api/matches` | List matches (with filters) |
+| `POST` | `/api/matches/:id/reactions` | Add emoji reaction |
+| `GET` | `/api/matches/:id/comments` | Get comments (paginated) |
+| `POST` | `/api/matches/:id/comments` | Add comment |
+| `GET` | `/api/users/:id` | Get player profile |
+| `GET` | `/api/users/:id/stats` | Get player statistics |
 
-### Protected Endpoints (JWT Required)
+### Admin Endpoints (Admin Only)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/admin/users` | List all users |
+| `PUT` | `/api/admin/users/:id` | Update user (ban, admin) |
+| `GET` | `/api/admin/matches` | List confirmed matches |
+| `POST` | `/api/admin/matches/:id/revert` | Revert a match (restore ELO) |
+## 📡 API Reference
+## 🔒 Security
+
+- **OAuth 2.0** authentication via 42 Intra
+- **CSRF protection** for OAuth state validation
+- **Campus validation** ensures only Heilbronn students can access
+- **JWT tokens** with httpOnly cookie option for secure storage
+- **Rate limiting** to prevent API abuse (10-100 req/min by endpoint)
+- **Input sanitization** on all user-provided data
+- **SQL injection prevention** via prepared statements
+- **Emoji validation** against whitelist
+- **Ban enforcement** middleware blocks banned users
+- **Error boundaries** prevent cascading UI failures
+- **CORS** properly configuredequired)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/api/auth/me` | Get current user |

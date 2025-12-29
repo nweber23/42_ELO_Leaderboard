@@ -95,9 +95,11 @@ npm run dev
 
 1. **User A logs in** → Gets ELO 1000/1000
 2. **User B logs in** → Gets ELO 1000/1000
-3. **User A submits match** → Creates pending match
+3. **User A submits match** → Creates pending match (sees ELO prediction)
 4. **User B confirms** → ELO ratings updated
 5. **Check leaderboard** → Rankings updated
+6. **View profiles** → See Statistics Dashboard with charts
+7. **Admin actions** → Promote users, revert matches if needed
 
 ## Troubleshooting
 
@@ -125,38 +127,68 @@ docker-compose up --build
 
 ```
 42_ELO_Leaderboard/
-├── backend/              # Go API
-│   ├── cmd/api/         # Main entry point
-│   ├── internal/        # Business logic
-│   │   ├── config/      # Configuration
-│   │   ├── handlers/    # HTTP handlers
-│   │   ├── services/    # Business logic
-│   │   ├── repositories/# Database layer
-│   │   ├── models/      # Data models
-│   │   ├── middleware/  # Auth middleware
-│   │   └── utils/       # JWT utilities
-│   └── migrations/      # SQL migrations
+├── backend/                  # Go API
+│   ├── cmd/api/             # Main entry point
+│   ├── internal/            # Business logic
+│   │   ├── cache/           # In-memory caching with TTL
+│   │   ├── config/          # Configuration
+│   │   ├── handlers/        # HTTP handlers (auth, match, admin)
+│   │   ├── services/        # Business logic (ELO, caching)
+│   │   ├── repositories/    # Database layer
+│   │   ├── models/          # Data models
+│   │   ├── middleware/      # Auth, rate limiting, ban middleware
+│   │   └── utils/           # JWT, response, sanitization utilities
+│   └── migrations/          # SQL migrations
 │
-├── frontend/            # React app
+├── frontend/                # React app
 │   ├── src/
-│   │   ├── api/        # API client
-│   │   ├── pages/      # Page components
-│   │   ├── types/      # TypeScript types
-│   │   └── App.tsx     # Main app
+│   │   ├── api/            # API client (Axios)
+│   │   ├── components/     # Reusable components
+│   │   │   ├── Comments.tsx      # Match comments
+│   │   │   ├── EmojiPicker.tsx   # Emoji picker
+│   │   │   ├── ErrorBoundary.tsx # Error handling
+│   │   │   ├── LazyImage.tsx     # Lazy-loaded images
+│   │   │   ├── Reactions.tsx     # Match reactions
+│   │   │   └── StatsDashboard.tsx # Statistics charts
+│   │   ├── hooks/          # Custom hooks (useUsers, usePerformance)
+│   │   ├── layout/         # App shell and page layouts
+│   │   ├── pages/          # Page components
+│   │   │   ├── Admin.tsx         # Admin panel
+│   │   │   ├── Leaderboard.tsx   # Rankings
+│   │   │   ├── Matches.tsx       # Match history
+│   │   │   ├── PlayerProfile.tsx # Player stats
+│   │   │   ├── SubmitMatch.tsx   # Submit matches
+│   │   │   └── Login.tsx         # OAuth login
+│   │   ├── state/          # State management (theme, toast)
+│   │   ├── styles/         # Global styles and CSS tokens
+│   │   ├── types/          # TypeScript types
+│   │   ├── ui/             # UI primitives (Button, Card, etc.)
+│   │   └── utils/          # Utility functions
 │   └── Dockerfile
 │
-├── docker-compose.yml   # Container orchestration
-├── .env                 # Environment variables
-└── README.md           # Full documentation
+├── docker-compose.yml       # Container orchestration
+├── .env                     # Environment variables
+└── README.md               # Full documentation
 ```
 
 ## Next Steps
 
 1. ✅ Application is running
-2. 📝 Customize the UI (frontend/src/)
-3. 🎨 Add more features (reactions, comments)
-4. 🚀 Deploy to production
-5. 📊 Monitor usage
+2. 📝 Customize the UI (frontend/src/pages/)
+3. 👨‍💼 Set up admin users for moderation
+4. 📊 Explore the Statistics Dashboard
+5. 🚀 Deploy to production
+
+## Features Overview
+
+| Feature | Description |
+|---------|-------------|
+| **Leaderboard** | View rankings by sport with search |
+| **Match Submission** | Submit matches with ELO prediction |
+| **Player Profiles** | View stats, history, and charts |
+| **Admin Panel** | Manage users, revert matches, ban players |
+| **Statistics** | ELO history, win rates, head-to-head |
+| **Social** | React with emojis and comment on matches |
 
 ## Support
 
