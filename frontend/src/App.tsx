@@ -11,29 +11,44 @@ import { AppShell } from './layout/AppShell';
 import { Spinner } from './ui';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
+// SECURITY: Extract and clear sensitive params from URL immediately, before any rendering
+// This minimizes the time the token is visible in the browser's URL bar
+function extractAndClearUrlParams(): { token: string | null; error: string | null; authSuccess: boolean } {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  const error = params.get('error');
+  const authSuccess = params.get('auth') === 'success';
+
+  // Clear sensitive params immediately
+  if (token || error || authSuccess) {
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+
+  return { token, error, authSuccess };
+}
+
+// Extract params synchronously before component renders
+const initialUrlParams = extractAndClearUrlParams();
+
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const tokenFromUrl = params.get('token');
-    const error = params.get('error');
+    const { token: tokenFromUrl, error, authSuccess } = initialUrlParams;
 
     if (error) {
       alert('Login failed: ' + error);
-      window.history.replaceState({}, '', '/');
       setLoading(false);
       return;
     }
 
     if (tokenFromUrl) {
       localStorage.setItem('token', tokenFromUrl);
-      window.history.replaceState({}, '', '/');
     }
 
     const token = localStorage.getItem('token');
-    if (token) {
+    if (token || authSuccess) {
       authAPI.me()
         .then(setUser)
         .catch(() => {

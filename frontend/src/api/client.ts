@@ -82,8 +82,9 @@ client.interceptors.response.use(
 
 // Auth API
 export const authAPI = {
-  getLoginURL: async (): Promise<{ auth_url: string }> => {
-    const { data } = await client.get('/auth/login');
+  getLoginURL: async (state?: string): Promise<{ auth_url: string }> => {
+    const params = state ? `?state=${encodeURIComponent(state)}` : '';
+    const { data } = await client.get(`/auth/login${params}`);
     return data;
   },
 
@@ -183,6 +184,18 @@ export const commentAPI = {
 
   list: async (matchId: number): Promise<Comment[]> => {
     const { data } = await client.get(`/matches/${matchId}/comments`);
+    return data;
+  },
+
+  listPaginated: async (matchId: number, limit: number = 20, offset: number = 0): Promise<{
+    comments: Comment[];
+    total: number;
+    limit: number;
+    offset: number;
+  }> => {
+    const { data } = await client.get(`/matches/${matchId}/comments`, {
+      params: { limit, offset }
+    });
     return data;
   },
 

@@ -41,6 +41,19 @@ function Reactions({ matchId, userId }: ReactionsProps) {
     }
   };
 
+  // Reconcile with server to handle conflicts from concurrent updates
+  const reconcileWithServer = async () => {
+    try {
+      const serverReactions = await reactionAPI.list(matchId);
+      if (isMounted.current) {
+        setReactions(serverReactions || []);
+      }
+    } catch (err) {
+      // Silent fail - we already have optimistic state
+      console.error('Failed to reconcile reactions:', err);
+    }
+  };
+
   const handleReaction = async (emoji: string) => {
     const existingReaction = reactions.find(
       r => r.user_id === userId && r.emoji === emoji
@@ -54,6 +67,8 @@ function Reactions({ matchId, userId }: ReactionsProps) {
       setLoading(true);
       try {
         await reactionAPI.remove(matchId, emoji);
+        // Reconcile with server to handle concurrent updates
+        await reconcileWithServer();
       } catch (err) {
         if (isMounted.current) {
           console.error('Failed to remove reaction:', err);
@@ -82,13 +97,10 @@ function Reactions({ matchId, userId }: ReactionsProps) {
 
     setLoading(true);
     try {
-      const newReaction = await reactionAPI.add(matchId, emoji);
-      if (isMounted.current) {
-        // Replace temp with real reaction
-        setReactions(prev =>
-          prev.map(r => (r.id === tempReaction.id ? newReaction : r))
-        );
-      }
+      await reactionAPI.add(matchId, emoji);
+      // Reconcile with server to handle concurrent updates
+      // This ensures we get the real reaction ID and any other users' reactions
+      await reconcileWithServer();
     } catch (err) {
       if (isMounted.current) {
         console.error('Failed to add reaction:', err);

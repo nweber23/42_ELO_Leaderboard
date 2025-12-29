@@ -31,10 +31,17 @@ func NewAuthHandler(cfg *config.Config, userRepo *repositories.UserRepository) *
 
 // Login redirects to 42 OAuth
 func (h *AuthHandler) Login(c *gin.Context) {
+	// Accept state parameter from frontend for CSRF protection
+	state := c.Query("state")
+	if state == "" {
+		state = "default"
+	}
+
 	authURL := fmt.Sprintf(
-		"https://api.intra.42.fr/oauth/authorize?client_id=%s&redirect_uri=%s&response_type=code&scope=public",
+		"https://api.intra.42.fr/oauth/authorize?client_id=%s&redirect_uri=%s&response_type=code&scope=public&state=%s",
 		url.QueryEscape(h.cfg.FTClientUID),
 		url.QueryEscape(h.cfg.FTRedirectURI),
+		url.QueryEscape(state),
 	)
 
 	utils.RespondWithJSON(c, http.StatusOK, gin.H{
@@ -45,6 +52,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 // Callback handles OAuth callback
 func (h *AuthHandler) Callback(c *gin.Context) {
 	code := c.Query("code")
+	state := c.Query("state")
 	if code == "" {
 		c.Redirect(http.StatusTemporaryRedirect, h.cfg.FrontendURL+"/?error=no_code")
 		return
@@ -118,12 +126,20 @@ func (h *AuthHandler) Callback(c *gin.Context) {
 			Secure:   h.cfg.CookieSecure,                    // Only send over HTTPS in production
 			SameSite: http.SameSiteStrictMode,               // Prevent CSRF
 		})
-		c.Redirect(http.StatusTemporaryRedirect, h.cfg.FrontendURL+"/?auth=success")
+		redirectURL := h.cfg.FrontendURL + "/?auth=success"
+		if state != "" {
+			redirectURL += "&state=" + url.QueryEscape(state)
+		}
+		c.Redirect(http.StatusTemporaryRedirect, redirectURL)
 		return
 	}
 
 	// Redirect to frontend with token (legacy mode - less secure)
-	c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s/?token=%s", h.cfg.FrontendURL, jwt))
+	redirectURL := fmt.Sprintf("%s/?token=%s", h.cfg.FrontendURL, jwt)
+	if state != "" {
+		redirectURL += "&state=" + url.QueryEscape(state)
+	}
+	c.Redirect(http.StatusTemporaryRedirect, redirectURL)
 }
 
 // Logout clears the auth cookie (for httpOnly cookie mode)

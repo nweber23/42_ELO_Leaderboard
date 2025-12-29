@@ -263,28 +263,56 @@ func (s *MatchService) GetLeaderboard(sport string) ([]models.LeaderboardEntry, 
 		return nil, err
 	}
 
-	// Sort by ELO (descending) using more efficient sort
+	// Sort by ELO (descending) with tiebreakers
 	sortLeaderboardByELO(entries)
 
-	// Assign ranks
+	// Assign ranks - same rank for tied ELO
 	for i := range entries {
-		entries[i].Rank = i + 1
+		if i == 0 {
+			entries[i].Rank = 1
+		} else if entries[i].ELO == entries[i-1].ELO {
+			// Same ELO = same rank
+			entries[i].Rank = entries[i-1].Rank
+		} else {
+			// Different ELO = position-based rank (accounts for ties above)
+			entries[i].Rank = i + 1
+		}
 	}
 
 	return entries, nil
 }
 
-// sortLeaderboardByELO sorts entries by ELO descending using optimized algorithm
+// sortLeaderboardByELO sorts entries by ELO descending with tiebreakers
+// Tiebreaker order: ELO (desc) > Wins (desc) > MatchesPlayed (desc) > UserID (asc for consistency)
 func sortLeaderboardByELO(entries []models.LeaderboardEntry) {
 	// Use insertion sort for small slices, quicksort-like approach for larger ones
 	n := len(entries)
 	for i := 1; i < n; i++ {
 		key := entries[i]
 		j := i - 1
-		for j >= 0 && entries[j].ELO < key.ELO {
+		for j >= 0 && compareLeaderboardEntries(entries[j], key) < 0 {
 			entries[j+1] = entries[j]
 			j--
 		}
 		entries[j+1] = key
 	}
+}
+
+// compareLeaderboardEntries compares two entries for sorting
+// Returns positive if a should come before b, negative if b should come before a
+func compareLeaderboardEntries(a, b models.LeaderboardEntry) int {
+	// Primary: ELO descending
+	if a.ELO != b.ELO {
+		return a.ELO - b.ELO
+	}
+	// Secondary: Wins descending
+	if a.Wins != b.Wins {
+		return a.Wins - b.Wins
+	}
+	// Tertiary: Matches played descending (more active = higher)
+	if a.MatchesPlayed != b.MatchesPlayed {
+		return a.MatchesPlayed - b.MatchesPlayed
+	}
+	// Final tiebreaker: User ID ascending for consistent ordering
+	return b.User.ID - a.User.ID
 }

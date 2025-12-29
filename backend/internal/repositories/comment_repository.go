@@ -60,6 +60,49 @@ func (r *CommentRepository) GetByMatchID(matchID int) ([]models.Comment, error) 
 	return comments, rows.Err()
 }
 
+// GetByMatchIDPaginated retrieves comments for a match with pagination
+func (r *CommentRepository) GetByMatchIDPaginated(matchID, limit, offset int) ([]models.Comment, int, error) {
+	// Get total count first
+	countQuery := `SELECT COUNT(*) FROM comments WHERE match_id = $1`
+	var total int
+	if err := r.db.QueryRow(countQuery, matchID).Scan(&total); err != nil {
+		return nil, 0, err
+	}
+
+	// Get paginated comments
+	query := `
+		SELECT id, match_id, user_id, content, created_at, updated_at
+		FROM comments
+		WHERE match_id = $1
+		ORDER BY created_at DESC
+		LIMIT $2 OFFSET $3
+	`
+
+	rows, err := r.db.Query(query, matchID, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	var comments []models.Comment
+	for rows.Next() {
+		var comment models.Comment
+		if err := rows.Scan(
+			&comment.ID,
+			&comment.MatchID,
+			&comment.UserID,
+			&comment.Content,
+			&comment.CreatedAt,
+			&comment.UpdatedAt,
+		); err != nil {
+			return nil, 0, err
+		}
+		comments = append(comments, comment)
+	}
+
+	return comments, total, rows.Err()
+}
+
 // Delete removes a comment
 func (r *CommentRepository) Delete(commentID, userID int) error {
 	query := `DELETE FROM comments WHERE id = $1 AND user_id = $2`

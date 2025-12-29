@@ -177,9 +177,12 @@ function EmojiPicker({ onSelect, disabled }: EmojiPickerProps) {
   // Get emojis to display
   const getDisplayEmojis = () => {
     if (search) {
-      // Search across all categories
+      // Search across all categories - case-insensitive
+      const searchLower = search.toLowerCase();
       const allEmojis = Object.values(EMOJI_DATA).flat();
-      return allEmojis.filter(emoji => emoji.includes(search));
+      // Emojis don't have case, but search term might be used for category names
+      // For now, just match the emoji directly (they're unicode symbols)
+      return allEmojis.filter(emoji => emoji.includes(search) || emoji.toLowerCase().includes(searchLower));
     }
     return EMOJI_DATA[activeCategory] || [];
   };

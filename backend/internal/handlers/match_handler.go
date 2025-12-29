@@ -316,7 +316,7 @@ func (h *MatchHandler) AddComment(c *gin.Context) {
 	utils.RespondWithJSON(c, http.StatusCreated, comment)
 }
 
-// GetComments retrieves comments for a match
+// GetComments retrieves comments for a match with optional pagination
 func (h *MatchHandler) GetComments(c *gin.Context) {
 	matchID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -324,6 +324,42 @@ func (h *MatchHandler) GetComments(c *gin.Context) {
 		return
 	}
 
+	// Check for pagination parameters
+	limitStr := c.Query("limit")
+	offsetStr := c.Query("offset")
+
+	if limitStr != "" || offsetStr != "" {
+		// Paginated request
+		limit := 20 // default
+		offset := 0
+
+		if limitStr != "" {
+			if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 100 {
+				limit = l
+			}
+		}
+		if offsetStr != "" {
+			if o, err := strconv.Atoi(offsetStr); err == nil && o >= 0 {
+				offset = o
+			}
+		}
+
+		comments, total, err := h.commentRepo.GetByMatchIDPaginated(matchID, limit, offset)
+		if err != nil {
+			utils.RespondWithError(c, http.StatusInternalServerError, err.Error(), err)
+			return
+		}
+
+		utils.RespondWithJSON(c, http.StatusOK, gin.H{
+			"comments": comments,
+			"total":    total,
+			"limit":    limit,
+			"offset":   offset,
+		})
+		return
+	}
+
+	// Non-paginated request (backwards compatibility)
 	comments, err := h.commentRepo.GetByMatchID(matchID)
 	if err != nil {
 		utils.RespondWithError(c, http.StatusInternalServerError, err.Error(), err)

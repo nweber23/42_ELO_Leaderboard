@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { commentAPI } from '../api/client';
 import type { Comment } from '../types';
 import { useToast } from '../state/useToast';
@@ -6,6 +6,8 @@ import { Toast } from '../ui/Toast';
 import { COMMENT_MAX_LENGTH } from '../constants';
 import { formatRelativeTime } from '../utils';
 import { useUsers, findUserById } from '../hooks';
+
+const COMMENTS_PER_PAGE = 20;
 
 interface CommentsProps {
   matchId: number;
@@ -16,7 +18,10 @@ function Comments({ matchId, userId }: CommentsProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [total, setTotal] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
   const { toast, show, dismiss } = useToast();
 
   // Use the shared useUsers hook (already has isMounted handling)
@@ -25,21 +30,27 @@ function Comments({ matchId, userId }: CommentsProps) {
   // Track mounted state to prevent state updates after unmount
   const isMounted = useRef(true);
 
-  useEffect(() => {
-    isMounted.current = true;
-    loadComments();
+  const loadComments = useCallback(async (reset: boolean = true) => {
+    if (reset) {
+      setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
 
-    return () => {
-      isMounted.current = false;
-    };
-  }, [matchId]);
-
-  const loadComments = async () => {
-    setLoading(true);
     try {
-      const data = await commentAPI.list(matchId);
+      const offset = reset ? 0 : comments.length;
+      const data = await commentAPI.listPaginated(matchId, COMMENTS_PER_PAGE, offset);
+
       if (isMounted.current) {
-        setComments(data || []);
+        if (reset) {
+          // Reverse to show oldest first in display
+          setComments(data.comments.reverse());
+        } else {
+          // Prepend older comments (they come in newest-first from API)
+          setComments(prev => [...data.comments.reverse(), ...prev]);
+        }
+        setTotal(data.total);
+        setHasMore(offset + data.comments.length < data.total);
       }
     } catch (err) {
       if (isMounted.current) {
@@ -49,9 +60,19 @@ function Comments({ matchId, userId }: CommentsProps) {
     } finally {
       if (isMounted.current) {
         setLoading(false);
+        setLoadingMore(false);
       }
     }
-  };
+  }, [matchId, comments.length, show]);
+
+  useEffect(() => {
+    isMounted.current = true;
+    loadComments(true);
+
+    return () => {
+      isMounted.current = false;
+    };
+  }, [matchId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,7 +129,7 @@ function Comments({ matchId, userId }: CommentsProps) {
   return (
     <div className="comments-container">
       <div className="comments-header">
-        Comments ({comments.length})
+        Comments ({total})
       </div>
 
       {loading ? (
@@ -119,6 +140,26 @@ function Comments({ matchId, userId }: CommentsProps) {
         <div className="comments-empty">No comments yet. Be the first!</div>
       ) : (
         <div className="comments-list">
+          {hasMore && (
+            <button
+              onClick={() => loadComments(false)}
+              disabled={loadingMore}
+              className="comments-load-more"
+              style={{
+                width: '100%',
+                padding: '8px',
+                marginBottom: '12px',
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border)',
+                borderRadius: '6px',
+                cursor: loadingMore ? 'wait' : 'pointer',
+                color: 'var(--text-secondary)',
+                fontSize: '13px',
+              }}
+            >
+              {loadingMore ? 'Loading...' : `Load older comments (${total - comments.length} more)`}
+            </button>
+          )}
           {comments.map(comment => {
             const author = findUserById(users, comment.user_id);
             return (

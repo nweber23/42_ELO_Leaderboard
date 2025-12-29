@@ -13,6 +13,7 @@ function PlayerProfile() {
   const [player, setPlayer] = useState<User | null>(null);
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
+  // Single filter for both stats and match history to avoid confusion
   const [sportFilter, setSportFilter] = useState<string | null>(null);
 
   // Prevent state updates after unmount
@@ -51,8 +52,6 @@ function PlayerProfile() {
     };
   }, [id]);
 
-  const [statsFilter, setStatsFilter] = useState<string | null>(null);
-
   // Memoize expensive calculations - must be called unconditionally (before any returns)
   const allConfirmedMatches = useMemo(() => {
     return matches.filter((m: Match) => m.status === 'confirmed');
@@ -70,9 +69,9 @@ function PlayerProfile() {
       };
     }
 
-    // Filter matches based on stats filter
-    const filteredMatches = statsFilter
-      ? allConfirmedMatches.filter((m: Match) => m.sport === statsFilter)
+    // Filter matches based on unified sport filter
+    const filteredMatches = sportFilter
+      ? allConfirmedMatches.filter((m: Match) => m.sport === sportFilter)
       : allConfirmedMatches;
 
     const wins = filteredMatches.filter((m: Match) => m.winner_id === player.id).length;
@@ -101,7 +100,7 @@ function PlayerProfile() {
       winRate,
       currentStreak,
     };
-  }, [allConfirmedMatches, player, statsFilter]);
+  }, [allConfirmedMatches, player, sportFilter]);
 
   const filteredMatches = useMemo(() => {
     return sportFilter
@@ -175,30 +174,13 @@ function PlayerProfile() {
         </CardContent>
       </Card>
 
-      {/* Stats Section */}
+      {/* Stats Section - uses same filter as match history */}
       <Card className="profile__stats-card">
         <div className="profile__stats-header">
           <h2 className="profile__section-title">Statistics</h2>
-          <div className="filters">
-            <button
-              className={!statsFilter ? 'active' : ''}
-              onClick={() => setStatsFilter(null)}
-            >
-              All
-            </button>
-            <button
-              className={statsFilter === 'table_tennis' ? 'active' : ''}
-              onClick={() => setStatsFilter('table_tennis')}
-            >
-              Table Tennis
-            </button>
-            <button
-              className={statsFilter === 'table_football' ? 'active' : ''}
-              onClick={() => setStatsFilter('table_football')}
-            >
-              Table Football
-            </button>
-          </div>
+          <span className="profile__filter-note">
+            {sportFilter ? SPORT_LABELS[sportFilter as keyof typeof SPORT_LABELS] : 'All Sports'}
+          </span>
         </div>
         <CardContent>
           <div className="profile__stats">

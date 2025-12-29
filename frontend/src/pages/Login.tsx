@@ -7,6 +7,16 @@ import { Toast } from '../ui/Toast';
 
 import '../styles/login.css';
 
+// Generate a cryptographically random state for CSRF protection
+function generateOAuthState(): string {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return Array.from(array, b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Store state in sessionStorage (cleared on tab close)
+const OAUTH_STATE_KEY = 'oauth_state';
+
 interface LoginProps {
   onLogin: (user: User) => void;
 }
@@ -20,12 +30,32 @@ function Login({ onLogin }: LoginProps) {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
     const error = params.get('error');
+    const returnedState = params.get('state');
+
+    // Clear URL immediately to minimize token exposure
+    if (token || error || returnedState) {
+      window.history.replaceState({}, '', '/login');
+    }
 
     if (error) {
       setErrorMsg('Login failed. Please try again.');
       setToastOpen(true);
-      window.history.replaceState({}, '', '/login');
+      sessionStorage.removeItem(OAUTH_STATE_KEY);
       return;
+    }
+
+    // Validate state parameter to prevent CSRF attacks
+    const storedState = sessionStorage.getItem(OAUTH_STATE_KEY);
+    if (token || returnedState) {
+      if (!storedState || storedState !== returnedState) {
+        console.error('OAuth state mismatch - possible CSRF attack');
+        setErrorMsg('Login failed. Security validation failed.');
+        setToastOpen(true);
+        sessionStorage.removeItem(OAUTH_STATE_KEY);
+        return;
+      }
+      // Clear state after successful validation
+      sessionStorage.removeItem(OAUTH_STATE_KEY);
     }
 
     if (token) {
@@ -47,10 +77,15 @@ function Login({ onLogin }: LoginProps) {
   const handleLogin = async () => {
     try {
       setIsLoading(true);
-      const { auth_url } = await authAPI.getLoginURL();
+      // Generate and store state for CSRF protection
+      const state = generateOAuthState();
+      sessionStorage.setItem(OAUTH_STATE_KEY, state);
+
+      const { auth_url } = await authAPI.getLoginURL(state);
       window.location.href = auth_url;
     } catch (err) {
       console.error('Failed to get login URL:', err);
+      sessionStorage.removeItem(OAUTH_STATE_KEY);
       setErrorMsg('Could not start login. Please check the backend and try again.');
       setToastOpen(true);
       setIsLoading(false);
