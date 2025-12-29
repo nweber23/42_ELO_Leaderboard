@@ -1,0 +1,216 @@
+/* Stats Dashboard Styles */
+.stats-dashboard {
+  display: grid;
+  gap: var(--space-6);
+  padding: var(--space-2) 0;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-5);
+}
+
+.stats-empty {
+  text-align: center;
+  color: var(--text-2);
+  padding: var(--space-8);
+}
+
+/* Stats Card */
+.stats-card {
+  overflow: hidden;
+}
+
+.stats-card .card__content {
+  padding: var(--space-5);
+}
+
+.stats-card__header {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.stats-card__value {
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.stats-card__value--win {
+  color: var(--success);
+}
+
+.stats-card__value--loss {
+  color: var(--danger);
+}
+
+.stats-card__value--none {
+  color: var(--text-2);
+}
+
+.stats-card__badge {
+  font-size: var(--text-xs);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--surface-2);
+  font-weight: 500;
+}
+
+/* ELO Graph */
+.elo-graph {
+  position: relative;
+  height: 160px;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-3) 0;
+}
+
+.elo-graph__svg {
+  width: 100%;
+  height: 100%;
+}
+
+.elo-graph__labels {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  font-size: var(--text-xs);
+  color: var(--text-3);
+  padding: var(--space-2) 0;
+}
+
+.elo-graph__label {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Day Performance */
+.day-performance {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+}
+
+.day-bar {
+  display: grid;
+  grid-template-columns: 50px 1fr 50px;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.day-bar__label {
+  font-size: var(--text-sm);
+  color: var(--text-2);
+  font-weight: 500;
+}
+
+.day-bar__container {
+  height: 12px;
+  background: var(--surface-2);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  display: flex;
+}
+
+.day-bar__fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.day-bar__fill--win {
+  background: var(--success);
+}
+
+.day-bar__fill--loss {
+  background: var(--danger);
+}
+
+.day-bar__count {
+  font-size: var(--text-sm);
+  color: var(--text-3);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Head-to-Head */
+.h2h-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.h2h-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--surface-2);
+  border-radius: var(--radius-2);
+}
+
+.h2h-item__info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.h2h-item__name {
+  font-weight: 600;
+  color: var(--text-1);
+  font-size: var(--text-base);
+}
+
+.h2h-item__games {
+  font-size: var(--text-sm);
+  color: var(--text-3);
+}
+
+.h2h-item__record {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-base);
+}
+
+.h2h-item__wins {
+  color: var(--success);
+}
+
+.h2h-item__losses {
+  color: var(--danger);
+}
+
+.h2h-item__separator {
+  color: var(--text-3);
+}
+
+.h2h-item__bar {
+  grid-column: 1 / -1;
+  height: 6px;
+  background: var(--danger);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-top: var(--space-2);
+}
+
+.h2h-item__bar-fill {
+  height: 100%;
+  background: var(--success);
+  transition: width 0.3s ease;
+}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { matchAPI } from '../api/client';
 import type { Match, User } from '../types';
@@ -15,10 +15,16 @@ interface MatchesProps {
   user: User;
 }
 
+// Date range presets
+type DateRangePreset = 'all' | 'today' | 'week' | 'month' | 'custom';
+
 function Matches({ user }: MatchesProps) {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed'>('all');
+  const [dateRange, setDateRange] = useState<DateRangePreset>('all');
+  const [customStartDate, setCustomStartDate] = useState<string>('');
+  const [customEndDate, setCustomEndDate] = useState<string>('');
 
   // Use the shared useUsers hook to prevent N+1 queries and get proper isMounted handling
   const { users } = useUsers();
@@ -46,6 +52,38 @@ function Matches({ user }: MatchesProps) {
         }
       });
   }, [filter]);
+
+  // Filter matches by date range
+  const filteredMatches = useMemo(() => {
+    if (dateRange === 'all') return matches;
+
+    const now = new Date();
+    let startDate: Date;
+    let endDate: Date = new Date(now.getTime() + 24 * 60 * 60 * 1000); // Tomorrow
+
+    switch (dateRange) {
+      case 'today':
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        break;
+      case 'week':
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case 'month':
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      case 'custom':
+        startDate = customStartDate ? new Date(customStartDate) : new Date(0);
+        endDate = customEndDate ? new Date(customEndDate + 'T23:59:59') : new Date();
+        break;
+      default:
+        return matches;
+    }
+
+    return matches.filter(m => {
+      const matchDate = new Date(m.created_at);
+      return matchDate >= startDate && matchDate <= endDate;
+    });
+  }, [matches, dateRange, customStartDate, customEndDate]);
 
   useEffect(() => {
     isMounted.current = true;
@@ -98,35 +136,105 @@ function Matches({ user }: MatchesProps) {
       title="Match History"
       subtitle="View and manage your matches"
       actions={
-        <div className="filters">
-          <button
-            className={filter === 'all' ? 'active' : ''}
-            onClick={() => setFilter('all')}
-          >
-            All
-          </button>
-          <button
-            className={filter === 'pending' ? 'active' : ''}
-            onClick={() => setFilter('pending')}
-          >
-            Pending
-          </button>
-          <button
-            className={filter === 'confirmed' ? 'active' : ''}
-            onClick={() => setFilter('confirmed')}
-          >
-            Confirmed
-          </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+          {/* Status Filter */}
+          <div className="filters">
+            <button
+              className={filter === 'all' ? 'active' : ''}
+              onClick={() => setFilter('all')}
+            >
+              All
+            </button>
+            <button
+              className={filter === 'pending' ? 'active' : ''}
+              onClick={() => setFilter('pending')}
+            >
+              Pending
+            </button>
+            <button
+              className={filter === 'confirmed' ? 'active' : ''}
+              onClick={() => setFilter('confirmed')}
+            >
+              Confirmed
+            </button>
+          </div>
+
+          {/* Date Range Filter */}
+          <div className="filters" style={{ flexWrap: 'wrap' }}>
+            <button
+              className={dateRange === 'all' ? 'active' : ''}
+              onClick={() => setDateRange('all')}
+            >
+              All Time
+            </button>
+            <button
+              className={dateRange === 'today' ? 'active' : ''}
+              onClick={() => setDateRange('today')}
+            >
+              Today
+            </button>
+            <button
+              className={dateRange === 'week' ? 'active' : ''}
+              onClick={() => setDateRange('week')}
+            >
+              Last 7 Days
+            </button>
+            <button
+              className={dateRange === 'month' ? 'active' : ''}
+              onClick={() => setDateRange('month')}
+            >
+              Last 30 Days
+            </button>
+            <button
+              className={dateRange === 'custom' ? 'active' : ''}
+              onClick={() => setDateRange('custom')}
+            >
+              Custom
+            </button>
+          </div>
+
+          {/* Custom Date Range Inputs */}
+          {dateRange === 'custom' && (
+            <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+              <input
+                type="date"
+                value={customStartDate}
+                onChange={(e) => setCustomStartDate(e.target.value)}
+                style={{
+                  padding: 'var(--space-2)',
+                  borderRadius: 'var(--radius-1)',
+                  border: '1px solid var(--border)',
+                  background: 'var(--surface-1)',
+                  color: 'var(--text-1)'
+                }}
+              />
+              <span>to</span>
+              <input
+                type="date"
+                value={customEndDate}
+                onChange={(e) => setCustomEndDate(e.target.value)}
+                style={{
+                  padding: 'var(--space-2)',
+                  borderRadius: 'var(--radius-1)',
+                  border: '1px solid var(--border)',
+                  background: 'var(--surface-1)',
+                  color: 'var(--text-1)'
+                }}
+              />
+            </div>
+          )}
         </div>
       }
     >
-      {matches.length === 0 ? (
+      {filteredMatches.length === 0 ? (
         <Card>
-          <div className="empty">No matches found</div>
+          <div className="empty">
+            {matches.length === 0 ? 'No matches found' : 'No matches in selected date range'}
+          </div>
         </Card>
       ) : (
         <div className="matches-list">
-          {matches.map((match) => {
+          {filteredMatches.map((match) => {
             const isPending = match.status === 'pending';
             const isOpponent = match.player2_id === user.id || match.player1_id === user.id;
             const canRespond = isPending && match.submitted_by !== user.id && isOpponent;

@@ -6,11 +6,13 @@ import { SPORT_LABELS } from '../types';
 import { Page } from '../layout/Page';
 import { Card, CardContent } from '../ui/Card';
 import { Button } from '../ui/Button';
+import StatsDashboard from '../components/StatsDashboard';
 import './PlayerProfile.css';
 
 function PlayerProfile() {
   const { id } = useParams<{ id: string }>();
   const [player, setPlayer] = useState<User | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   // Single filter for both stats and match history to avoid confusion
@@ -27,8 +29,11 @@ function PlayerProfile() {
 
       setLoading(true);
       try {
-        const users = await usersAPI.getAll();
-        const foundPlayer = users.find(u => u.id === parseInt(id));
+        const allUsers = await usersAPI.getAll();
+        if (isMounted.current) {
+          setUsers(allUsers);
+        }
+        const foundPlayer = allUsers.find(u => u.id === parseInt(id));
         if (foundPlayer && isMounted.current) {
           setPlayer(foundPlayer);
           const allMatches = await matchAPI.list({ user_id: parseInt(id) });
@@ -205,6 +210,16 @@ function PlayerProfile() {
               <span className="profile__stat-label">Win Streak</span>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Advanced Statistics Dashboard */}
+      <Card className="profile__stats-dashboard-card">
+        <div className="profile__stats-header">
+          <h2 className="profile__section-title">Advanced Statistics</h2>
+        </div>
+        <CardContent>
+          <StatsDashboard player={player} matches={matches} sport={sportFilter} users={users} />
         </CardContent>
       </Card>
 
