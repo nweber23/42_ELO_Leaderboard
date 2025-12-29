@@ -1,16 +1,18 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { authAPI } from './api/client';
 import type { User } from './types';
-import Login from './pages/Login';
-import Leaderboard from './pages/Leaderboard';
-import Matches from './pages/Matches';
-import SubmitMatch from './pages/SubmitMatch';
-import PlayerProfile from './pages/PlayerProfile';
-import { Admin } from './pages/Admin';
 import { AppShell } from './layout/AppShell';
 import { Spinner } from './ui';
 import { ErrorBoundary } from './components/ErrorBoundary';
+
+// Lazy load pages for code splitting
+const Login = lazy(() => import('./pages/Login'));
+const Leaderboard = lazy(() => import('./pages/Leaderboard'));
+const Matches = lazy(() => import('./pages/Matches'));
+const SubmitMatch = lazy(() => import('./pages/SubmitMatch'));
+const PlayerProfile = lazy(() => import('./pages/PlayerProfile'));
+const Admin = lazy(() => import('./pages/Admin').then(m => ({ default: m.Admin })));
 
 // SECURITY: Extract and clear sensitive params from URL immediately, before any rendering
 // This minimizes the time the token is visible in the browser's URL bar
@@ -71,17 +73,19 @@ function App() {
   return (
     <ErrorBoundary>
       <Router>
-        <Routes>
-          <Route element={<AppShell user={user} onLogout={handleLogout} />}>
-            <Route index element={<Navigate to="/leaderboard/table_tennis" replace />} />
-            <Route path="/leaderboard/:sport" element={<Leaderboard />} />
-            <Route path="/players/:id" element={<PlayerProfile />} />
-            <Route path="/matches" element={user ? <Matches user={user} /> : <Navigate to="/login" replace />} />
-            <Route path="/submit" element={user ? <SubmitMatch user={user} /> : <Navigate to="/login" replace />} />
-            <Route path="/admin" element={user ? <Admin user={user} /> : <Navigate to="/login" replace />} />
-          </Route>
-          <Route path="/login" element={<Login onLogin={setUser} />} />
-        </Routes>
+        <Suspense fallback={<Spinner />}>
+          <Routes>
+            <Route element={<AppShell user={user} onLogout={handleLogout} />}>
+              <Route index element={<Navigate to="/leaderboard/table_tennis" replace />} />
+              <Route path="/leaderboard/:sport" element={<Leaderboard />} />
+              <Route path="/players/:id" element={<PlayerProfile />} />
+              <Route path="/matches" element={user ? <Matches user={user} /> : <Navigate to="/login" replace />} />
+              <Route path="/submit" element={user ? <SubmitMatch user={user} /> : <Navigate to="/login" replace />} />
+              <Route path="/admin" element={user ? <Admin user={user} /> : <Navigate to="/login" replace />} />
+            </Route>
+            <Route path="/login" element={<Login onLogin={setUser} />} />
+          </Routes>
+        </Suspense>
       </Router>
     </ErrorBoundary>
   );

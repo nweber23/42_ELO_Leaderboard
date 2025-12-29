@@ -12,6 +12,7 @@ import (
 	"github.com/42heilbronn/elo-leaderboard/internal/repositories"
 	"github.com/42heilbronn/elo-leaderboard/internal/services"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 )
@@ -68,6 +69,9 @@ func main() {
 
 	// Setup Gin router
 	router := gin.Default()
+
+	// Gzip compression middleware - compress responses for better performance
+	router.Use(gzip.Gzip(gzip.DefaultCompression))
 
 	// CORS middleware
 	router.Use(cors.New(cors.Config{

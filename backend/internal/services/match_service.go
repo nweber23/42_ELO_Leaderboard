@@ -4,16 +4,22 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
+	"github.com/42heilbronn/elo-leaderboard/internal/cache"
 	"github.com/42heilbronn/elo-leaderboard/internal/models"
 	"github.com/42heilbronn/elo-leaderboard/internal/repositories"
 )
+
+// Cache TTL for leaderboard data
+const leaderboardCacheTTL = 5 * time.Minute
 
 type MatchService struct {
 	db              *sql.DB
 	matchRepo       *repositories.MatchRepository
 	userRepo        *repositories.UserRepository
 	eloService      *ELOService
+	cache           *cache.Cache
 }
 
 func NewMatchService(
@@ -27,6 +33,7 @@ func NewMatchService(
 		matchRepo:  matchRepo,
 		userRepo:   userRepo,
 		eloService: eloService,
+		cache:      cache.NewCache(leaderboardCacheTTL, 1*time.Minute),
 	}
 }
 
@@ -204,7 +211,14 @@ func (s *MatchService) ConfirmMatch(matchID, userID int) error {
 	}
 
 	// Commit transaction
-	return tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
+	// Invalidate leaderboard cache since ELO changed
+	s.InvalidateLeaderboardCache()
+
+	return nil
 }
 
 // DenyMatch denies a pending match
@@ -255,9 +269,18 @@ func (s *MatchService) CancelMatch(matchID, userID int) error {
 }
 
 // GetLeaderboard generates leaderboard for a sport
-// Optimized to use a single query instead of N+1 queries
+// Optimized with caching - regenerates every 5 minutes
 func (s *MatchService) GetLeaderboard(sport string) ([]models.LeaderboardEntry, error) {
-	// Get all users with their match statistics in a single query
+	cacheKey := "leaderboard:" + sport
+
+	// Try to get from cache first
+	if cached, found := s.cache.Get(cacheKey); found {
+		if entries, ok := cached.([]models.LeaderboardEntry); ok {
+			return entries, nil
+		}
+	}
+
+	// Cache miss - fetch from database
 	entries, err := s.matchRepo.GetLeaderboardEntries(sport)
 	if err != nil {
 		return nil, err
@@ -279,7 +302,16 @@ func (s *MatchService) GetLeaderboard(sport string) ([]models.LeaderboardEntry, 
 		}
 	}
 
+	// Store in cache
+	s.cache.Set(cacheKey, entries)
+
 	return entries, nil
+}
+
+// InvalidateLeaderboardCache clears the leaderboard cache
+// Should be called after match confirmations that affect ELO
+func (s *MatchService) InvalidateLeaderboardCache() {
+	s.cache.DeleteByPrefix("leaderboard:")
 }
 
 // sortLeaderboardByELO sorts entries by ELO descending with tiebreakers
