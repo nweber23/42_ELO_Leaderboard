@@ -60,10 +60,6 @@ The 42 Heilbronn ELO Leaderboard is a full-stack web application that enables st
 - Gzip response compression
 - Rate limiting middleware
 - Input sanitization utilities
-- Clean architecture pattern
-- 42 Intra OAuth + JWT auth
-- Database connection pooling
-- Input sanitization utilities
 
 </td>
 <td align="center" width="50%">
@@ -82,9 +78,7 @@ The 42 Heilbronn ELO Leaderboard is a full-stack web application that enables st
 - Custom hooks & utilities
 - Lazy image loading
 - Error boundaries for resilience
-- Glassmorphism 2.0 CSS designlities
-- Error boundaries for resilience
-- Custom CSS styling
+- Glassmorphism 2.0 CSS design
 
 </td>
 </tr>
@@ -146,6 +140,9 @@ Fully containerized with multi-stage builds, automated migrations, and productio
 │   Port: 3000    │     │   Port: 8080    │     │   Port: 5432    │
 │                 │     │                 │     │                 │
 └─────────────────┘     └─────────────────┘     └─────────────────┘
+       Nginx              REST API              Database
+```
+
 ### Project Structure
 
 ```
@@ -158,42 +155,24 @@ Fully containerized with multi-stage builds, automated migrations, and productio
 │   │   ├── handlers/         # HTTP handlers (auth, match, admin)
 │   │   ├── middleware/       # Auth, rate limiting, ban middleware
 │   │   ├── models/           # Data models
-│   │   ├── repositories/     # Database layer (user, match, admin, comment, reaction)
-│   │   ├── services/         # Business logic (ELO calculations, leaderboard caching)
-│   │   └── utils/            # JWT, response, sanitization, privacy utilities
-│   └── migrations/           # SQL migrations (init, indexes, admin)
+│   │   ├── repositories/     # Database layer
+│   │   ├── services/         # Business logic (ELO, caching)
+│   │   └── utils/            # JWT, response, sanitization
+│   └── migrations/           # SQL migrations
 ├── frontend/
 │   ├── src/
 │   │   ├── api/              # API client (Axios)
 │   │   ├── components/       # Reusable components
-│   │   │   ├── Comments.tsx      # Match comments
-│   │   │   ├── EmojiPicker.tsx   # Emoji reaction picker
-│   │   │   ├── ErrorBoundary.tsx # Error handling
-│   │   │   ├── LazyImage.tsx     # Lazy-loaded images
-│   │   │   ├── Reactions.tsx     # Match reactions
-│   │   │   └── StatsDashboard.tsx # Statistics charts
 │   │   ├── constants/        # Shared validation constants
 │   │   ├── hooks/            # Custom React hooks
-│   │   │   ├── useUsers.ts       # User search hook
-│   │   │   └── usePerformance.ts # Debounce & intersection observer
 │   │   ├── layout/           # App shell and page layouts
 │   │   ├── pages/            # Page components
-│   │   │   ├── Admin.tsx         # Admin panel
-│   │   │   ├── Leaderboard.tsx   # Rankings with search
-│   │   │   ├── Matches.tsx       # Match history & filters
-│   │   │   ├── PlayerProfile.tsx # Player stats & history
-│   │   │   ├── SubmitMatch.tsx   # Match submission with ELO prediction
-│   │   │   └── Login.tsx         # OAuth login
-│   │   ├── state/            # State management (theme, toast)
+│   │   ├── state/            # State management
 │   │   ├── styles/           # Global styles and CSS tokens
-│   │   ├── types/            # TypeScript type definitions
-│   │   ├── ui/               # UI primitives (Button, Card, Field, Spinner, etc.)
-│   │   └── utils/            # Utility functions (date, error handling)
+│   │   ├── types/            # TypeScript definitions
+│   │   ├── ui/               # UI primitives
+│   │   └── utils/            # Utility functions
 │   └── nginx.conf            # Production server config
-└── docker-compose.yml
-``` │   ├── utils/        # Utility functions (date, error handling)
-│   │   └── styles/       # Global styles and CSS tokens
-│   └── nginx.conf        # Production server config
 └── docker-compose.yml
 ```
 
@@ -220,6 +199,26 @@ Submit Match → Pending → Opponent Confirms → ELO Updated
                   ↓
               Opponent Denies → Match Rejected
 ```
+
+## 🗃️ Database Schema
+
+| Table | Description |
+|-------|-------------|
+| `users` | Player profiles with dual ELO ratings, admin flags, ban status |
+| `matches` | Match records with scores, status, ELO deltas, and notes |
+| `reactions` | Emoji reactions on matches |
+| `comments` | Text comments on matches with pagination |
+
+## 📡 API Reference
+
+### Public Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/auth/login` | Get 42 OAuth URL |
+| `GET` | `/api/auth/callback` | Handle OAuth callback |
+| `GET` | `/api/leaderboard/:sport` | Get sport leaderboard |
+| `GET` | `/health` | Health check |
+
 ### Protected Endpoints (JWT Required)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -242,29 +241,6 @@ Submit Match → Pending → Opponent Confirms → ELO Updated
 | `PUT` | `/api/admin/users/:id` | Update user (ban, admin) |
 | `GET` | `/api/admin/matches` | List confirmed matches |
 | `POST` | `/api/admin/matches/:id/revert` | Revert a match (restore ELO) |
-## 📡 API Reference
-## 🔒 Security
-
-- **OAuth 2.0** authentication via 42 Intra
-- **CSRF protection** for OAuth state validation
-- **Campus validation** ensures only Heilbronn students can access
-- **JWT tokens** with httpOnly cookie option for secure storage
-- **Rate limiting** to prevent API abuse (10-100 req/min by endpoint)
-- **Input sanitization** on all user-provided data
-- **SQL injection prevention** via prepared statements
-- **Emoji validation** against whitelist
-- **Ban enforcement** middleware blocks banned users
-- **Error boundaries** prevent cascading UI failures
-- **CORS** properly configuredequired)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/auth/me` | Get current user |
-| `POST` | `/api/matches` | Submit a match |
-| `POST` | `/api/matches/:id/confirm` | Confirm a match |
-| `POST` | `/api/matches/:id/deny` | Deny a match |
-| `GET` | `/api/matches` | List matches (with filters) |
-| `POST` | `/api/matches/:id/reactions` | Add emoji reaction |
-| `POST` | `/api/matches/:id/comments` | Add comment |
 
 ## 🔧 Environment Variables
 
@@ -281,11 +257,14 @@ Submit Match → Pending → Opponent Confirms → ELO Updated
 ## 🔒 Security
 
 - **OAuth 2.0** authentication via 42 Intra
+- **CSRF protection** for OAuth state validation
 - **Campus validation** ensures only Heilbronn students can access
-- **JWT tokens** for stateless session management with secure secret validation
+- **JWT tokens** with httpOnly cookie option for secure storage
+- **Rate limiting** to prevent API abuse (10-100 req/min by endpoint)
 - **Input sanitization** on all user-provided data
 - **SQL injection prevention** via prepared statements
-- **Database connection pooling** for efficient resource management
+- **Emoji validation** against whitelist
+- **Ban enforcement** middleware blocks banned users
 - **Error boundaries** prevent cascading UI failures
 - **CORS** properly configured
 
