@@ -76,6 +76,14 @@ func main() {
 		AllowCredentials: true,
 	}))
 
+	// Initialize rate limiters
+	strictLimiter := middleware.NewStrictRateLimiter()   // 10 req/min for match submission
+	moderateLimiter := middleware.NewModerateRateLimiter() // 30 req/min for reactions/comments
+	looseLimiter := middleware.NewLooseRateLimiter()     // 100 req/min for reads
+	defer strictLimiter.Stop()
+	defer moderateLimiter.Stop()
+	defer looseLimiter.Stop()
+
 	// Public routes
 	api := router.Group("/api")
 	{
@@ -84,6 +92,7 @@ func main() {
 		{
 			auth.GET("/login", authHandler.Login)
 			auth.GET("/callback", authHandler.Callback)
+			auth.POST("/logout", authHandler.Logout) // Logout endpoint to clear httpOnly cookie
 		}
 
 		// Public leaderboard - with optional auth to show real data to logged-in users
@@ -98,23 +107,23 @@ func main() {
 		protected.GET("/auth/me", authHandler.Me)
 		protected.GET("/users", authHandler.GetUsers)
 
-		// Matches
-		protected.POST("/matches", matchHandler.SubmitMatch)
-		protected.GET("/matches", matchHandler.GetMatches)
-		protected.GET("/matches/:id", matchHandler.GetMatch)
-		protected.POST("/matches/:id/confirm", matchHandler.ConfirmMatch)
-		protected.POST("/matches/:id/deny", matchHandler.DenyMatch)
-		protected.POST("/matches/:id/cancel", matchHandler.CancelMatch)
+		// Matches - apply strict rate limiting to mutation endpoints
+		protected.POST("/matches", middleware.RateLimitMiddleware(strictLimiter, middleware.CombinedKeyFunc), matchHandler.SubmitMatch)
+		protected.GET("/matches", middleware.RateLimitMiddleware(looseLimiter, middleware.IPKeyFunc), matchHandler.GetMatches)
+		protected.GET("/matches/:id", middleware.RateLimitMiddleware(looseLimiter, middleware.IPKeyFunc), matchHandler.GetMatch)
+		protected.POST("/matches/:id/confirm", middleware.RateLimitMiddleware(strictLimiter, middleware.CombinedKeyFunc), matchHandler.ConfirmMatch)
+		protected.POST("/matches/:id/deny", middleware.RateLimitMiddleware(strictLimiter, middleware.CombinedKeyFunc), matchHandler.DenyMatch)
+		protected.POST("/matches/:id/cancel", middleware.RateLimitMiddleware(strictLimiter, middleware.CombinedKeyFunc), matchHandler.CancelMatch)
 
-		// Reactions
-		protected.POST("/matches/:id/reactions", matchHandler.AddReaction)
-		protected.GET("/matches/:id/reactions", matchHandler.GetReactions)
-		protected.DELETE("/matches/:id/reactions/:emoji", matchHandler.RemoveReaction)
+		// Reactions - moderate rate limiting
+		protected.POST("/matches/:id/reactions", middleware.RateLimitMiddleware(moderateLimiter, middleware.CombinedKeyFunc), matchHandler.AddReaction)
+		protected.GET("/matches/:id/reactions", middleware.RateLimitMiddleware(looseLimiter, middleware.IPKeyFunc), matchHandler.GetReactions)
+		protected.DELETE("/matches/:id/reactions/:emoji", middleware.RateLimitMiddleware(moderateLimiter, middleware.CombinedKeyFunc), matchHandler.RemoveReaction)
 
-		// Comments
-		protected.POST("/matches/:id/comments", matchHandler.AddComment)
-		protected.GET("/matches/:id/comments", matchHandler.GetComments)
-		protected.DELETE("/matches/:id/comments/:commentId", matchHandler.DeleteComment)
+		// Comments - moderate rate limiting
+		protected.POST("/matches/:id/comments", middleware.RateLimitMiddleware(moderateLimiter, middleware.CombinedKeyFunc), matchHandler.AddComment)
+		protected.GET("/matches/:id/comments", middleware.RateLimitMiddleware(looseLimiter, middleware.IPKeyFunc), matchHandler.GetComments)
+		protected.DELETE("/matches/:id/comments/:commentId", middleware.RateLimitMiddleware(moderateLimiter, middleware.CombinedKeyFunc), matchHandler.DeleteComment)
 	}
 
 	// Health check

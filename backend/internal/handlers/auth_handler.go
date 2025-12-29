@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/42heilbronn/elo-leaderboard/internal/config"
 	"github.com/42heilbronn/elo-leaderboard/internal/middleware"
@@ -103,8 +104,43 @@ func (h *AuthHandler) Callback(c *gin.Context) {
 		return
 	}
 
-	// Redirect to frontend with token
+	// If using httpOnly cookies, set the cookie and redirect without token in URL
+	if h.cfg.UseHTTPOnlyCookie {
+		// Set httpOnly cookie - more secure than localStorage as it's not accessible via JavaScript
+		// This protects against XSS attacks stealing the token
+		http.SetCookie(c.Writer, &http.Cookie{
+			Name:     "auth_token",
+			Value:    jwt,
+			Path:     "/",
+			Domain:   h.cfg.CookieDomain,
+			MaxAge:   int(7 * 24 * time.Hour / time.Second), // 7 days
+			HttpOnly: true,                                   // Not accessible via JavaScript
+			Secure:   h.cfg.CookieSecure,                    // Only send over HTTPS in production
+			SameSite: http.SameSiteStrictMode,               // Prevent CSRF
+		})
+		c.Redirect(http.StatusTemporaryRedirect, h.cfg.FrontendURL+"/?auth=success")
+		return
+	}
+
+	// Redirect to frontend with token (legacy mode - less secure)
 	c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s/?token=%s", h.cfg.FrontendURL, jwt))
+}
+
+// Logout clears the auth cookie (for httpOnly cookie mode)
+func (h *AuthHandler) Logout(c *gin.Context) {
+	// Clear the auth cookie by setting it with a past expiration
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "auth_token",
+		Value:    "",
+		Path:     "/",
+		Domain:   h.cfg.CookieDomain,
+		MaxAge:   -1, // Delete the cookie
+		HttpOnly: true,
+		Secure:   h.cfg.CookieSecure,
+		SameSite: http.SameSiteStrictMode,
+	})
+
+	utils.RespondWithJSON(c, http.StatusOK, gin.H{"message": "logged out"})
 }
 
 // Me returns current user info

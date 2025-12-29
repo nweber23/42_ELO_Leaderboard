@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
-import { commentAPI, usersAPI } from '../api/client';
-import type { Comment, User } from '../types';
+import { useState, useEffect, useRef } from 'react';
+import { commentAPI } from '../api/client';
+import type { Comment } from '../types';
 import { useToast } from '../state/useToast';
 import { Toast } from '../ui/Toast';
 import { COMMENT_MAX_LENGTH } from '../constants';
 import { formatRelativeTime } from '../utils';
+import { useUsers, findUserById } from '../hooks';
 
 interface CommentsProps {
   matchId: number;
@@ -13,27 +14,42 @@ interface CommentsProps {
 
 function Comments({ matchId, userId }: CommentsProps) {
   const [comments, setComments] = useState<Comment[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { toast, show, dismiss } = useToast();
 
+  // Use the shared useUsers hook (already has isMounted handling)
+  const { users } = useUsers();
+
+  // Track mounted state to prevent state updates after unmount
+  const isMounted = useRef(true);
+
   useEffect(() => {
+    isMounted.current = true;
     loadComments();
-    usersAPI.getAll().then(setUsers).catch(console.error);
+
+    return () => {
+      isMounted.current = false;
+    };
   }, [matchId]);
 
   const loadComments = async () => {
     setLoading(true);
     try {
       const data = await commentAPI.list(matchId);
-      setComments(data || []);
+      if (isMounted.current) {
+        setComments(data || []);
+      }
     } catch (err) {
-      console.error('Failed to load comments:', err);
-      show({ title: 'Error', message: 'Failed to load comments', tone: 'error' });
+      if (isMounted.current) {
+        console.error('Failed to load comments:', err);
+        show({ title: 'Error', message: 'Failed to load comments', tone: 'error' });
+      }
     } finally {
-      setLoading(false);
+      if (isMounted.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -44,17 +60,23 @@ function Comments({ matchId, userId }: CommentsProps) {
     setSubmitting(true);
     try {
       const comment = await commentAPI.add(matchId, newComment.trim());
-      setComments([...comments, comment]);
-      setNewComment('');
-      show({ title: 'Success', message: 'Comment added', tone: 'success' });
+      if (isMounted.current) {
+        setComments(prev => [...prev, comment]);
+        setNewComment('');
+        show({ title: 'Success', message: 'Comment added', tone: 'success' });
+      }
     } catch (err: any) {
-      show({
-        title: 'Error',
-        message: err.response?.data?.error || 'Failed to add comment',
-        tone: 'error'
-      });
+      if (isMounted.current) {
+        show({
+          title: 'Error',
+          message: err.response?.data?.error || 'Failed to add comment',
+          tone: 'error'
+        });
+      }
     } finally {
-      setSubmitting(false);
+      if (isMounted.current) {
+        setSubmitting(false);
+      }
     }
   };
 
@@ -67,15 +89,19 @@ function Comments({ matchId, userId }: CommentsProps) {
 
     try {
       await commentAPI.delete(matchId, commentId);
-      show({ title: 'Success', message: 'Comment deleted', tone: 'success' });
+      if (isMounted.current) {
+        show({ title: 'Success', message: 'Comment deleted', tone: 'success' });
+      }
     } catch (err: any) {
-      // Revert on error
-      setComments(originalComments);
-      show({
-        title: 'Error',
-        message: err.response?.data?.error || 'Failed to delete comment',
-        tone: 'error'
-      });
+      if (isMounted.current) {
+        // Revert on error
+        setComments(originalComments);
+        show({
+          title: 'Error',
+          message: err.response?.data?.error || 'Failed to delete comment',
+          tone: 'error'
+        });
+      }
     }
   };
 
@@ -94,7 +120,7 @@ function Comments({ matchId, userId }: CommentsProps) {
       ) : (
         <div className="comments-list">
           {comments.map(comment => {
-            const author = users.find(u => u.id === comment.user_id);
+            const author = findUserById(users, comment.user_id);
             return (
             <div key={comment.id} className="comment">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

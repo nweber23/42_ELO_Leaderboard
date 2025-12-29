@@ -47,9 +47,32 @@ The `.env` file is already configured with:
 - ✅ Default ELO settings
 
 **⚠️ Before production**:
-- Change `JWT_SECRET` to a secure random string
+- Change `JWT_SECRET` to a secure random string (min 32 chars)
 - Update `POSTGRES_PASSWORD`
 - Update `FT_REDIRECT_URI` to your production domain
+
+### Security Configuration (Production)
+
+For production, enable httpOnly cookies for JWT storage (more secure than localStorage):
+
+```bash
+# In your .env file
+USE_HTTPONLY_COOKIE=true    # Use httpOnly cookies instead of localStorage
+COOKIE_DOMAIN=.yourdomain.com  # Cookie domain (leave empty for localhost)
+COOKIE_SECURE=true          # Require HTTPS for cookies
+```
+
+Generate a secure JWT secret:
+```bash
+openssl rand -hex 32
+```
+
+### Rate Limiting
+
+The API has built-in rate limiting to prevent abuse:
+- **Strict** (10 req/min): Match submission, confirm/deny/cancel
+- **Moderate** (30 req/min): Reactions, comments
+- **Loose** (100 req/min): Read operations
 
 ## Development
 

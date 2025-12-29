@@ -8,25 +8,34 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// getTokenFromRequest extracts the JWT token from either Authorization header or httpOnly cookie
+func getTokenFromRequest(c *gin.Context) string {
+	// First, try Authorization header
+	authHeader := c.GetHeader("Authorization")
+	if authHeader != "" {
+		parts := strings.Split(authHeader, " ")
+		if len(parts) == 2 && parts[0] == "Bearer" {
+			return parts[1]
+		}
+	}
+
+	// Then, try httpOnly cookie
+	cookie, err := c.Cookie("auth_token")
+	if err == nil && cookie != "" {
+		return cookie
+	}
+
+	return ""
+}
+
 func AuthMiddleware(jwtSecret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Get token from Authorization header
-		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "authorization header required"})
+		tokenString := getTokenFromRequest(c)
+		if tokenString == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "authorization required"})
 			c.Abort()
 			return
 		}
-
-		// Extract token
-		parts := strings.Split(authHeader, " ")
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid authorization header format"})
-			c.Abort()
-			return
-		}
-
-		tokenString := parts[1]
 
 		// Validate token
 		claims, err := utils.ValidateJWT(tokenString, jwtSecret)
@@ -56,25 +65,13 @@ func GetUserID(c *gin.Context) (int, bool) {
 // This allows endpoints to behave differently for authenticated vs unauthenticated users
 func OptionalAuthMiddleware(jwtSecret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Get token from Authorization header
-		authHeader := c.GetHeader("Authorization")
-		if authHeader == "" {
-			// No auth header - continue as unauthenticated
+		tokenString := getTokenFromRequest(c)
+		if tokenString == "" {
+			// No token - continue as unauthenticated
 			c.Set("authenticated", false)
 			c.Next()
 			return
 		}
-
-		// Extract token
-		parts := strings.Split(authHeader, " ")
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			// Invalid format - continue as unauthenticated
-			c.Set("authenticated", false)
-			c.Next()
-			return
-		}
-
-		tokenString := parts[1]
 
 		// Validate token
 		claims, err := utils.ValidateJWT(tokenString, jwtSecret)

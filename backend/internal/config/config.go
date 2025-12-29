@@ -18,6 +18,9 @@ type Config struct {
 	FrontendURL     string
 	DefaultELO      int
 	ELOKFactor      int
+	UseHTTPOnlyCookie bool   // Use httpOnly cookies instead of localStorage for JWT
+	CookieDomain      string // Domain for the cookie (e.g., ".example.com")
+	CookieSecure      bool   // Whether to require HTTPS for cookies
 }
 
 func Load() (*Config, error) {
@@ -34,17 +37,25 @@ func Load() (*Config, error) {
 	allowedOrigins := getEnvAsSlice("ALLOWED_ORIGINS", []string{"http://localhost:3000", "http://localhost:5173"}, ",")
 	frontendURL := getEnv("FRONTEND_URL", "http://localhost:3000")
 
+	// Cookie settings - more secure than localStorage for JWT
+	useHTTPOnlyCookie := getEnv("USE_HTTPONLY_COOKIE", "false") == "true"
+	cookieDomain := getEnv("COOKIE_DOMAIN", "")
+	cookieSecure := getEnv("COOKIE_SECURE", "false") == "true"
+
 	cfg := &Config{
-		DatabaseURL:    getEnv("DATABASE_URL", ""),
-		FTClientUID:    getEnv("FT_CLIENT_UID", ""),
-		FTClientSecret: getEnv("FT_CLIENT_SECRET", ""),
-		FTRedirectURI:  getEnv("FT_REDIRECT_URI", ""),
-		JWTSecret:      getEnv("JWT_SECRET", ""),
-		Port:           getEnv("PORT", "8080"),
-		AllowedOrigins: allowedOrigins,
-		FrontendURL:    frontendURL,
-		DefaultELO:     defaultELO,
-		ELOKFactor:     kFactor,
+		DatabaseURL:       getEnv("DATABASE_URL", ""),
+		FTClientUID:       getEnv("FT_CLIENT_UID", ""),
+		FTClientSecret:    getEnv("FT_CLIENT_SECRET", ""),
+		FTRedirectURI:     getEnv("FT_REDIRECT_URI", ""),
+		JWTSecret:         getEnv("JWT_SECRET", ""),
+		Port:              getEnv("PORT", "8080"),
+		AllowedOrigins:    allowedOrigins,
+		FrontendURL:       frontendURL,
+		DefaultELO:        defaultELO,
+		ELOKFactor:        kFactor,
+		UseHTTPOnlyCookie: useHTTPOnlyCookie,
+		CookieDomain:      cookieDomain,
+		CookieSecure:      cookieSecure,
 	}
 
 	if err := cfg.Validate(); err != nil {

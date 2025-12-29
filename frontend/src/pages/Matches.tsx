@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { matchAPI, usersAPI } from '../api/client';
+import { matchAPI } from '../api/client';
 import type { Match, User } from '../types';
 import { SPORT_LABELS } from '../types';
 import { Page } from '../layout/Page';
@@ -9,6 +9,7 @@ import { StatusPill } from '../ui/StatusPill';
 import Reactions from '../components/Reactions';
 import Comments from '../components/Comments';
 import { getErrorMessage } from '../utils/errorUtils';
+import { useUsers, findUserById } from '../hooks';
 
 interface MatchesProps {
   user: User;
@@ -16,25 +17,43 @@ interface MatchesProps {
 
 function Matches({ user }: MatchesProps) {
   const [matches, setMatches] = useState<Match[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed'>('all');
+
+  // Use the shared useUsers hook to prevent N+1 queries and get proper isMounted handling
+  const { users } = useUsers();
+
+  // Track mounted state to prevent state updates after unmount
+  const isMounted = useRef(true);
 
   const loadMatches = useCallback(() => {
     setLoading(true);
     const params = filter === 'all' ? {} : { status: filter };
     matchAPI.list(params)
-      .then(data => setMatches(data || []))
-      .catch(console.error)
-      .finally(() => setLoading(false));
+      .then(data => {
+        if (isMounted.current) {
+          setMatches(data || []);
+        }
+      })
+      .catch(err => {
+        if (isMounted.current) {
+          console.error('Failed to load matches:', err);
+        }
+      })
+      .finally(() => {
+        if (isMounted.current) {
+          setLoading(false);
+        }
+      });
   }, [filter]);
 
   useEffect(() => {
-    usersAPI.getAll().then(setUsers).catch(console.error);
-  }, []);
-
-  useEffect(() => {
+    isMounted.current = true;
     loadMatches();
+
+    return () => {
+      isMounted.current = false;
+    };
   }, [loadMatches]);
 
   const handleConfirm = useCallback(async (matchId: number) => {
@@ -114,8 +133,8 @@ function Matches({ user }: MatchesProps) {
             const canCancel = isPending && match.submitted_by === user.id;
             const sportLabel = SPORT_LABELS[match.sport as keyof typeof SPORT_LABELS];
 
-            const player1 = users.find(u => u.id === match.player1_id);
-            const player2 = users.find(u => u.id === match.player2_id);
+            const player1 = findUserById(users, match.player1_id);
+            const player2 = findUserById(users, match.player2_id);
 
             return (
               <div key={match.id} className="match-card">

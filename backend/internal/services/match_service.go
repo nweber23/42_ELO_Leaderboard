@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 
@@ -136,12 +137,48 @@ func (s *MatchService) ConfirmMatch(matchID, userID int) error {
 		player1Won,
 	)
 
-	// Start transaction
-	tx, err := s.db.Begin()
+	// Start transaction with SERIALIZABLE isolation level to prevent race conditions
+	// This ensures that concurrent ELO updates don't interfere with each other
+	ctx := context.Background()
+	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{
+		Isolation: sql.LevelSerializable,
+	})
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
+
+	// Re-fetch ELO values within transaction to ensure consistency
+	// This is necessary because the ELO might have changed between our initial read and now
+	player1Current, err := s.userRepo.GetByIDForUpdate(tx, match.Player1ID)
+	if err != nil {
+		return fmt.Errorf("failed to lock player1: %w", err)
+	}
+	player2Current, err := s.userRepo.GetByIDForUpdate(tx, match.Player2ID)
+	if err != nil {
+		return fmt.Errorf("failed to lock player2: %w", err)
+	}
+
+	// Recalculate ELO with locked values to ensure consistency
+	var player1CurrentELO, player2CurrentELO int
+	if match.Sport == models.SportTableTennis {
+		player1CurrentELO = player1Current.TableTennisELO
+		player2CurrentELO = player2Current.TableTennisELO
+	} else {
+		player1CurrentELO = player1Current.TableFootballELO
+		player2CurrentELO = player2Current.TableFootballELO
+	}
+
+	// If ELO changed between reads, recalculate
+	if player1CurrentELO != player1ELO || player2CurrentELO != player2ELO {
+		player1ELO = player1CurrentELO
+		player2ELO = player2CurrentELO
+		player1NewELO, player2NewELO, player1Delta, player2Delta = s.eloService.CalculateELO(
+			player1ELO,
+			player2ELO,
+			player1Won,
+		)
+	}
 
 	// Update match with ELO data
 	eloData := map[string]int{

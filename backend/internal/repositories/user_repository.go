@@ -103,6 +103,37 @@ func (r *UserRepository) GetByIntraID(intraID int) (*models.User, error) {
 	return user, err
 }
 
+// GetByIDForUpdate retrieves a user by ID with a row lock for update
+// This should be used within a transaction to prevent race conditions
+func (r *UserRepository) GetByIDForUpdate(tx *sql.Tx, id int) (*models.User, error) {
+	user := &models.User{}
+	query := `
+		SELECT id, intra_id, login, display_name, avatar_url, campus,
+		       table_tennis_elo, table_football_elo, created_at, updated_at
+		FROM users WHERE id = $1
+		FOR UPDATE
+	`
+
+	err := tx.QueryRow(query, id).Scan(
+		&user.ID,
+		&user.IntraID,
+		&user.Login,
+		&user.DisplayName,
+		&user.AvatarURL,
+		&user.Campus,
+		&user.TableTennisELO,
+		&user.TableFootballELO,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+
+	if err == sql.ErrNoRows {
+		return nil, fmt.Errorf("user not found")
+	}
+
+	return user, err
+}
+
 // GetAll retrieves all users
 func (r *UserRepository) GetAll() ([]models.User, error) {
 	query := `

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { reactionAPI } from '../api/client';
 import type { Reaction } from '../types';
 import EmojiPicker from './EmojiPicker';
@@ -15,17 +15,29 @@ function Reactions({ matchId, userId }: ReactionsProps) {
   const [loading, setLoading] = useState(false);
   const { toast, show, dismiss } = useToast();
 
+  // Track mounted state to prevent state updates after unmount
+  const isMounted = useRef(true);
+
   useEffect(() => {
+    isMounted.current = true;
     loadReactions();
+
+    return () => {
+      isMounted.current = false;
+    };
   }, [matchId]);
 
   const loadReactions = async () => {
     try {
       const data = await reactionAPI.list(matchId);
-      setReactions(data || []);
+      if (isMounted.current) {
+        setReactions(data || []);
+      }
     } catch (err) {
-      console.error('Failed to load reactions:', err);
-      // Silent fail for loading reactions is usually fine, or show a small toast
+      if (isMounted.current) {
+        console.error('Failed to load reactions:', err);
+      }
+      // Silent fail for loading reactions is usually fine
     }
   };
 
@@ -36,23 +48,29 @@ function Reactions({ matchId, userId }: ReactionsProps) {
 
     if (existingReaction) {
       // Remove reaction - optimistic update
+      const originalReactions = [...reactions];
       setReactions(reactions.filter(r => r.id !== existingReaction.id));
 
       setLoading(true);
       try {
         await reactionAPI.remove(matchId, emoji);
       } catch (err) {
-        console.error('Failed to remove reaction:', err);
-        // Revert on error
-        setReactions(reactions);
-        show({ title: 'Error', message: 'Failed to remove reaction', tone: 'error' });
+        if (isMounted.current) {
+          console.error('Failed to remove reaction:', err);
+          // Revert on error
+          setReactions(originalReactions);
+          show({ title: 'Error', message: 'Failed to remove reaction', tone: 'error' });
+        }
       } finally {
-        setLoading(false);
+        if (isMounted.current) {
+          setLoading(false);
+        }
       }
       return;
     }
 
     // Add reaction - optimistic update
+    const originalReactions = [...reactions];
     const tempReaction: Reaction = {
       id: Date.now(),
       match_id: matchId,
@@ -65,17 +83,23 @@ function Reactions({ matchId, userId }: ReactionsProps) {
     setLoading(true);
     try {
       const newReaction = await reactionAPI.add(matchId, emoji);
-      // Replace temp with real reaction
-      setReactions(prev =>
-        prev.map(r => (r.id === tempReaction.id ? newReaction : r))
-      );
+      if (isMounted.current) {
+        // Replace temp with real reaction
+        setReactions(prev =>
+          prev.map(r => (r.id === tempReaction.id ? newReaction : r))
+        );
+      }
     } catch (err) {
-      console.error('Failed to add reaction:', err);
-      // Revert on error
-      setReactions(reactions);
-      show({ title: 'Error', message: 'Failed to add reaction', tone: 'error' });
+      if (isMounted.current) {
+        console.error('Failed to add reaction:', err);
+        // Revert on error
+        setReactions(originalReactions);
+        show({ title: 'Error', message: 'Failed to add reaction', tone: 'error' });
+      }
     } finally {
-      setLoading(false);
+      if (isMounted.current) {
+        setLoading(false);
+      }
     }
   };
 
