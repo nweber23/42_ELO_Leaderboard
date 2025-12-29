@@ -67,3 +67,14 @@
 .pill--cancelled::before {
   background: var(--muted);
 }
+
+.pill--disputed {
+  background: var(--warning-muted);
+  color: var(--warning-text);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.pill--disputed::before {
+  background: var(--warning);
+  box-shadow: 0 0 8px var(--warning-muted);
+}

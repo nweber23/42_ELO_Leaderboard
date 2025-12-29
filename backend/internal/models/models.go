@@ -18,16 +18,21 @@ const (
 
 // User represents a 42 student
 type User struct {
-	ID               int       `json:"id"`
-	IntraID          int       `json:"intra_id"`
-	Login            string    `json:"login"`
-	DisplayName      string    `json:"display_name"`
-	AvatarURL        string    `json:"avatar_url"`
-	Campus           string    `json:"campus"`
-	TableTennisELO   int       `json:"table_tennis_elo"`
-	TableFootballELO int       `json:"table_football_elo"`
-	CreatedAt        time.Time `json:"created_at"`
-	UpdatedAt        time.Time `json:"updated_at"`
+	ID               int        `json:"id"`
+	IntraID          int        `json:"intra_id"`
+	Login            string     `json:"login"`
+	DisplayName      string     `json:"display_name"`
+	AvatarURL        string     `json:"avatar_url"`
+	Campus           string     `json:"campus"`
+	TableTennisELO   int        `json:"table_tennis_elo"`
+	TableFootballELO int        `json:"table_football_elo"`
+	IsAdmin          bool       `json:"is_admin"`
+	IsBanned         bool       `json:"is_banned"`
+	BanReason        *string    `json:"ban_reason,omitempty"`
+	BannedAt         *time.Time `json:"banned_at,omitempty"`
+	BannedBy         *int       `json:"banned_by,omitempty"`
+	CreatedAt        time.Time  `json:"created_at"`
+	UpdatedAt        time.Time  `json:"updated_at"`
 }
 
 // Match represents a game between two players
@@ -130,4 +135,63 @@ type AddReactionRequest struct {
 // AddCommentRequest is the request body for adding a comment
 type AddCommentRequest struct {
 	Content string `json:"content" binding:"required,max=500"`
+}
+
+// Admin-related models
+
+// AdjustELORequest is the request body for manually adjusting a user's ELO
+type AdjustELORequest struct {
+	UserID int    `json:"user_id" binding:"required,min=1"`
+	Sport  string `json:"sport" binding:"required,oneof=table_tennis table_football"`
+	NewELO int    `json:"new_elo" binding:"required,min=0,max=5000"`
+	Reason string `json:"reason" binding:"required,min=5,max=500"`
+}
+
+// BanUserRequest is the request body for banning a user
+type BanUserRequest struct {
+	UserID int    `json:"user_id" binding:"required,min=1"`
+	Reason string `json:"reason" binding:"required,min=5,max=500"`
+}
+
+// EditMatchRequest is the request body for editing a match
+type EditMatchRequest struct {
+	Player1Score *int    `json:"player1_score,omitempty"`
+	Player2Score *int    `json:"player2_score,omitempty"`
+	Status       *string `json:"status,omitempty"`
+}
+
+// ELOAdjustment represents a manual ELO adjustment
+type ELOAdjustment struct {
+	ID         int       `json:"id"`
+	UserID     int       `json:"user_id"`
+	Sport      string    `json:"sport"`
+	OldELO     int       `json:"old_elo"`
+	NewELO     int       `json:"new_elo"`
+	Reason     string    `json:"reason"`
+	AdjustedBy int       `json:"adjusted_by"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
+// AdminAuditLog represents an admin action log entry
+type AdminAuditLog struct {
+	ID         int       `json:"id"`
+	AdminID    int       `json:"admin_id"`
+	Action     string    `json:"action"`
+	TargetType string    `json:"target_type"`
+	TargetID   *int      `json:"target_id,omitempty"`
+	Details    string    `json:"details,omitempty"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
+// SystemHealth represents the system health status
+type SystemHealth struct {
+	Status           string `json:"status"`
+	DatabaseStatus   string `json:"database_status"`
+	TotalUsers       int    `json:"total_users"`
+	TotalMatches     int    `json:"total_matches"`
+	PendingMatches   int    `json:"pending_matches"`
+	DisputedMatches  int    `json:"disputed_matches"`
+	BannedUsers      int    `json:"banned_users"`
+	MatchesToday     int    `json:"matches_today"`
+	ActiveUsersToday int    `json:"active_users_today"`
 }

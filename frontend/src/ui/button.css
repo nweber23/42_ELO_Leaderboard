@@ -117,6 +117,18 @@
   --_glow: var(--danger-muted);
 }
 
+.btn--outline {
+  --_bg: transparent;
+  --_fg: var(--text);
+  --_bg-hover: var(--surface);
+  --_border: var(--border);
+  --_glow: transparent;
+}
+
+.btn--outline:hover:not(:disabled) {
+  border-color: var(--border-focus);
+}
+
 .btn--success {
   --_bg: var(--success);
   --_fg: white;

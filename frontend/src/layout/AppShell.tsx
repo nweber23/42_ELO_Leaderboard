@@ -13,12 +13,19 @@ export function AppShell({
 }) {
   const location = useLocation();
   const nav = useMemo(
-    () => [
-      { name: "Leaderboards", to: "/leaderboard/table_tennis", matchPath: "/leaderboard" },
-      { name: "Matches", to: "/matches" },
-      { name: "Submit", to: "/submit" },
-    ],
-    []
+    () => {
+      const items = [
+        { name: "Leaderboards", to: "/leaderboard/table_tennis", matchPath: "/leaderboard" },
+        { name: "Matches", to: "/matches" },
+        { name: "Submit", to: "/submit" },
+      ];
+      // Add admin link for admin users
+      if (user?.is_admin) {
+        items.push({ name: "Admin", to: "/admin" });
+      }
+      return items;
+    },
+    [user]
   );
 
   return (

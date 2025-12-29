@@ -50,7 +50,8 @@ func (r *UserRepository) GetByID(id int) (*models.User, error) {
 	user := &models.User{}
 	query := `
 		SELECT id, intra_id, login, display_name, avatar_url, campus,
-		       table_tennis_elo, table_football_elo, created_at, updated_at
+		       table_tennis_elo, table_football_elo, is_admin, is_banned,
+		       ban_reason, banned_at, banned_by, created_at, updated_at
 		FROM users WHERE id = $1
 	`
 
@@ -63,6 +64,11 @@ func (r *UserRepository) GetByID(id int) (*models.User, error) {
 		&user.Campus,
 		&user.TableTennisELO,
 		&user.TableFootballELO,
+		&user.IsAdmin,
+		&user.IsBanned,
+		&user.BanReason,
+		&user.BannedAt,
+		&user.BannedBy,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
@@ -79,7 +85,8 @@ func (r *UserRepository) GetByIntraID(intraID int) (*models.User, error) {
 	user := &models.User{}
 	query := `
 		SELECT id, intra_id, login, display_name, avatar_url, campus,
-		       table_tennis_elo, table_football_elo, created_at, updated_at
+		       table_tennis_elo, table_football_elo, is_admin, is_banned,
+		       ban_reason, banned_at, banned_by, created_at, updated_at
 		FROM users WHERE intra_id = $1
 	`
 
@@ -92,6 +99,11 @@ func (r *UserRepository) GetByIntraID(intraID int) (*models.User, error) {
 		&user.Campus,
 		&user.TableTennisELO,
 		&user.TableFootballELO,
+		&user.IsAdmin,
+		&user.IsBanned,
+		&user.BanReason,
+		&user.BannedAt,
+		&user.BannedBy,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
@@ -109,7 +121,8 @@ func (r *UserRepository) GetByIDForUpdate(tx *sql.Tx, id int) (*models.User, err
 	user := &models.User{}
 	query := `
 		SELECT id, intra_id, login, display_name, avatar_url, campus,
-		       table_tennis_elo, table_football_elo, created_at, updated_at
+		       table_tennis_elo, table_football_elo, is_admin, is_banned,
+		       ban_reason, banned_at, banned_by, created_at, updated_at
 		FROM users WHERE id = $1
 		FOR UPDATE
 	`
@@ -123,6 +136,11 @@ func (r *UserRepository) GetByIDForUpdate(tx *sql.Tx, id int) (*models.User, err
 		&user.Campus,
 		&user.TableTennisELO,
 		&user.TableFootballELO,
+		&user.IsAdmin,
+		&user.IsBanned,
+		&user.BanReason,
+		&user.BannedAt,
+		&user.BannedBy,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
@@ -138,7 +156,8 @@ func (r *UserRepository) GetByIDForUpdate(tx *sql.Tx, id int) (*models.User, err
 func (r *UserRepository) GetAll() ([]models.User, error) {
 	query := `
 		SELECT id, intra_id, login, display_name, avatar_url, campus,
-		       table_tennis_elo, table_football_elo, created_at, updated_at
+		       table_tennis_elo, table_football_elo, is_admin, is_banned,
+		       ban_reason, banned_at, banned_by, created_at, updated_at
 		FROM users
 		ORDER BY login
 	`
@@ -161,6 +180,11 @@ func (r *UserRepository) GetAll() ([]models.User, error) {
 			&user.Campus,
 			&user.TableTennisELO,
 			&user.TableFootballELO,
+			&user.IsAdmin,
+			&user.IsBanned,
+			&user.BanReason,
+			&user.BannedAt,
+			&user.BannedBy,
 			&user.CreatedAt,
 			&user.UpdatedAt,
 		); err != nil {

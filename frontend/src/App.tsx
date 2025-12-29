@@ -7,6 +7,7 @@ import Leaderboard from './pages/Leaderboard';
 import Matches from './pages/Matches';
 import SubmitMatch from './pages/SubmitMatch';
 import PlayerProfile from './pages/PlayerProfile';
+import { Admin } from './pages/Admin';
 import { AppShell } from './layout/AppShell';
 import { Spinner } from './ui';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -77,6 +78,7 @@ function App() {
             <Route path="/players/:id" element={<PlayerProfile />} />
             <Route path="/matches" element={user ? <Matches user={user} /> : <Navigate to="/login" replace />} />
             <Route path="/submit" element={user ? <SubmitMatch user={user} /> : <Navigate to="/login" replace />} />
+            <Route path="/admin" element={user ? <Admin user={user} /> : <Navigate to="/login" replace />} />
           </Route>
           <Route path="/login" element={<Login onLogin={setUser} />} />
         </Routes>

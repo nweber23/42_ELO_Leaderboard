@@ -55,6 +55,7 @@ func main() {
 	matchRepo := repositories.NewMatchRepository(db)
 	reactionRepo := repositories.NewReactionRepository(db)
 	commentRepo := repositories.NewCommentRepository(db)
+	adminRepo := repositories.NewAdminRepository(db)
 
 	// Initialize services
 	eloService := services.NewELOService(cfg.ELOKFactor)
@@ -63,6 +64,7 @@ func main() {
 	// Initialize handlers
 	authHandler := handlers.NewAuthHandler(cfg, userRepo)
 	matchHandler := handlers.NewMatchHandler(matchService, matchRepo, reactionRepo, commentRepo)
+	adminHandler := handlers.NewAdminHandler(adminRepo, userRepo, matchRepo)
 
 	// Setup Gin router
 	router := gin.Default()
@@ -102,6 +104,7 @@ func main() {
 	// Protected routes
 	protected := api.Group("")
 	protected.Use(middleware.AuthMiddleware(cfg.JWTSecret))
+	protected.Use(middleware.BannedUserMiddleware(userRepo))
 	{
 		// Auth
 		protected.GET("/auth/me", authHandler.Me)
@@ -124,6 +127,38 @@ func main() {
 		protected.POST("/matches/:id/comments", middleware.RateLimitMiddleware(moderateLimiter, middleware.CombinedKeyFunc), matchHandler.AddComment)
 		protected.GET("/matches/:id/comments", middleware.RateLimitMiddleware(looseLimiter, middleware.IPKeyFunc), matchHandler.GetComments)
 		protected.DELETE("/matches/:id/comments/:commentId", middleware.RateLimitMiddleware(moderateLimiter, middleware.CombinedKeyFunc), matchHandler.DeleteComment)
+	}
+
+	// Admin routes - require authentication + admin privilege
+	admin := api.Group("/admin")
+	admin.Use(middleware.AuthMiddleware(cfg.JWTSecret))
+	admin.Use(middleware.AdminMiddleware(userRepo))
+	{
+		// System health dashboard
+		admin.GET("/health", adminHandler.GetSystemHealth)
+
+		// User management
+		admin.GET("/users/banned", adminHandler.GetBannedUsers)
+		admin.POST("/users/ban", adminHandler.BanUser)
+		admin.POST("/users/:id/unban", adminHandler.UnbanUser)
+
+		// ELO management
+		admin.POST("/elo/adjust", adminHandler.AdjustELO)
+		admin.GET("/elo/adjustments", adminHandler.GetELOAdjustments)
+
+		// Match management
+		admin.GET("/matches/disputed", adminHandler.GetDisputedMatches)
+		admin.GET("/matches/confirmed", adminHandler.GetConfirmedMatches)
+		admin.PUT("/matches/:id/status", adminHandler.UpdateMatchStatus)
+		admin.POST("/matches/:id/revert", adminHandler.RevertMatch)
+		admin.DELETE("/matches/:id", adminHandler.DeleteMatch)
+
+		// Audit log
+		admin.GET("/audit-log", adminHandler.GetAuditLog)
+
+		// CSV exports
+		admin.GET("/export/matches", adminHandler.ExportMatchesCSV)
+		admin.GET("/export/users", adminHandler.ExportUsersCSV)
 	}
 
 	// Health check

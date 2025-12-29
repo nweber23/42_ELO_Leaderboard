@@ -1,5 +1,8 @@
 import axios, { AxiosError } from 'axios';
-import type { User, Match, LeaderboardEntry, Reaction, Comment, SubmitMatchRequest } from '../types';
+import type {
+  User, Match, LeaderboardEntry, Reaction, Comment, SubmitMatchRequest,
+  SystemHealth, ELOAdjustment, AdminAuditLog, AdjustELORequest, BanUserRequest
+} from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -201,6 +204,80 @@ export const commentAPI = {
 
   delete: async (matchId: number, commentId: number): Promise<void> => {
     await client.delete(`/matches/${matchId}/comments/${commentId}`);
+  },
+};
+
+// Admin API
+export const adminAPI = {
+  // System Health
+  getSystemHealth: async (): Promise<SystemHealth> => {
+    const { data } = await client.get('/admin/health');
+    return data;
+  },
+
+  // User Management
+  getBannedUsers: async (): Promise<User[]> => {
+    const { data } = await client.get('/admin/users/banned');
+    return data;
+  },
+
+  banUser: async (request: BanUserRequest): Promise<void> => {
+    await client.post('/admin/users/ban', request);
+  },
+
+  unbanUser: async (userId: number): Promise<void> => {
+    await client.post(`/admin/users/${userId}/unban`);
+  },
+
+  // ELO Management
+  adjustELO: async (request: AdjustELORequest): Promise<ELOAdjustment> => {
+    const { data } = await client.post('/admin/elo/adjust', request);
+    return data;
+  },
+
+  getELOAdjustments: async (limit?: number): Promise<ELOAdjustment[]> => {
+    const { data } = await client.get('/admin/elo/adjustments', { params: { limit } });
+    return data;
+  },
+
+  // Match Management
+  getDisputedMatches: async (): Promise<Match[]> => {
+    const { data } = await client.get('/admin/matches/disputed');
+    return data;
+  },
+
+  getConfirmedMatches: async (limit?: number): Promise<Match[]> => {
+    const { data } = await client.get('/admin/matches/confirmed', { params: { limit } });
+    return data;
+  },
+
+  updateMatchStatus: async (matchId: number, status: string): Promise<void> => {
+    await client.put(`/admin/matches/${matchId}/status`, { status });
+  },
+
+  revertMatch: async (matchId: number): Promise<void> => {
+    await client.post(`/admin/matches/${matchId}/revert`);
+  },
+
+  deleteMatch: async (matchId: number): Promise<void> => {
+    await client.delete(`/admin/matches/${matchId}`);
+  },
+
+  // Audit Log
+  getAuditLog: async (limit?: number): Promise<AdminAuditLog[]> => {
+    const { data } = await client.get('/admin/audit-log', { params: { limit } });
+    return data;
+  },
+
+  // CSV Exports
+  exportMatchesCSV: (): string => {
+    const token = localStorage.getItem('token');
+    return `${API_URL}/api/admin/export/matches${token ? `?token=${token}` : ''}`;
+  },
+
+  exportUsersCSV: (): string => {
+    const token = localStorage.getItem('token');
+    return `${API_URL}/api/admin/export/users${token ? `?token=${token}` : ''}`;
   },
 };
 

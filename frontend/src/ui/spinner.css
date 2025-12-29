@@ -24,6 +24,14 @@
   width: 100%;
 }
 
+.spinner-container--sm {
+  min-height: 40px;
+}
+
+.spinner-container--lg {
+  min-height: 300px;
+}
+
 /* Small spinner variant */
 .spinner--sm {
   width: 20px;
