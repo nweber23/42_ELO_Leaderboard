@@ -15,6 +15,69 @@ const (
 	MaxEmojiLength       = 20 // Compound emojis can be longer
 )
 
+// AllowedEmojis is the whitelist of allowed emoji reactions
+// Using a whitelist instead of complex unicode validation is more secure
+// and easier to maintain
+var AllowedEmojis = map[string]bool{
+	// Common reaction emojis
+	"👍": true, // thumbs up
+	"👎": true, // thumbs down
+	"❤️": true, // red heart
+	"🎉": true, // party popper
+	"🔥": true, // fire
+	"😂": true, // face with tears of joy
+	"😍": true, // smiling face with heart-eyes
+	"🤔": true, // thinking face
+	"😮": true, // face with open mouth
+	"😢": true, // crying face
+	"😡": true, // angry face
+	"👏": true, // clapping hands
+	"🙌": true, // raising hands
+	"💪": true, // flexed biceps
+	"🏆": true, // trophy
+	"🥇": true, // 1st place medal
+	"🥈": true, // 2nd place medal
+	"🥉": true, // 3rd place medal
+	"⭐": true, // star
+	"🌟": true, // glowing star
+	"💯": true, // hundred points
+	"✅": true, // check mark
+	"❌": true, // cross mark
+	"🎯": true, // direct hit
+	"🏓": true, // ping pong (table tennis)
+	"⚽": true, // soccer ball (table football)
+	"🎮": true, // video game
+	"🤝": true, // handshake
+	"👀": true, // eyes
+	"💀": true, // skull
+	"🤯": true, // exploding head
+	"🫡": true, // saluting face
+	"🤡": true, // clown face
+	"😎": true, // smiling face with sunglasses
+	"🥳": true, // partying face
+	"😤": true, // face with steam from nose
+	"🙏": true, // folded hands
+	"💔": true, // broken heart
+	"🤣": true, // rolling on the floor laughing
+	"😭": true, // loudly crying face
+	"🫠": true, // melting face
+}
+
+// ValidateEmojiWhitelist checks if the emoji is in the allowed whitelist
+// This is the preferred method for emoji validation as it's simpler and more secure
+func ValidateEmojiWhitelist(emoji string) bool {
+	return AllowedEmojis[emoji]
+}
+
+// GetAllowedEmojis returns a slice of all allowed emojis
+func GetAllowedEmojis() []string {
+	emojis := make([]string, 0, len(AllowedEmojis))
+	for emoji := range AllowedEmojis {
+		emojis = append(emojis, emoji)
+	}
+	return emojis
+}
+
 // SanitizeString removes potentially dangerous characters and normalizes whitespace
 // Use this for user input like comments to prevent XSS and ensure clean data
 func SanitizeString(s string) string {
