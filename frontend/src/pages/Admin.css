@@ -248,6 +248,33 @@
   padding-right: var(--space-10);
 }
 
+/* Fix dropdown options for dark theme */
+.admin-form select option {
+  background-color: var(--surface-solid, #15151d);
+  color: var(--text, #e5e5e5);
+  padding: var(--space-2) var(--space-3);
+}
+
+.admin-form select option:hover,
+.admin-form select option:focus,
+.admin-form select option:checked {
+  background-color: var(--accent, #6366f1);
+  color: white;
+}
+
+/* Light theme support for dropdowns */
+[data-theme="light"] .admin-form select option {
+  background-color: #ffffff;
+  color: #1f2937;
+}
+
+[data-theme="light"] .admin-form select option:hover,
+[data-theme="light"] .admin-form select option:focus,
+[data-theme="light"] .admin-form select option:checked {
+  background-color: var(--accent, #6366f1);
+  color: white;
+}
+
 .admin-form textarea {
   resize: vertical;
   min-height: 80px;

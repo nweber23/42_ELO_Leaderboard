@@ -90,3 +90,19 @@
   background: var(--surface-solid);
   color: var(--text);
 }
+
+.select option:checked {
+  background: var(--accent);
+  color: white;
+}
+
+/* Light theme select options */
+[data-theme="light"] .select option {
+  background: #ffffff;
+  color: #1f2937;
+}
+
+[data-theme="light"] .select option:checked {
+  background: var(--accent);
+  color: white;
+}

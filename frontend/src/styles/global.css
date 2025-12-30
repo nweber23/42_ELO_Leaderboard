@@ -15,6 +15,12 @@ html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   scroll-behavior: smooth;
+  color-scheme: dark;
+}
+
+/* Light theme color scheme */
+[data-theme="light"] {
+  color-scheme: light;
 }
 
 body {

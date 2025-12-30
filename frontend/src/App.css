@@ -341,6 +341,22 @@
   color: var(--text);
 }
 
+.form-select option:checked {
+  background: var(--accent);
+  color: white;
+}
+
+/* Light theme select options */
+[data-theme="light"] .form-select option {
+  background: #ffffff;
+  color: #1f2937;
+}
+
+[data-theme="light"] .form-select option:checked {
+  background: var(--accent);
+  color: white;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
