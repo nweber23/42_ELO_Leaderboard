@@ -13,19 +13,22 @@ import (
 	"github.com/42heilbronn/elo-leaderboard/internal/middleware"
 	"github.com/42heilbronn/elo-leaderboard/internal/models"
 	"github.com/42heilbronn/elo-leaderboard/internal/repositories"
+	"github.com/42heilbronn/elo-leaderboard/internal/services"
 	"github.com/42heilbronn/elo-leaderboard/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 
 type AuthHandler struct {
-	cfg      *config.Config
-	userRepo *repositories.UserRepository
+	cfg          *config.Config
+	userRepo     *repositories.UserRepository
+	matchService *services.MatchService
 }
 
-func NewAuthHandler(cfg *config.Config, userRepo *repositories.UserRepository) *AuthHandler {
+func NewAuthHandler(cfg *config.Config, userRepo *repositories.UserRepository, matchService *services.MatchService) *AuthHandler {
 	return &AuthHandler{
-		cfg:      cfg,
-		userRepo: userRepo,
+		cfg:          cfg,
+		userRepo:     userRepo,
+		matchService: matchService,
 	}
 }
 
@@ -136,6 +139,9 @@ func (h *AuthHandler) Callback(c *gin.Context) {
 		c.Redirect(http.StatusTemporaryRedirect, h.cfg.FrontendURL+"/?error=user_creation_failed")
 		return
 	}
+
+	// Invalidate leaderboard cache to ensure new/updated user appears immediately
+	h.matchService.InvalidateLeaderboardCache()
 
 	// Generate JWT
 	jwt, err := utils.GenerateJWT(user.ID, h.cfg.JWTSecret)

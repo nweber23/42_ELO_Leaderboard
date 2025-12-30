@@ -64,7 +64,7 @@ func main() {
 	matchService := services.NewMatchService(db, matchRepo, userRepo, eloService)
 
 	// Initialize handlers
-	authHandler := handlers.NewAuthHandler(cfg, userRepo)
+	authHandler := handlers.NewAuthHandler(cfg, userRepo, matchService)
 	matchHandler := handlers.NewMatchHandler(matchService, matchRepo, reactionRepo, commentRepo)
 	adminHandler := handlers.NewAdminHandler(adminRepo, userRepo, matchRepo)
 	healthHandler := handlers.NewHealthHandler(db)
