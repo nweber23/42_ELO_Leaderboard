@@ -43,15 +43,18 @@ function Comments({ matchId, userId }: CommentsProps) {
       const data = await commentAPI.listPaginated(matchId, COMMENTS_PER_PAGE, offset);
 
       if (isMounted.current) {
+        // Ensure comments is always an array (API may return null)
+        const loadedComments = data.comments || [];
+
         if (reset) {
           // Reverse to show oldest first in display
-          setComments(data.comments.reverse());
+          setComments([...loadedComments].reverse());
         } else {
           // Prepend older comments (they come in newest-first from API)
-          setComments(prev => [...data.comments.reverse(), ...prev]);
+          setComments(prev => [[...loadedComments].reverse(), ...prev].flat());
         }
-        setTotal(data.total);
-        setHasMore(offset + data.comments.length < data.total);
+        setTotal(data.total || 0);
+        setHasMore(offset + loadedComments.length < (data.total || 0));
       }
     } catch (err) {
       if (isMounted.current) {

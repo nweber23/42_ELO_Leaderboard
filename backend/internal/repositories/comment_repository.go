@@ -57,6 +57,11 @@ func (r *CommentRepository) GetByMatchID(matchID int) ([]models.Comment, error) 
 		comments = append(comments, comment)
 	}
 
+	// Ensure we return an empty slice, not nil, for JSON serialization
+	if comments == nil {
+		comments = []models.Comment{}
+	}
+
 	return comments, rows.Err()
 }
 
@@ -98,6 +103,11 @@ func (r *CommentRepository) GetByMatchIDPaginated(matchID, limit, offset int) ([
 			return nil, 0, err
 		}
 		comments = append(comments, comment)
+	}
+
+	// Ensure we return an empty slice, not nil, for JSON serialization
+	if comments == nil {
+		comments = []models.Comment{}
 	}
 
 	return comments, total, rows.Err()
