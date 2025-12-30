@@ -1,3 +1,5 @@
+-- +migrate Up
+
 -- Migration: Add composite indexes for common query patterns
 -- This improves query performance for frequently used queries
 
@@ -31,3 +33,13 @@ ON reactions(user_id, match_id);
 -- Index for comment queries by user
 CREATE INDEX IF NOT EXISTS idx_comments_user_id
 ON comments(user_id);
+
+-- +migrate Down
+
+DROP INDEX IF EXISTS idx_comments_user_id;
+DROP INDEX IF EXISTS idx_reactions_user_match;
+DROP INDEX IF EXISTS idx_matches_player2_status;
+DROP INDEX IF EXISTS idx_matches_player1_status;
+DROP INDEX IF EXISTS idx_matches_submitted_by;
+DROP INDEX IF EXISTS idx_matches_sport_status_created;
+DROP INDEX IF EXISTS idx_matches_player_sport_status;

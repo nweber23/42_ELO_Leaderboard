@@ -1,3 +1,5 @@
+-- +migrate Up
+
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
@@ -93,3 +95,19 @@ CREATE TRIGGER update_matches_updated_at BEFORE UPDATE ON matches
 
 CREATE TRIGGER update_comments_updated_at BEFORE UPDATE ON comments
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- +migrate Down
+
+-- Drop triggers
+DROP TRIGGER IF EXISTS update_comments_updated_at ON comments;
+DROP TRIGGER IF EXISTS update_matches_updated_at ON matches;
+DROP TRIGGER IF EXISTS update_users_updated_at ON users;
+
+-- Drop function
+DROP FUNCTION IF EXISTS update_updated_at_column();
+
+-- Drop tables in reverse order (respecting foreign keys)
+DROP TABLE IF EXISTS comments;
+DROP TABLE IF EXISTS reactions;
+DROP TABLE IF EXISTS matches;
+DROP TABLE IF EXISTS users;

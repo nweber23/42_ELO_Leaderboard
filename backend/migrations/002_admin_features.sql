@@ -1,3 +1,5 @@
+-- +migrate Up
+
 -- Add admin and ban fields to users table
 ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS is_banned BOOLEAN NOT NULL DEFAULT FALSE;
@@ -41,3 +43,28 @@ CREATE TABLE IF NOT EXISTS elo_adjustments (
 -- Create index for ELO adjustments
 CREATE INDEX idx_elo_adjustments_user_id ON elo_adjustments(user_id);
 CREATE INDEX idx_elo_adjustments_created_at ON elo_adjustments(created_at DESC);
+
+-- +migrate Down
+
+-- Drop ELO adjustments
+DROP INDEX IF EXISTS idx_elo_adjustments_created_at;
+DROP INDEX IF EXISTS idx_elo_adjustments_user_id;
+DROP TABLE IF EXISTS elo_adjustments;
+
+-- Drop admin audit log
+DROP INDEX IF EXISTS idx_admin_audit_log_action;
+DROP INDEX IF EXISTS idx_admin_audit_log_created_at;
+DROP INDEX IF EXISTS idx_admin_audit_log_admin_id;
+DROP TABLE IF EXISTS admin_audit_log;
+
+-- Remove disputed status from matches (revert to original constraint)
+ALTER TABLE matches DROP CONSTRAINT IF EXISTS matches_status_check;
+ALTER TABLE matches ADD CONSTRAINT matches_status_check
+    CHECK (status IN ('pending', 'confirmed', 'denied', 'cancelled'));
+
+-- Remove admin and ban fields from users table
+ALTER TABLE users DROP COLUMN IF EXISTS banned_by;
+ALTER TABLE users DROP COLUMN IF EXISTS banned_at;
+ALTER TABLE users DROP COLUMN IF EXISTS ban_reason;
+ALTER TABLE users DROP COLUMN IF EXISTS is_banned;
+ALTER TABLE users DROP COLUMN IF EXISTS is_admin;
