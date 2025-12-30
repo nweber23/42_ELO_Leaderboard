@@ -165,28 +165,89 @@ function StatsDashboard({ player, matches, sport, users }: StatsDashboardProps) 
 
   // Calculate ELO graph dimensions
   const eloGraphData = useMemo(() => {
-    if (eloHistory.length < 2) return null;
+    // Only show graph for specific sports, not "all"
+    if (!sport || eloHistory.length < 2) return null;
 
-    const minElo = Math.min(...eloHistory.map(d => d.elo));
-    const maxElo = Math.max(...eloHistory.map(d => d.elo));
-    const range = maxElo - minElo || 100; // Avoid division by zero
+    const elos = eloHistory.map(d => d.elo);
+    const minElo = Math.min(...elos);
+    const maxElo = Math.max(...elos);
+    // Add 5% padding to min/max for visual breathing room
+    const eloPadding = Math.max((maxElo - minElo) * 0.1, 10);
+    const displayMin = Math.floor((minElo - eloPadding) / 10) * 10;
+    const displayMax = Math.ceil((maxElo + eloPadding) / 10) * 10;
+    const range = displayMax - displayMin;
 
-    const width = 100;
-    const height = 50;
-    const padding = 5;
+    // Chart dimensions (will be scaled by CSS)
+    const chartWidth = 400;
+    const chartHeight = 160;
+    const paddingLeft = 45;
+    const paddingRight = 15;
+    const paddingTop = 20;
+    const paddingBottom = 30;
+    const graphWidth = chartWidth - paddingLeft - paddingRight;
+    const graphHeight = chartHeight - paddingTop - paddingBottom;
 
+    // Calculate points
     const points = eloHistory.map((d, i) => {
-      const x = padding + (i / (eloHistory.length - 1)) * (width - 2 * padding);
-      const y = height - padding - ((d.elo - minElo) / range) * (height - 2 * padding);
+      const x = paddingLeft + (i / (eloHistory.length - 1)) * graphWidth;
+      const y = paddingTop + (1 - (d.elo - displayMin) / range) * graphHeight;
       return { x, y, ...d };
     });
 
-    const pathD = points.map((p, i) =>
-      `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`
-    ).join(' ');
+    // Generate smooth bezier curve path
+    const getPath = (pts: Array<ELODataPoint & { x: number; y: number }>) => {
+      if (pts.length === 0) return '';
+      if (pts.length === 1) return `M ${pts[0].x} ${pts[0].y}`;
 
-    return { points, pathD, minElo, maxElo, width, height };
-  }, [eloHistory]);
+      let d = `M ${pts[0].x} ${pts[0].y}`;
+
+      for (let i = 0; i < pts.length - 1; i++) {
+        const p0 = i > 0 ? pts[i - 1] : pts[0];
+        const p1 = pts[i];
+        const p2 = pts[i + 1];
+        const p3 = i < pts.length - 2 ? pts[i + 2] : p2;
+
+        const cp1x = p1.x + (p2.x - p0.x) / 6;
+        const cp1y = p1.y + (p2.y - p0.y) / 6;
+        const cp2x = p2.x - (p3.x - p1.x) / 6;
+        const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+        d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
+      }
+      return d;
+    };
+
+    const pathD = getPath(points);
+
+    // Create area path for gradient fill
+    const lastPoint = points[points.length - 1];
+    const firstPoint = points[0];
+    const areaD = `${pathD} L ${lastPoint.x} ${paddingTop + graphHeight} L ${firstPoint.x} ${paddingTop + graphHeight} Z`;
+
+    // Generate horizontal grid lines (5 lines)
+    const gridLines = [];
+    const numGridLines = 4;
+    for (let i = 0; i <= numGridLines; i++) {
+      const yPos = paddingTop + (i / numGridLines) * graphHeight;
+      const eloValue = Math.round(displayMax - (i / numGridLines) * range);
+      gridLines.push({ y: yPos, elo: eloValue });
+    }
+
+    return {
+      points,
+      pathD,
+      areaD,
+      minElo: displayMin,
+      maxElo: displayMax,
+      chartWidth,
+      chartHeight,
+      paddingLeft,
+      paddingTop,
+      graphWidth,
+      graphHeight,
+      gridLines,
+    };
+  }, [eloHistory, sport]);
 
   if (confirmedMatches.length === 0) {
     return (
@@ -231,38 +292,118 @@ function StatsDashboard({ player, matches, sport, users }: StatsDashboardProps) 
       {eloGraphData && (
         <Card className="stats-card stats-card--graph">
           <CardContent>
-            <div className="stats-card__header">ELO History</div>
+            <div className="stats-card__header">
+              ELO History
+              <span className="stats-card__header-sub">{eloHistory.length} matches</span>
+            </div>
             <div className="elo-graph">
-              <svg viewBox={`0 0 ${eloGraphData.width} ${eloGraphData.height}`} className="elo-graph__svg">
-                {/* Grid lines */}
-                <line x1="5" y1="5" x2="5" y2="45" stroke="var(--border)" strokeWidth="0.5" />
-                <line x1="5" y1="45" x2="95" y2="45" stroke="var(--border)" strokeWidth="0.5" />
+              <svg
+                viewBox={`0 0 ${eloGraphData.chartWidth} ${eloGraphData.chartHeight}`}
+                className="elo-graph__svg"
+                preserveAspectRatio="xMidYMid meet"
+              >
+                <defs>
+                  <linearGradient id="eloAreaGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.3" />
+                    <stop offset="100%" stopColor="var(--accent)" stopOpacity="0.02" />
+                  </linearGradient>
+                  <filter id="glow">
+                    <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+                    <feMerge>
+                      <feMergeNode in="coloredBlur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                </defs>
 
-                {/* ELO line */}
+                {/* Horizontal grid lines with labels */}
+                {eloGraphData.gridLines.map((line, i) => (
+                  <g key={i}>
+                    <line
+                      x1={eloGraphData.paddingLeft}
+                      y1={line.y}
+                      x2={eloGraphData.paddingLeft + eloGraphData.graphWidth}
+                      y2={line.y}
+                      stroke="var(--border-subtle)"
+                      strokeWidth="1"
+                      strokeDasharray={i === eloGraphData.gridLines.length - 1 ? "0" : "4 4"}
+                    />
+                    <text
+                      x={eloGraphData.paddingLeft - 8}
+                      y={line.y + 4}
+                      textAnchor="end"
+                      className="elo-graph__axis-label"
+                    >
+                      {line.elo}
+                    </text>
+                  </g>
+                ))}
+
+                {/* Area fill */}
+                <path
+                  d={eloGraphData.areaD}
+                  fill="url(#eloAreaGradient)"
+                  stroke="none"
+                />
+
+                {/* ELO line with glow */}
                 <path
                   d={eloGraphData.pathD}
                   fill="none"
-                  stroke="var(--primary)"
-                  strokeWidth="1.5"
+                  stroke="var(--accent)"
+                  strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
+                  filter="url(#glow)"
                 />
 
                 {/* Data points */}
                 {eloGraphData.points.map((p, i) => (
-                  <circle
-                    key={i}
-                    cx={p.x}
-                    cy={p.y}
-                    r="1.5"
-                    fill="var(--primary)"
-                  />
+                  <g key={i} className="elo-graph__point-group">
+                    {/* Invisible hitbox for hover */}
+                    <circle
+                      cx={p.x}
+                      cy={p.y}
+                      r="12"
+                      className="elo-graph__point-hitbox"
+                    />
+                    {/* Visible point */}
+                    <circle
+                      cx={p.x}
+                      cy={p.y}
+                      r="4"
+                      className="elo-graph__point"
+                    />
+                    {/* Tooltip */}
+                    <g className="elo-graph__tooltip">
+                      <rect
+                        x={p.x - 30}
+                        y={p.y - 36}
+                        width="60"
+                        height="28"
+                        rx="6"
+                        className="elo-graph__tooltip-bg"
+                      />
+                      <text
+                        x={p.x}
+                        y={p.y - 22}
+                        textAnchor="middle"
+                        className="elo-graph__tooltip-value"
+                      >
+                        {p.elo}
+                      </text>
+                      <text
+                        x={p.x}
+                        y={p.y - 12}
+                        textAnchor="middle"
+                        className="elo-graph__tooltip-date"
+                      >
+                        {p.date}
+                      </text>
+                    </g>
+                  </g>
                 ))}
               </svg>
-              <div className="elo-graph__labels">
-                <span className="elo-graph__label">{eloGraphData.maxElo}</span>
-                <span className="elo-graph__label">{eloGraphData.minElo}</span>
-              </div>
             </div>
           </CardContent>
         </Card>
