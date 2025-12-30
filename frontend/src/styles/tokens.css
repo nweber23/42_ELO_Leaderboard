@@ -81,6 +81,16 @@
   /* Container */
   --container-max: 1140px;
   --container-narrow: 680px;
+
+  /* Touch targets - minimum 44px for mobile accessibility */
+  --touch-target: 44px;
+  --touch-target-sm: 36px;
+
+  /* Mobile bottom nav height */
+  --mobile-nav-height: 64px;
+
+  /* Safe area for notched devices */
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* ============================================

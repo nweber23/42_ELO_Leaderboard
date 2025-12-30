@@ -1,0 +1,239 @@
+/* ============================================
+   Matches Page — Mobile-First Glassmorphism
+   ============================================ */
+
+/* Matches Filters Container */
+.matches-filters {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+/* Filters */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: var(--space-1);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  width: 100%;
+}
+
+.filters button {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  cursor: pointer;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--muted);
+  min-height: var(--touch-target-sm);
+  white-space: nowrap;
+  transition: all var(--dur-fast) var(--ease-out);
+}
+
+.filters button:hover,
+.filters button:active {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.filters button.active {
+  background: var(--accent);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Custom date inputs */
+.date-range-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.date-range-inputs input[type="date"] {
+  width: 100%;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 16px; /* Prevent iOS zoom */
+  min-height: var(--touch-target);
+}
+
+.date-range-inputs span {
+  text-align: center;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+/* Match List */
+.matches-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* Match Card */
+.match-card {
+  background: var(--surface);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition: all var(--dur-base) var(--ease-out);
+}
+
+.match-card:active {
+  background: var(--surface-hover);
+}
+
+.match-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.match-header .sport {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--accent-text);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-caps);
+}
+
+.match-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.match-details .scores {
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--text);
+  word-break: break-word;
+}
+
+.match-details .scores a {
+  color: var(--text);
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.match-details .scores a:hover,
+.match-details .scores a:active {
+  color: var(--accent-text);
+}
+
+.match-details .elo-changes {
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+/* Match Actions */
+.match-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.match-actions button {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-3) var(--space-4);
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  min-height: var(--touch-target);
+  transition: all var(--dur-fast) var(--ease-out);
+}
+
+.match-actions button.confirm {
+  background: var(--success);
+  color: white;
+}
+
+.match-actions button.confirm:hover,
+.match-actions button.confirm:active {
+  background: var(--success-text);
+}
+
+.match-actions button.deny,
+.match-actions button.cancel {
+  background: var(--danger);
+  color: white;
+}
+
+.match-actions button.deny:hover,
+.match-actions button.deny:active,
+.match-actions button.cancel:hover,
+.match-actions button.cancel:active {
+  background: var(--danger-text);
+}
+
+/* Loading and Empty states */
+.loading,
+.empty {
+  padding: var(--space-8);
+  text-align: center;
+  color: var(--muted);
+  font-size: var(--text-md);
+}
+
+/* ============================================
+   Tablet Responsive (≥600px)
+   ============================================ */
+
+@media (min-width: 600px) {
+  .filters button {
+    flex: 0 0 auto;
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--text-sm);
+  }
+
+  .date-range-inputs {
+    flex-direction: row;
+    align-items: center;
+    width: auto;
+  }
+
+  .date-range-inputs input[type="date"] {
+    width: auto;
+  }
+
+  .match-actions button {
+    flex: 0 0 auto;
+  }
+}
+
+/* ============================================
+   Desktop Responsive (≥768px)
+   ============================================ */
+
+@media (min-width: 768px) {
+  .match-card {
+    padding: var(--space-5);
+  }
+
+  .match-card:hover {
+    border-color: var(--border-highlight);
+    box-shadow: var(--shadow-md);
+  }
+}

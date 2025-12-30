@@ -1,0 +1,90 @@
+/* ============================================
+   Submit Match Form — Mobile-First
+   ============================================ */
+
+.submit-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.submit-form__scores {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.submit-form__elo-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.submit-form__elo-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.submit-form__elo-label {
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.submit-form__elo-prediction {
+  border-top: 1px solid var(--border);
+  margin-top: var(--space-2);
+  padding-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.submit-form__elo-prediction-title {
+  font-size: var(--text-sm);
+  color: var(--muted);
+  margin-bottom: var(--space-1);
+}
+
+.submit-form__error {
+  color: var(--danger-text);
+  font-size: var(--text-sm);
+  padding: var(--space-3);
+  background: var(--danger-muted);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-md);
+}
+
+/* Text color utilities */
+.text-success {
+  color: var(--success-text);
+  font-weight: var(--weight-semibold);
+}
+
+.text-danger {
+  color: var(--danger-text);
+  font-weight: var(--weight-semibold);
+}
+
+/* ============================================
+   Desktop Responsive (≥600px)
+   ============================================ */
+
+@media (min-width: 600px) {
+  .submit-form {
+    gap: var(--space-5);
+  }
+
+  .submit-form__scores {
+    gap: var(--space-4);
+  }
+}

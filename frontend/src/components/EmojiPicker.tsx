@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import './Social.css';
 
 interface EmojiPickerProps {
   onSelect: (emoji: string) => void;
@@ -109,15 +110,25 @@ function EmojiPicker({ onSelect, disabled }: EmojiPickerProps) {
   const [activeCategory, setActiveCategory] = useState('Smileys');
   const [search, setSearch] = useState('');
   const [position, setPosition] = useState({ top: 0, left: 0 });
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 600);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
 
-  // Calculate position when opening
+  // Track window resize for mobile detection
   useEffect(() => {
-    if (isOpen && triggerRef.current) {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 600);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Calculate position when opening (only for desktop)
+  useEffect(() => {
+    if (isOpen && triggerRef.current && !isMobile) {
       const rect = triggerRef.current.getBoundingClientRect();
-      const pickerWidth = 352;
-      const pickerHeight = 420;
+      const pickerWidth = 360;
+      const pickerHeight = 440;
       const padding = 12;
 
       let left = rect.left;
@@ -135,7 +146,7 @@ function EmojiPicker({ onSelect, disabled }: EmojiPickerProps) {
 
       setPosition({ top, left });
     }
-  }, [isOpen]);
+  }, [isOpen, isMobile]);
 
   // Close on click outside
   useEffect(() => {
@@ -193,7 +204,7 @@ function EmojiPicker({ onSelect, disabled }: EmojiPickerProps) {
     <div
       ref={pickerRef}
       className="emoji-picker-popup"
-      style={{
+      style={isMobile ? undefined : {
         position: 'fixed',
         top: position.top,
         left: position.left,

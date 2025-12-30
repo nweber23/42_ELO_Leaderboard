@@ -10,6 +10,7 @@ import Reactions from '../components/Reactions';
 import Comments from '../components/Comments';
 import { getErrorMessage } from '../utils/errorUtils';
 import { useUsers, findUserById } from '../hooks';
+import './Matches.css';
 
 interface MatchesProps {
   user: User;
@@ -136,7 +137,7 @@ function Matches({ user }: MatchesProps) {
       title="Match History"
       subtitle="View and manage your matches"
       actions={
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+        <div className="matches-filters">
           {/* Status Filter */}
           <div className="filters">
             <button
@@ -160,7 +161,7 @@ function Matches({ user }: MatchesProps) {
           </div>
 
           {/* Date Range Filter */}
-          <div className="filters" style={{ flexWrap: 'wrap' }}>
+          <div className="filters">
             <button
               className={dateRange === 'all' ? 'active' : ''}
               onClick={() => setDateRange('all')}
@@ -177,13 +178,13 @@ function Matches({ user }: MatchesProps) {
               className={dateRange === 'week' ? 'active' : ''}
               onClick={() => setDateRange('week')}
             >
-              Last 7 Days
+              7 Days
             </button>
             <button
               className={dateRange === 'month' ? 'active' : ''}
               onClick={() => setDateRange('month')}
             >
-              Last 30 Days
+              30 Days
             </button>
             <button
               className={dateRange === 'custom' ? 'active' : ''}
@@ -195,31 +196,17 @@ function Matches({ user }: MatchesProps) {
 
           {/* Custom Date Range Inputs */}
           {dateRange === 'custom' && (
-            <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+            <div className="date-range-inputs">
               <input
                 type="date"
                 value={customStartDate}
                 onChange={(e) => setCustomStartDate(e.target.value)}
-                style={{
-                  padding: 'var(--space-2)',
-                  borderRadius: 'var(--radius-1)',
-                  border: '1px solid var(--border)',
-                  background: 'var(--surface-1)',
-                  color: 'var(--text-1)'
-                }}
               />
               <span>to</span>
               <input
                 type="date"
                 value={customEndDate}
                 onChange={(e) => setCustomEndDate(e.target.value)}
-                style={{
-                  padding: 'var(--space-2)',
-                  borderRadius: 'var(--radius-1)',
-                  border: '1px solid var(--border)',
-                  background: 'var(--surface-1)',
-                  color: 'var(--text-1)'
-                }}
               />
             </div>
           )}

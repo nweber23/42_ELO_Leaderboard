@@ -10,6 +10,7 @@ import { Button } from '../ui/Button';
 import { getErrorMessage } from '../utils/errorUtils';
 import { calculateELOChange, formatEloDelta } from '../utils/eloUtils';
 import { SCORE_MIN } from '../constants';
+import './SubmitMatch.css';
 
 interface SubmitMatchProps {
   user: User;
@@ -107,7 +108,7 @@ function SubmitMatch({ user }: SubmitMatchProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 'var(--space-5)' }}>
+          <form onSubmit={handleSubmit} className="submit-form">
             <Field label="Sport">
               <Select
                 value={sport}
@@ -133,10 +134,12 @@ function SubmitMatch({ user }: SubmitMatchProps) {
               </Select>
             </Field>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-4)' }}>
+            <div className="submit-form__scores">
               <Field label="Your Score">
                 <Input
                   type="number"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={playerScore}
                   onChange={(e) => setPlayerScore(e.target.value)}
                   min="0"
@@ -148,6 +151,8 @@ function SubmitMatch({ user }: SubmitMatchProps) {
               <Field label="Opponent Score">
                 <Input
                   type="number"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={opponentScore}
                   onChange={(e) => setOpponentScore(e.target.value)}
                   min="0"
@@ -159,48 +164,34 @@ function SubmitMatch({ user }: SubmitMatchProps) {
 
             {/* ELO Information Panel */}
             {selectedOpponent && (
-              <div className="elo-info-panel" style={{
-                background: 'var(--surface-2)',
-                borderRadius: 'var(--radius-2)',
-                padding: 'var(--space-4)',
-                display: 'grid',
-                gap: 'var(--space-3)'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ color: 'var(--text-2)' }}>Your ELO</span>
+              <div className="submit-form__elo-panel">
+                <div className="submit-form__elo-row">
+                  <span className="submit-form__elo-label">Your ELO</span>
                   <strong>{playerELO}</strong>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ color: 'var(--text-2)' }}>{selectedOpponent.display_name}'s ELO</span>
+                <div className="submit-form__elo-row">
+                  <span className="submit-form__elo-label">{selectedOpponent.display_name}'s ELO</span>
                   <strong>{opponentELO}</strong>
                 </div>
 
                 {eloPrediction && (
-                  <>
-                    <div style={{ borderTop: '1px solid var(--border)', marginTop: 'var(--space-2)', paddingTop: 'var(--space-3)' }}>
-                      <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-2)', marginBottom: 'var(--space-2)' }}>
-                        Predicted ELO Changes:
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span>You</span>
-                        <span style={{
-                          color: eloPrediction.playerDelta > 0 ? 'var(--success)' : 'var(--danger)',
-                          fontWeight: 600
-                        }}>
-                          {formatEloDelta(eloPrediction.playerDelta)} → {eloPrediction.playerNewELO}
-                        </span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span>{selectedOpponent.display_name}</span>
-                        <span style={{
-                          color: eloPrediction.opponentDelta > 0 ? 'var(--success)' : 'var(--danger)',
-                          fontWeight: 600
-                        }}>
-                          {formatEloDelta(eloPrediction.opponentDelta)} → {eloPrediction.opponentNewELO}
-                        </span>
-                      </div>
+                  <div className="submit-form__elo-prediction">
+                    <div className="submit-form__elo-prediction-title">
+                      Predicted ELO Changes:
                     </div>
-                  </>
+                    <div className="submit-form__elo-row">
+                      <span>You</span>
+                      <span className={eloPrediction.playerDelta > 0 ? 'text-success' : 'text-danger'}>
+                        {formatEloDelta(eloPrediction.playerDelta)} → {eloPrediction.playerNewELO}
+                      </span>
+                    </div>
+                    <div className="submit-form__elo-row">
+                      <span>{selectedOpponent.display_name}</span>
+                      <span className={eloPrediction.opponentDelta > 0 ? 'text-success' : 'text-danger'}>
+                        {formatEloDelta(eloPrediction.opponentDelta)} → {eloPrediction.opponentNewELO}
+                      </span>
+                    </div>
+                  </div>
                 )}
               </div>
             )}
@@ -215,9 +206,9 @@ function SubmitMatch({ user }: SubmitMatchProps) {
               />
             </Field>
 
-            {error && <div className="error-message">{error}</div>}
+            {error && <div className="submit-form__error">{error}</div>}
 
-            <Button type="submit" size="lg" isLoading={submitting}>
+            <Button type="submit" size="lg" isLoading={submitting} style={{ width: '100%' }}>
               Submit Match
             </Button>
           </form>

@@ -5,6 +5,15 @@ import "./app-shell.css";
 import { Button } from "../ui/Button";
 import { ThemeToggle } from "../components/ThemeToggle";
 
+// Icons for mobile navigation
+const icons = {
+  leaderboard: "🏆",
+  matches: "📋",
+  submit: "➕",
+  admin: "⚙️",
+  profile: "👤",
+};
+
 export function AppShell({
   user,
   onLogout,
@@ -16,17 +25,37 @@ export function AppShell({
   const nav = useMemo(
     () => {
       const items = [
-        { name: "Leaderboards", to: "/leaderboard/table_tennis", matchPath: "/leaderboard" },
-        { name: "Matches", to: "/matches" },
-        { name: "Submit", to: "/submit" },
+        { name: "Leaderboard", to: "/leaderboard/table_tennis", matchPath: "/leaderboard", icon: icons.leaderboard },
+        { name: "Matches", to: "/matches", icon: icons.matches },
+        { name: "Submit", to: "/submit", icon: icons.submit },
       ];
       // Add admin link for admin users
       if (user?.is_admin) {
-        items.push({ name: "Admin", to: "/admin" });
+        items.push({ name: "Admin", to: "/admin", icon: icons.admin });
       }
       return items;
     },
     [user]
+  );
+
+  const renderNavLinks = (isMobile: boolean) => (
+    <>
+      {nav.map((item) => {
+        const isActive = item.matchPath
+          ? location.pathname.startsWith(item.matchPath)
+          : location.pathname === item.to || location.pathname.startsWith(item.to + '/');
+        return (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className={isActive ? "nav__link nav__link--active" : "nav__link"}
+          >
+            {isMobile && <span className="nav__icon">{item.icon}</span>}
+            <span className="nav__label">{item.name}</span>
+          </NavLink>
+        );
+      })}
+    </>
   );
 
   return (
@@ -40,21 +69,9 @@ export function AppShell({
             </div>
           </NavLink>
 
-          <nav className="nav" aria-label="Primary">
-            {nav.map((item) => {
-              const isActive = item.matchPath
-                ? location.pathname.startsWith(item.matchPath)
-                : location.pathname === item.to || location.pathname.startsWith(item.to + '/');
-              return (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  className={isActive ? "nav__link nav__link--active" : "nav__link"}
-                >
-                  {item.name}
-                </NavLink>
-              );
-            })}
+          {/* Desktop Navigation */}
+          <nav className="nav--desktop" aria-label="Primary">
+            {renderNavLinks(false)}
           </nav>
 
           <div className="topbar__right">
@@ -86,6 +103,29 @@ export function AppShell({
           <Outlet />
         </div>
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="nav--mobile" aria-label="Primary mobile navigation">
+        {renderNavLinks(true)}
+        {user && (
+          <NavLink
+            to={`/players/${user.id}`}
+            className={location.pathname.startsWith('/players/') ? "nav__link nav__link--active" : "nav__link"}
+          >
+            <span className="nav__icon">{icons.profile}</span>
+            <span className="nav__label">Profile</span>
+          </NavLink>
+        )}
+        {!user && (
+          <NavLink
+            to="/login"
+            className="nav__link"
+          >
+            <span className="nav__icon">🔑</span>
+            <span className="nav__label">Sign in</span>
+          </NavLink>
+        )}
+      </nav>
 
       <footer className="footer">
         <div className="container footer__inner">

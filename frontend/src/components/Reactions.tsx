@@ -4,6 +4,7 @@ import type { Reaction } from '../types';
 import EmojiPicker from './EmojiPicker';
 import { useToast } from '../state/useToast';
 import { Toast } from '../ui/Toast';
+import './Social.css';
 
 interface ReactionsProps {
   matchId: number;

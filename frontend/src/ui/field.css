@@ -1,5 +1,5 @@
 /* ============================================
-   Field Component — Glassmorphism 2.0
+   Field Component — Mobile First
    ============================================ */
 
 .field {
@@ -12,6 +12,7 @@
   align-items: baseline;
   justify-content: space-between;
   gap: var(--space-3);
+  flex-wrap: wrap;
 }
 
 .field__label {
@@ -30,18 +31,23 @@
   color: var(--danger-text);
 }
 
-/* Input & Select */
+/* Input & Select — Mobile First */
 .input,
 .select {
   width: 100%;
+  /* Mobile: Touch target 48px */
+  min-height: 48px;
   padding: var(--space-3) var(--space-4);
   background: var(--surface);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  font-size: var(--text-base);
+  /* 16px prevents iOS zoom on focus */
+  font-size: 16px;
   color: var(--text);
+  -webkit-appearance: none;
+  appearance: none;
   transition:
     border-color var(--dur-base) var(--ease-out),
     box-shadow var(--dur-base) var(--ease-out),
@@ -52,18 +58,27 @@
   color: var(--muted);
 }
 
-.input:hover,
-.select:hover {
-  border-color: var(--border-focus);
-  background: var(--surface-hover);
-}
-
 .input:focus,
 .select:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--ring), var(--shadow-sm);
+  box-shadow: 0 0 0 3px var(--ring);
   background: var(--surface-hover);
+}
+
+/* Desktop: Hover states */
+@media (min-width: 768px) {
+  .input,
+  .select {
+    min-height: auto;
+    font-size: var(--text-base);
+  }
+
+  .input:hover,
+  .select:hover {
+    border-color: var(--border-focus);
+    background: var(--surface-hover);
+  }
 }
 
 /* Error state */

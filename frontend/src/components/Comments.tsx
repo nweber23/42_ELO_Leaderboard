@@ -6,6 +6,7 @@ import { Toast } from '../ui/Toast';
 import { COMMENT_MAX_LENGTH } from '../constants';
 import { formatRelativeTime } from '../utils';
 import { useUsers, findUserById } from '../hooks';
+import './Social.css';
 
 const COMMENTS_PER_PAGE = 20;
 
@@ -145,17 +146,6 @@ function Comments({ matchId, userId }: CommentsProps) {
               onClick={() => loadComments(false)}
               disabled={loadingMore}
               className="comments-load-more"
-              style={{
-                width: '100%',
-                padding: '8px',
-                marginBottom: '12px',
-                background: 'var(--bg-secondary)',
-                border: '1px solid var(--border)',
-                borderRadius: '6px',
-                cursor: loadingMore ? 'wait' : 'pointer',
-                color: 'var(--text-secondary)',
-                fontSize: '13px',
-              }}
             >
               {loadingMore ? 'Loading...' : `Load older comments (${total - comments.length} more)`}
             </button>
@@ -164,8 +154,8 @@ function Comments({ matchId, userId }: CommentsProps) {
             const author = findUserById(users, comment.user_id);
             return (
             <div key={comment.id} className="comment">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
+              <div className="comment-header">
+                <div className="comment-meta">
                   <span className="comment-author">
                     {comment.user_id === userId ? 'You' : author?.display_name || `User ${comment.user_id}`}
                   </span>
@@ -210,7 +200,7 @@ function Comments({ matchId, userId }: CommentsProps) {
         </button>
       </form>
       {newComment.length > 0 && (
-        <div style={{ fontSize: '12px', color: 'var(--text-tertiary)', marginTop: '4px' }}>
+        <div className="comment-char-count">
           {newComment.length}/{COMMENT_MAX_LENGTH}
         </div>
       )}

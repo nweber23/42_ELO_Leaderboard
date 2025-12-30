@@ -1,13 +1,14 @@
 /* ============================================
-   Login Page — Glassmorphism 2.0
+   Login Page — Mobile-First Glassmorphism
    ============================================ */
 
 .login {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-6);
+  padding: var(--space-4);
   background: var(--bg);
   background-image: var(--bg-gradient);
   position: relative;
@@ -42,18 +43,22 @@
 .login__grid {
   position: relative;
   z-index: 1;
-  display: grid;
-  gap: var(--space-10);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
   align-items: center;
   width: 100%;
-  max-width: 1100px;
+  max-width: 100%;
   animation: fade-in var(--dur-slower) var(--ease-out);
+  text-align: center;
 }
 
 /* Hero Section */
 .login__hero {
-  display: grid;
-  gap: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  align-items: center;
 }
 
 .login__badge {
@@ -75,7 +80,7 @@
 
 .login__title {
   margin: 0;
-  font-size: var(--text-4xl);
+  font-size: var(--text-2xl);
   font-weight: var(--weight-bold);
   letter-spacing: var(--tracking-tight);
   line-height: var(--leading-tight);
@@ -88,21 +93,23 @@
 
 .login__subtitle {
   margin: 0;
-  font-size: var(--text-lg);
+  font-size: var(--text-base);
   line-height: var(--leading-relaxed);
   color: var(--text-secondary);
-  max-width: 48ch;
+  max-width: 100%;
 }
 
 .login__bullets {
-  display: grid;
-  gap: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
   margin: 0;
   padding-left: 0;
   color: var(--text-secondary);
-  font-size: var(--text-md);
+  font-size: var(--text-sm);
   line-height: var(--leading-relaxed);
   list-style: none;
+  text-align: left;
 }
 
 .login__bullets li {
@@ -128,16 +135,17 @@
 }
 
 .login__hint {
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   color: var(--muted);
-  max-width: 50ch;
+  max-width: 100%;
   line-height: var(--leading-relaxed);
+  text-align: center;
 }
 
 /* Panel / Card — Glass card */
 .login__panel {
   width: 100%;
-  max-width: 440px;
+  max-width: 100%;
 }
 
 .login__panel .card {
@@ -163,52 +171,61 @@
 }
 
 /* ============================================
-   Responsive
+   Tablet Responsive (≥600px)
    ============================================ */
 
-@media (min-width: 900px) {
-  .login__grid {
-    grid-template-columns: 1.2fr 1fr;
-    gap: var(--space-16);
-  }
-
-  .login__title {
-    font-size: 3.25rem;
-  }
-
-  .login__panel {
-    justify-self: end;
-  }
-}
-
-@media (max-width: 899px) {
-  .login__grid {
-    justify-items: center;
-    text-align: center;
-  }
-
-  .login__hero {
-    align-items: center;
+@media (min-width: 600px) {
+  .login {
+    padding: var(--space-6);
   }
 
   .login__title {
     font-size: var(--text-3xl);
   }
 
+  .login__panel {
+    max-width: 400px;
+  }
+}
+
+/* ============================================
+   Desktop Responsive (≥900px)
+   ============================================ */
+
+@media (min-width: 900px) {
+  .login__grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: var(--space-16);
+    text-align: left;
+    max-width: 1100px;
+    align-items: center;
+  }
+
+  .login__hero {
+    align-items: flex-start;
+  }
+
+  .login__title {
+    font-size: 3.25rem;
+  }
+
+  .login__subtitle {
+    font-size: var(--text-lg);
+    max-width: 48ch;
+  }
+
   .login__bullets {
-    justify-content: center;
+    font-size: var(--text-md);
   }
 
-  .login__bullets li {
-    justify-content: center;
-  }
-
-  .login__subtitle,
   .login__hint {
-    max-width: none;
+    text-align: left;
+    max-width: 50ch;
   }
 
   .login__panel {
-    max-width: 400px;
+    justify-self: end;
+    max-width: 440px;
   }
 }

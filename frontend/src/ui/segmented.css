@@ -1,9 +1,10 @@
 /* ============================================
-   Segmented Navigation — Glassmorphism 2.0
+   Segmented Navigation — Mobile-First Glassmorphism
    ============================================ */
 
 .seg {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--space-1);
   padding: var(--space-1);
   background: var(--glass-bg);
@@ -12,17 +13,27 @@
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-inner);
+  width: 100%;
 }
 
 .seg__item {
   position: relative;
-  padding: var(--space-2) var(--space-5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-lg);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   font-weight: var(--weight-medium);
   color: var(--muted);
   background: transparent;
   border: 1px solid transparent;
+  min-height: var(--touch-target-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition:
     background var(--dur-base) var(--ease-out),
     color var(--dur-base) var(--ease-out),
@@ -30,7 +41,8 @@
     box-shadow var(--dur-base) var(--ease-out);
 }
 
-.seg__item:hover {
+.seg__item:hover,
+.seg__item:active {
   color: var(--text);
   background: var(--surface-hover);
 }
@@ -55,4 +67,22 @@
   height: 1px;
   background: var(--glass-highlight);
   border-radius: 1px;
+}
+
+/* ============================================
+   Tablet+ Responsive (≥600px)
+   ============================================ */
+
+@media (min-width: 600px) {
+  .seg {
+    display: inline-flex;
+    flex-wrap: nowrap;
+    width: auto;
+  }
+
+  .seg__item {
+    flex: 0 0 auto;
+    padding: var(--space-2) var(--space-5);
+    font-size: var(--text-sm);
+  }
 }

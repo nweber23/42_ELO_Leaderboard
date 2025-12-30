@@ -1,5 +1,5 @@
 /* ============================================
-   Button Component — Glassmorphism 2.0
+   Button Component — Mobile First
    ============================================ */
 
 .btn {
@@ -17,9 +17,11 @@
 
   border: 1px solid var(--_border);
   border-radius: var(--radius-lg);
+  /* Mobile: Touch target 48px */
+  min-height: 48px;
   padding: var(--space-3) var(--space-5);
 
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
   font-weight: var(--weight-semibold);
   line-height: 1;
   white-space: nowrap;
@@ -29,6 +31,10 @@
   background: var(--_bg);
   color: var(--_fg);
 
+  /* Mobile: Touch improvements */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+
   transition:
     background var(--dur-base) var(--ease-out),
     border-color var(--dur-base) var(--ease-out),
@@ -36,15 +42,10 @@
     box-shadow var(--dur-base) var(--ease-out);
 }
 
-.btn:hover:not(:disabled) {
-  background: var(--_bg-hover);
-  box-shadow: 0 4px 20px var(--_glow);
-  transform: translateY(-1px);
-}
-
+/* Mobile: Active state instead of hover */
 .btn:active:not(:disabled) {
-  transform: translateY(0) scale(0.98);
-  box-shadow: none;
+  transform: scale(0.97);
+  background: var(--_bg-hover);
 }
 
 .btn:focus-visible {
@@ -57,22 +58,62 @@
   cursor: not-allowed;
 }
 
-/* Sizes */
+/* Desktop: Hover states and smaller touch targets */
+@media (min-width: 768px) {
+  .btn {
+    min-height: auto;
+    font-size: var(--text-sm);
+  }
+
+  .btn:hover:not(:disabled) {
+    background: var(--_bg-hover);
+    box-shadow: 0 4px 20px var(--_glow);
+    transform: translateY(-1px);
+  }
+
+  .btn:active:not(:disabled) {
+    transform: translateY(0) scale(0.98);
+    box-shadow: none;
+  }
+}
+
+/* Sizes — Mobile First */
 .btn--sm {
+  min-height: 44px;
   padding: var(--space-2) var(--space-4);
-  font-size: var(--text-xs);
+  font-size: var(--text-sm);
   border-radius: var(--radius-md);
 }
 
 .btn--md {
+  min-height: 48px;
   padding: var(--space-3) var(--space-5);
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
 }
 
 .btn--lg {
+  min-height: 52px;
   padding: var(--space-4) var(--space-8);
-  font-size: var(--text-base);
+  font-size: var(--text-lg);
   border-radius: var(--radius-xl);
+}
+
+/* Desktop: Smaller touch targets */
+@media (min-width: 768px) {
+  .btn--sm {
+    min-height: auto;
+    font-size: var(--text-xs);
+  }
+
+  .btn--md {
+    min-height: auto;
+    font-size: var(--text-sm);
+  }
+
+  .btn--lg {
+    min-height: auto;
+    font-size: var(--text-base);
+  }
 }
 
 /* Variants */
