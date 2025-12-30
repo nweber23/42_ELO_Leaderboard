@@ -31,11 +31,24 @@ func NewAuthHandler(cfg *config.Config, userRepo *repositories.UserRepository) *
 
 // Login redirects to 42 OAuth
 func (h *AuthHandler) Login(c *gin.Context) {
-	// Accept state parameter from frontend for CSRF protection
-	state := c.Query("state")
-	if state == "" {
-		state = "default"
+	// Generate a cryptographically secure CSRF state token
+	state, err := utils.GenerateCSRFToken()
+	if err != nil {
+		slog.Error("Failed to generate CSRF token", "error", err)
+		utils.RespondWithError(c, http.StatusInternalServerError, "failed to generate security token", err)
+		return
 	}
+
+	// Store state in httpOnly cookie for CSRF validation on callback
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "oauth_state",
+		Value:    state,
+		Path:     "/",
+		MaxAge:   600, // 10 minutes
+		HttpOnly: true,
+		Secure:   h.cfg.CookieSecure,
+		SameSite: http.SameSiteStrictMode,
+	})
 
 	authURL := fmt.Sprintf(
 		"https://api.intra.42.fr/oauth/authorize?client_id=%s&redirect_uri=%s&response_type=code&scope=public&state=%s",
@@ -56,6 +69,26 @@ func (h *AuthHandler) Callback(c *gin.Context) {
 	if code == "" {
 		c.Redirect(http.StatusTemporaryRedirect, h.cfg.FrontendURL+"/?error=no_code")
 		return
+	}
+
+	// Validate CSRF state token using constant-time comparison to prevent timing attacks
+	expectedState, err := c.Cookie("oauth_state")
+	if err == nil && expectedState != "" {
+		if csrfErr := utils.ValidateCSRFToken(expectedState, state); csrfErr != nil {
+			slog.Warn("CSRF state mismatch", "error", csrfErr)
+			c.Redirect(http.StatusTemporaryRedirect, h.cfg.FrontendURL+"/?error=invalid_state")
+			return
+		}
+		// Clear the state cookie after validation
+		http.SetCookie(c.Writer, &http.Cookie{
+			Name:     "oauth_state",
+			Value:    "",
+			Path:     "/",
+			MaxAge:   -1,
+			HttpOnly: true,
+			Secure:   h.cfg.CookieSecure,
+			SameSite: http.SameSiteStrictMode,
+		})
 	}
 
 	// Exchange code for token

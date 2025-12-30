@@ -48,6 +48,12 @@ func (h *MatchHandler) SubmitMatch(c *gin.Context) {
 		return
 	}
 
+	// Explicit validation beyond struct tags
+	if err := utils.ValidateMatchSubmission(req.Sport, req.OpponentID, req.PlayerScore, req.OpponentScore, userID); err != nil {
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), err)
+		return
+	}
+
 	match, err := h.matchService.SubmitMatch(&req, userID)
 	if err != nil {
 		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), err)
@@ -144,21 +150,15 @@ func (h *MatchHandler) GetMatches(c *gin.Context) {
 		status = &statusStr
 	}
 
-	limit := 50
-	if limitStr := c.Query("limit"); limitStr != "" {
-		if l, err := strconv.Atoi(limitStr); err == nil {
-			limit = l
-		}
-	}
+	// Use pagination utility with enforced maximum limits
+	pagination := utils.ParsePaginationWithDefaults(
+		c.Query("limit"),
+		c.Query("offset"),
+		50,  // default limit
+		100, // max limit
+	)
 
-	offset := 0
-	if offsetStr := c.Query("offset"); offsetStr != "" {
-		if o, err := strconv.Atoi(offsetStr); err == nil {
-			offset = o
-		}
-	}
-
-	matches, err := h.matchRepo.GetMatches(userID, sport, status, limit, offset)
+	matches, err := h.matchRepo.GetMatches(userID, sport, status, pagination.Limit, pagination.Offset)
 	if err != nil {
 		utils.RespondWithError(c, http.StatusInternalServerError, err.Error(), err)
 		return
@@ -244,6 +244,12 @@ func (h *MatchHandler) AddReaction(c *gin.Context) {
 		return
 	}
 
+	// Validate emoji against whitelist for security
+	if !utils.ValidateEmojiWhitelist(req.Emoji) {
+		utils.RespondWithError(c, http.StatusBadRequest, "invalid emoji: not in allowed list", nil)
+		return
+	}
+
 	reaction := &models.Reaction{
 		MatchID: matchID,
 		UserID:  userID,
@@ -289,16 +295,22 @@ func (h *MatchHandler) AddComment(c *gin.Context) {
 		return
 	}
 
+	// Validate match ID explicitly
+	if err := utils.ValidateMatchID(matchID); err != nil {
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), err)
+		return
+	}
+
 	var req models.AddCommentRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), err)
 		return
 	}
 
-	// Sanitize comment content to prevent XSS and clean up whitespace
-	sanitizedContent := utils.SanitizeString(req.Content)
-	if len(sanitizedContent) == 0 {
-		utils.RespondWithError(c, http.StatusBadRequest, "comment cannot be empty", nil)
+	// Validate and sanitize comment content using explicit validation
+	sanitizedContent, err := utils.ValidateComment(req.Content)
+	if err != nil {
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), err)
 		return
 	}
 
@@ -329,22 +341,10 @@ func (h *MatchHandler) GetComments(c *gin.Context) {
 	offsetStr := c.Query("offset")
 
 	if limitStr != "" || offsetStr != "" {
-		// Paginated request
-		limit := 20 // default
-		offset := 0
+		// Paginated request - use pagination utility with enforced limits
+		pagination := utils.ParsePagination(limitStr, offsetStr)
 
-		if limitStr != "" {
-			if l, err := strconv.Atoi(limitStr); err == nil && l > 0 && l <= 100 {
-				limit = l
-			}
-		}
-		if offsetStr != "" {
-			if o, err := strconv.Atoi(offsetStr); err == nil && o >= 0 {
-				offset = o
-			}
-		}
-
-		comments, total, err := h.commentRepo.GetByMatchIDPaginated(matchID, limit, offset)
+		comments, total, err := h.commentRepo.GetByMatchIDPaginated(matchID, pagination.Limit, pagination.Offset)
 		if err != nil {
 			utils.RespondWithError(c, http.StatusInternalServerError, err.Error(), err)
 			return
@@ -353,8 +353,8 @@ func (h *MatchHandler) GetComments(c *gin.Context) {
 		utils.RespondWithJSON(c, http.StatusOK, gin.H{
 			"comments": comments,
 			"total":    total,
-			"limit":    limit,
-			"offset":   offset,
+			"limit":    pagination.Limit,
+			"offset":   pagination.Offset,
 		})
 		return
 	}

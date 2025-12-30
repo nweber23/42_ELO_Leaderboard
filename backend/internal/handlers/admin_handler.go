@@ -49,6 +49,12 @@ func (h *AdminHandler) AdjustELO(c *gin.Context) {
 		return
 	}
 
+	// Explicit validation beyond struct tags
+	if err := utils.ValidateELOAdjustment(req.UserID, req.Sport, req.NewELO, req.Reason, adminID); err != nil {
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), err)
+		return
+	}
+
 	// Verify target user exists
 	user, err := h.userRepo.GetByID(req.UserID)
 	if err != nil {
@@ -76,14 +82,15 @@ func (h *AdminHandler) AdjustELO(c *gin.Context) {
 
 // GetELOAdjustments returns ELO adjustment history
 func (h *AdminHandler) GetELOAdjustments(c *gin.Context) {
-	limit := 100
-	if l := c.Query("limit"); l != "" {
-		if parsed, err := strconv.Atoi(l); err == nil && parsed > 0 {
-			limit = parsed
-		}
-	}
+	// Use pagination utility with enforced maximum limits
+	pagination := utils.ParsePaginationWithDefaults(
+		c.Query("limit"),
+		c.Query("offset"),
+		100, // default limit
+		500, // max limit for admin
+	)
 
-	adjustments, err := h.adminRepo.GetELOAdjustments(limit)
+	adjustments, err := h.adminRepo.GetELOAdjustments(pagination.Limit)
 	if err != nil {
 		utils.RespondWithError(c, http.StatusInternalServerError, "failed to get ELO adjustments", err)
 		return
@@ -99,6 +106,18 @@ func (h *AdminHandler) BanUser(c *gin.Context) {
 	var req models.BanUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.RespondWithError(c, http.StatusBadRequest, "invalid request", err)
+		return
+	}
+
+	// Explicit validation of user ID
+	if err := utils.ValidateUserID(req.UserID); err != nil {
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), err)
+		return
+	}
+
+	// Explicit validation of reason
+	if err := utils.ValidateReason(req.Reason); err != nil {
+		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), err)
 		return
 	}
 
@@ -269,14 +288,15 @@ func (h *AdminHandler) GetDisputedMatches(c *gin.Context) {
 
 // GetConfirmedMatches returns confirmed matches that can be reverted
 func (h *AdminHandler) GetConfirmedMatches(c *gin.Context) {
-	limit := 50
-	if l := c.Query("limit"); l != "" {
-		if parsed, err := strconv.Atoi(l); err == nil && parsed > 0 && parsed <= 200 {
-			limit = parsed
-		}
-	}
+	// Use pagination utility with enforced maximum limits
+	pagination := utils.ParsePaginationWithDefaults(
+		c.Query("limit"),
+		c.Query("offset"),
+		50,  // default limit
+		200, // max limit
+	)
 
-	matches, err := h.adminRepo.GetConfirmedMatches(limit)
+	matches, err := h.adminRepo.GetConfirmedMatches(pagination.Limit)
 	if err != nil {
 		utils.RespondWithError(c, http.StatusInternalServerError, "failed to get confirmed matches", err)
 		return
@@ -325,14 +345,15 @@ func (h *AdminHandler) RevertMatch(c *gin.Context) {
 
 // GetAuditLog returns admin audit log
 func (h *AdminHandler) GetAuditLog(c *gin.Context) {
-	limit := 100
-	if l := c.Query("limit"); l != "" {
-		if parsed, err := strconv.Atoi(l); err == nil && parsed > 0 {
-			limit = parsed
-		}
-	}
+	// Use pagination utility with enforced maximum limits
+	pagination := utils.ParsePaginationWithDefaults(
+		c.Query("limit"),
+		c.Query("offset"),
+		100, // default limit
+		500, // max limit for admin
+	)
 
-	logs, err := h.adminRepo.GetAuditLog(limit)
+	logs, err := h.adminRepo.GetAuditLog(pagination.Limit)
 	if err != nil {
 		utils.RespondWithError(c, http.StatusInternalServerError, "failed to get audit log", err)
 		return
