@@ -108,13 +108,22 @@ export function AppShell({
       <nav className="nav--mobile" aria-label="Primary mobile navigation">
         {renderNavLinks(true)}
         {user && (
-          <NavLink
-            to={`/players/${user.id}`}
-            className={location.pathname.startsWith('/players/') ? "nav__link nav__link--active" : "nav__link"}
-          >
-            <span className="nav__icon">{icons.profile}</span>
-            <span className="nav__label">Profile</span>
-          </NavLink>
+          <>
+            <NavLink
+              to={`/players/${user.id}`}
+              className={location.pathname.startsWith('/players/') ? "nav__link nav__link--active" : "nav__link"}
+            >
+              <span className="nav__icon">{icons.profile}</span>
+              <span className="nav__label">Profile</span>
+            </NavLink>
+            <button
+              onClick={onLogout}
+              className="nav__link nav__link--logout"
+            >
+              <span className="nav__icon">🚪</span>
+              <span className="nav__label">Logout</span>
+            </button>
+          </>
         )}
         {!user && (
           <NavLink

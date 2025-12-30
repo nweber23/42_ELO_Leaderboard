@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { leaderboardAPI } from '../api/client';
-import type { LeaderboardEntry } from '../types';
+import type { LeaderboardEntry, User } from '../types';
 import { SPORT_LABELS } from '../types';
 import { Page } from '../layout/Page';
 import { Card, CardContent } from '../ui/Card';
@@ -12,12 +12,13 @@ import '../styles/leaderboard.css';
 
 interface LeaderboardProps {
   sport?: string;
+  user?: User | null;
 }
 
 type SortField = 'rank' | 'elo' | 'matches' | 'wins' | 'winrate';
 type SortDirection = 'asc' | 'desc';
 
-function Leaderboard({ sport: propSport }: LeaderboardProps) {
+function Leaderboard({ sport: propSport, user }: LeaderboardProps) {
   const { sport: paramSport } = useParams();
   const sport = propSport || paramSport || 'table_tennis';
 
@@ -33,6 +34,9 @@ function Leaderboard({ sport: propSport }: LeaderboardProps) {
 
   // Track mounted state to prevent state updates after unmount
   const isMounted = useRef(true);
+
+  // Track if user is authenticated (use user?.id to detect auth state changes)
+  const isAuthenticated = !!user;
 
   useEffect(() => {
     isMounted.current = true;
@@ -60,7 +64,7 @@ function Leaderboard({ sport: propSport }: LeaderboardProps) {
     return () => {
       isMounted.current = false;
     };
-  }, [sport]);
+  }, [sport, isAuthenticated]);
 
   // Handle column header click for sorting
   const handleSort = (field: SortField) => {

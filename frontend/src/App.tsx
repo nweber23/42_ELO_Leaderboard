@@ -77,8 +77,8 @@ function App() {
           <Routes>
             <Route element={<AppShell user={user} onLogout={handleLogout} />}>
               <Route index element={<Navigate to="/leaderboard/table_tennis" replace />} />
-              <Route path="/leaderboard/:sport" element={<Leaderboard />} />
-              <Route path="/players/:id" element={<PlayerProfile />} />
+              <Route path="/leaderboard/:sport" element={<Leaderboard user={user} />} />
+              <Route path="/players/:id" element={<PlayerProfile user={user} />} />
               <Route path="/matches" element={user ? <Matches user={user} /> : <Navigate to="/login" replace />} />
               <Route path="/submit" element={user ? <SubmitMatch user={user} /> : <Navigate to="/login" replace />} />
               <Route path="/admin" element={user ? <Admin user={user} /> : <Navigate to="/login" replace />} />

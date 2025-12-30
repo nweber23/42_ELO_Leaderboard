@@ -205,6 +205,19 @@
   max-width: 100%;
 }
 
+/* Logout button in mobile nav */
+.nav__link--logout {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--danger-text);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav__link--logout:active {
+  background: var(--danger-muted);
+}
+
 .nav__cta {
   display: inline-flex;
   align-items: center;
@@ -236,6 +249,11 @@
   gap: var(--space-2);
   flex-shrink: 0;
   min-width: 0;
+}
+
+/* Hide logout button on mobile - access via profile instead */
+.topbar__right .btn--ghost {
+  display: none;
 }
 
 /* Hide user chip on mobile, show simplified version */
@@ -367,6 +385,11 @@
 
   .nav--desktop .nav__label {
     font-size: var(--text-sm);
+  }
+
+  /* Show logout button on desktop */
+  .topbar__right .btn--ghost {
+    display: inline-flex;
   }
 
   .userchip {

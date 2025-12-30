@@ -9,7 +9,11 @@ import { Button } from '../ui/Button';
 import StatsDashboard from '../components/StatsDashboard';
 import './PlayerProfile.css';
 
-function PlayerProfile() {
+interface PlayerProfileProps {
+  user?: User | null;
+}
+
+function PlayerProfile({ user: _currentUser }: PlayerProfileProps) {
   const { id } = useParams<{ id: string }>();
   const [player, setPlayer] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
