@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import type { User } from "../types";
 import "./app-shell.css";
 import { Button } from "../ui/Button";
+import { ThemeToggle } from "../components/ThemeToggle";
 
 export function AppShell({
   user,
@@ -57,6 +58,7 @@ export function AppShell({
           </nav>
 
           <div className="topbar__right">
+            <ThemeToggle />
             {user ? (
               <>
                 <NavLink to={`/players/${user.id}`} className="userchip">
