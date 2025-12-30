@@ -286,32 +286,34 @@ export function Admin({ user }: AdminProps) {
               {bannedUsers.length === 0 ? (
                 <div className="admin-empty">No banned users</div>
               ) : (
-                <table className="admin-table">
-                  <thead>
-                    <tr>
-                      <th>User</th>
-                      <th>Reason</th>
-                      <th>Banned At</th>
-                      <th>Banned By</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {bannedUsers.map(u => (
-                      <tr key={u.id}>
-                        <td>{u.login} ({u.display_name})</td>
-                        <td>{u.ban_reason || '-'}</td>
-                        <td>{u.banned_at ? formatRelativeTime(u.banned_at) : '-'}</td>
-                        <td>{u.banned_by ? getUserLogin(u.banned_by) : '-'}</td>
-                        <td>
-                          <button className="btn-success" onClick={() => handleUnbanUser(u.id)}>
-                            Unban
-                          </button>
-                        </td>
+                <div className="table-wrapper">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>User</th>
+                        <th>Reason</th>
+                        <th>Banned At</th>
+                        <th>Banned By</th>
+                        <th>Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {bannedUsers.map(u => (
+                        <tr key={u.id}>
+                          <td>{u.login} ({u.display_name})</td>
+                          <td>{u.ban_reason || '-'}</td>
+                          <td>{u.banned_at ? formatRelativeTime(u.banned_at) : '-'}</td>
+                          <td>{u.banned_by ? getUserLogin(u.banned_by) : '-'}</td>
+                          <td>
+                            <button className="btn-success" onClick={() => handleUnbanUser(u.id)}>
+                              Unban
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           )}
@@ -379,32 +381,34 @@ export function Admin({ user }: AdminProps) {
               {eloAdjustments.length === 0 ? (
                 <div className="admin-empty">No ELO adjustments yet</div>
               ) : (
-                <table className="admin-table">
-                  <thead>
-                    <tr>
-                      <th>User</th>
-                      <th>Sport</th>
-                      <th>Old ELO</th>
-                      <th>New ELO</th>
-                      <th>Reason</th>
-                      <th>Adjusted By</th>
-                      <th>Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {eloAdjustments.map(adj => (
-                      <tr key={adj.id}>
-                        <td>{adj.user_login || getUserLogin(adj.user_id)}</td>
-                        <td>{adj.sport === 'table_tennis' ? 'Table Tennis' : 'Table Football'}</td>
-                        <td>{adj.old_elo}</td>
-                        <td>{adj.new_elo}</td>
-                        <td>{adj.reason}</td>
-                        <td>{adj.admin_login || getUserLogin(adj.adjusted_by)}</td>
-                        <td>{formatRelativeTime(adj.created_at)}</td>
+                <div className="table-wrapper">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>User</th>
+                        <th>Sport</th>
+                        <th>Old ELO</th>
+                        <th>New ELO</th>
+                        <th>Reason</th>
+                        <th>Adjusted By</th>
+                        <th>Date</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {eloAdjustments.map(adj => (
+                        <tr key={adj.id}>
+                          <td>{adj.user_login || getUserLogin(adj.user_id)}</td>
+                          <td>{adj.sport === 'table_tennis' ? 'Table Tennis' : 'Table Football'}</td>
+                          <td>{adj.old_elo}</td>
+                          <td>{adj.new_elo}</td>
+                          <td>{adj.reason}</td>
+                          <td>{adj.admin_login || getUserLogin(adj.adjusted_by)}</td>
+                          <td>{formatRelativeTime(adj.created_at)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           )}
@@ -418,49 +422,51 @@ export function Admin({ user }: AdminProps) {
               {confirmedMatches.length === 0 ? (
                 <div className="admin-empty">No confirmed matches to revert</div>
               ) : (
-                <table className="admin-table">
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Sport</th>
-                      <th>Player 1</th>
-                      <th>Player 2</th>
-                      <th>Score</th>
-                      <th>ELO Change</th>
-                      <th>Confirmed</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {confirmedMatches.map(m => (
-                      <tr key={m.id}>
-                        <td>#{m.id}</td>
-                        <td>{m.sport === 'table_tennis' ? 'TT' : 'TF'}</td>
-                        <td>{getUserLogin(m.player1_id)}</td>
-                        <td>{getUserLogin(m.player2_id)}</td>
-                        <td>{m.player1_score} - {m.player2_score}</td>
-                        <td>
-                          <span className={m.player1_elo_delta && m.player1_elo_delta > 0 ? 'elo-positive' : 'elo-negative'}>
-                            {m.player1_elo_delta && m.player1_elo_delta > 0 ? '+' : ''}{m.player1_elo_delta}
-                          </span>
-                          {' / '}
-                          <span className={m.player2_elo_delta && m.player2_elo_delta > 0 ? 'elo-positive' : 'elo-negative'}>
-                            {m.player2_elo_delta && m.player2_elo_delta > 0 ? '+' : ''}{m.player2_elo_delta}
-                          </span>
-                        </td>
-                        <td>{m.confirmed_at ? formatRelativeTime(m.confirmed_at) : '-'}</td>
-                        <td className="action-buttons">
-                          <button
-                            className="btn-danger"
-                            onClick={() => handleRevertMatch(m.id)}
-                          >
-                            Revert
-                          </button>
-                        </td>
+                <div className="table-wrapper">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Sport</th>
+                        <th>Player 1</th>
+                        <th>Player 2</th>
+                        <th>Score</th>
+                        <th>ELO Change</th>
+                        <th>Confirmed</th>
+                        <th>Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {confirmedMatches.map(m => (
+                        <tr key={m.id}>
+                          <td>#{m.id}</td>
+                          <td>{m.sport === 'table_tennis' ? 'TT' : 'TF'}</td>
+                          <td>{getUserLogin(m.player1_id)}</td>
+                          <td>{getUserLogin(m.player2_id)}</td>
+                          <td>{m.player1_score} - {m.player2_score}</td>
+                          <td>
+                            <span className={m.player1_elo_delta && m.player1_elo_delta > 0 ? 'elo-positive' : 'elo-negative'}>
+                              {m.player1_elo_delta && m.player1_elo_delta > 0 ? '+' : ''}{m.player1_elo_delta}
+                            </span>
+                            {' / '}
+                            <span className={m.player2_elo_delta && m.player2_elo_delta > 0 ? 'elo-positive' : 'elo-negative'}>
+                              {m.player2_elo_delta && m.player2_elo_delta > 0 ? '+' : ''}{m.player2_elo_delta}
+                            </span>
+                          </td>
+                          <td>{m.confirmed_at ? formatRelativeTime(m.confirmed_at) : '-'}</td>
+                          <td className="action-buttons">
+                            <button
+                              className="btn-danger"
+                              onClick={() => handleRevertMatch(m.id)}
+                            >
+                              Revert
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           )}
@@ -471,32 +477,34 @@ export function Admin({ user }: AdminProps) {
               {auditLog.length === 0 ? (
                 <div className="admin-empty">No audit log entries</div>
               ) : (
-                <table className="admin-table">
-                  <thead>
-                    <tr>
-                      <th>Admin</th>
-                      <th>Action</th>
-                      <th>Entity</th>
-                      <th>Details</th>
-                      <th>Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {auditLog.map(log => (
-                      <tr key={log.id}>
-                        <td>{log.admin_login || getUserLogin(log.admin_id)}</td>
-                        <td>{log.action.replace(/_/g, ' ')}</td>
-                        <td>{log.entity_type}{log.entity_id ? ` #${log.entity_id}` : ''}</td>
-                        <td>
-                          <code style={{ fontSize: '0.75rem' }}>
-                            {log.details ? JSON.stringify(log.details) : '-'}
-                          </code>
-                        </td>
-                        <td>{formatRelativeTime(log.created_at)}</td>
+                <div className="table-wrapper">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Admin</th>
+                        <th>Action</th>
+                        <th>Entity</th>
+                        <th>Details</th>
+                        <th>Date</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {auditLog.map(log => (
+                        <tr key={log.id}>
+                          <td>{log.admin_login || getUserLogin(log.admin_id)}</td>
+                          <td>{log.action.replace(/_/g, ' ')}</td>
+                          <td>{log.entity_type}{log.entity_id ? ` #${log.entity_id}` : ''}</td>
+                          <td>
+                            <code style={{ fontSize: '0.75rem' }}>
+                              {log.details ? JSON.stringify(log.details) : '-'}
+                            </code>
+                          </td>
+                          <td>{formatRelativeTime(log.created_at)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           )}
