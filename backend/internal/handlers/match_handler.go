@@ -200,9 +200,16 @@ func (h *MatchHandler) GetLeaderboard(c *gin.Context) {
 
 	// Check if user is authenticated - if not, mask personal data for privacy
 	if !middleware.IsAuthenticated(c) {
-		for i := range leaderboard {
-			leaderboard[i].User = maskUserData(leaderboard[i].User)
+		// Create a copy of the leaderboard to avoid modifying the cached data
+		// which is shared across requests
+		maskedLeaderboard := make([]models.LeaderboardEntry, len(leaderboard))
+		copy(maskedLeaderboard, leaderboard)
+
+		for i := range maskedLeaderboard {
+			maskedLeaderboard[i].User = maskUserData(maskedLeaderboard[i].User)
 		}
+		utils.RespondWithJSON(c, http.StatusOK, maskedLeaderboard)
+		return
 	}
 
 	utils.RespondWithJSON(c, http.StatusOK, leaderboard)
