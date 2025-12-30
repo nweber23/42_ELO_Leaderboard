@@ -10,6 +10,7 @@ import (
 	"github.com/42heilbronn/elo-leaderboard/internal/handlers"
 	"github.com/42heilbronn/elo-leaderboard/internal/middleware"
 	"github.com/42heilbronn/elo-leaderboard/internal/repositories"
+	"github.com/42heilbronn/elo-leaderboard/internal/server"
 	"github.com/42heilbronn/elo-leaderboard/internal/services"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
@@ -35,7 +36,7 @@ func main() {
 		slog.Error("Failed to connect to database", "error", err)
 		os.Exit(1)
 	}
-	defer db.Close()
+	// Note: db.Close() is handled by the shutdown manager
 
 	// Configure connection pool for better performance under load
 	db.SetMaxOpenConns(25)                  // Maximum number of open connections
@@ -66,9 +67,14 @@ func main() {
 	authHandler := handlers.NewAuthHandler(cfg, userRepo)
 	matchHandler := handlers.NewMatchHandler(matchService, matchRepo, reactionRepo, commentRepo)
 	adminHandler := handlers.NewAdminHandler(adminRepo, userRepo, matchRepo)
+	healthHandler := handlers.NewHealthHandler(db)
 
 	// Setup Gin router
-	router := gin.Default()
+	router := gin.New()
+
+	// Add recovery middleware with proper error boundaries
+	router.Use(middleware.RecoveryMiddleware())
+	router.Use(gin.Logger())
 
 	// Gzip compression middleware - compress responses for better performance
 	router.Use(gzip.Gzip(gzip.DefaultCompression))
@@ -86,9 +92,6 @@ func main() {
 	strictLimiter := middleware.NewStrictRateLimiter()   // 10 req/min for match submission
 	moderateLimiter := middleware.NewModerateRateLimiter() // 30 req/min for reactions/comments
 	looseLimiter := middleware.NewLooseRateLimiter()     // 100 req/min for reads
-	defer strictLimiter.Stop()
-	defer moderateLimiter.Stop()
-	defer looseLimiter.Stop()
 
 	// Public routes
 	api := router.Group("/api")
@@ -165,14 +168,30 @@ func main() {
 		admin.GET("/export/users", adminHandler.ExportUsersCSV)
 	}
 
-	// Health check
-	router.GET("/health", func(c *gin.Context) {
-		c.JSON(200, gin.H{"status": "ok"})
+	// Health check endpoints
+	router.GET("/health", healthHandler.Health)
+	router.GET("/health/live", healthHandler.Liveness)
+	router.GET("/health/ready", healthHandler.Readiness)
+
+	// Create server with graceful shutdown
+	srv := server.NewServer(server.ServerConfig{
+		Addr:            ":" + cfg.Port,
+		Handler:         router,
+		ReadTimeout:     15 * time.Second,
+		WriteTimeout:    15 * time.Second,
+		IdleTimeout:     60 * time.Second,
+		ShutdownTimeout: 30 * time.Second,
 	})
 
-	// Start server
+	// Register cleanup functions
+	srv.RegisterSimple("strict_rate_limiter", strictLimiter.Stop)
+	srv.RegisterSimple("moderate_rate_limiter", moderateLimiter.Stop)
+	srv.RegisterSimple("loose_rate_limiter", looseLimiter.Stop)
+	srv.ShutdownManager().RegisterDatabase(db)
+
+	// Start server with graceful shutdown
 	slog.Info("Server starting", "port", cfg.Port)
-	if err := router.Run(":" + cfg.Port); err != nil {
+	if err := srv.Start(); err != nil {
 		slog.Error("Failed to start server", "error", err)
 		os.Exit(1)
 	}
