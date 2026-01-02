@@ -13,7 +13,7 @@ interface PlayerProfileProps {
   user?: User | null;
 }
 
-function PlayerProfile({ user: _currentUser }: PlayerProfileProps) {
+function PlayerProfile({ user: currentUser }: PlayerProfileProps) {
   const { id } = useParams<{ id: string }>();
   const [player, setPlayer] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
@@ -168,6 +168,13 @@ function PlayerProfile({ user: _currentUser }: PlayerProfileProps) {
               <h1 className="profile__name">{player.display_name}</h1>
               <p className="profile__meta">@{player.login} · {player.campus}</p>
             </div>
+            {currentUser && currentUser.id === player.id && (
+              <Link to="/settings" style={{ marginTop: 'var(--space-2)' }}>
+                <Button variant="secondary" size="sm">
+                  Manage Profile
+                </Button>
+              </Link>
+            )}
           </div>
 
           <div className="profile__elo-grid">
