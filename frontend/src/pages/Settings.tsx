@@ -210,7 +210,7 @@ export function Settings({ user, onLogout }: SettingsProps) {
         onClose={() => setToastOpen(false)}
         title={toastType === 'success' ? 'Erfolg' : 'Fehler'}
         message={toastMessage}
-        variant={toastType}
+        tone={toastType}
       />
     </Page>
   );
