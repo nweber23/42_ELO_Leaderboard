@@ -29,13 +29,14 @@ func SecurityHeaders(cookieSecure bool) gin.HandlerFunc {
 
 		// Content Security Policy
 		// Adjust this based on your actual resource needs
+		// Note: connect-src allows any http/https for development flexibility
 		c.Header("Content-Security-Policy",
 			"default-src 'self'; "+
 			"script-src 'self' 'unsafe-inline'; "+
 			"style-src 'self' 'unsafe-inline'; "+
 			"img-src 'self' https://cdn.intra.42.fr data:; "+
 			"font-src 'self'; "+
-			"connect-src 'self' https://api.intra.42.fr; "+
+			"connect-src 'self' http://localhost:* https://api.intra.42.fr; "+
 			"frame-ancestors 'none'; "+
 			"base-uri 'self'; "+
 			"form-action 'self'")

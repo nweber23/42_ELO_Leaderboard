@@ -41,7 +41,7 @@ export function Terms() {
             <ul>
               <li>Sie müssen ein aktiver 42-Student mit gültigem Intra-Account sein</li>
               <li>Sie müssen dem Campus Heilbronn zugeordnet sein</li>
-              <li>Sie müssen mindestens 16 Jahre alt sein</li>
+              <li>Sie müssen mindestens 18 Jahre alt sein</li>
             </ul>
           </section>
 
