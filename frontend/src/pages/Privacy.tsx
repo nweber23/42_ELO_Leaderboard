@@ -127,8 +127,7 @@ export function Privacy() {
               [Adresse des Hosters]
             </p>
             <p>
-              Der Hoster kann technische Protokolldaten (IP-Adresse, Zeitstempel)
-              zur Sicherstellung des Betriebs erheben.
+              Der Hoster verarbeitet personenbezogene Daten (z. B. IP-Adressen) nur im Rahmen der Auftragsverarbeitung gemäß Art. 28 DSGVO.
             </p>
           </section>
 
