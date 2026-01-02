@@ -136,7 +136,7 @@ func (h *AuthHandler) Callback(c *gin.Context) {
 
 	if err := h.userRepo.CreateOrUpdate(user); err != nil {
 		slog.Error("Failed to create/update user", "error", err)
-		c.Redirect(http.StatusTemporaryRedirect, h.cfg.FrontendURL+"/?error=user_creation_failed")
+		c.Redirect(http.StatusTemporaryRedirect, h.cfg.FrontendURL+"/?error=user_creation_failed&details="+url.QueryEscape(err.Error()))
 		return
 	}
 

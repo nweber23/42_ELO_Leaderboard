@@ -9,6 +9,7 @@ import (
 	"github.com/42heilbronn/elo-leaderboard/internal/config"
 	"github.com/42heilbronn/elo-leaderboard/internal/handlers"
 	"github.com/42heilbronn/elo-leaderboard/internal/middleware"
+	"github.com/42heilbronn/elo-leaderboard/internal/migrations"
 	"github.com/42heilbronn/elo-leaderboard/internal/repositories"
 	"github.com/42heilbronn/elo-leaderboard/internal/server"
 	"github.com/42heilbronn/elo-leaderboard/internal/services"
@@ -51,6 +52,18 @@ func main() {
 	}
 
 	slog.Info("Connected to database successfully")
+
+	// Run database migrations
+	migrator, err := migrations.NewMigrator(db)
+	if err != nil {
+		slog.Error("Failed to initialize migrator", "error", err)
+		os.Exit(1)
+	}
+	if err := migrator.MigrateUp(); err != nil {
+		slog.Error("Failed to run migrations", "error", err)
+		os.Exit(1)
+	}
+	slog.Info("Database migrations applied successfully")
 
 	// Initialize repositories
 	userRepo := repositories.NewUserRepository(db)
