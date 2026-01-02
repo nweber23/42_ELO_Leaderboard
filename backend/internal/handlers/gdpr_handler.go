@@ -218,6 +218,27 @@ func (h *GDPRHandler) DeleteAccount(c *gin.Context) {
 
 	slog.Info("Starting account deletion", "user_id", userID, "login", user.Login)
 
+	// Ensure anonymized user exists (IntraID -1)
+	var anonymizedID int
+	err = h.db.QueryRow("SELECT id FROM users WHERE intra_id = -1").Scan(&anonymizedID)
+	if err == sql.ErrNoRows {
+		// Create it
+		err = h.db.QueryRow(`
+			INSERT INTO users (intra_id, login, display_name, avatar_url, campus, is_banned, ban_reason)
+			VALUES (-1, 'deleted_user', 'Deleted User', '', '42heilbronn', true, 'System account for anonymized data')
+			RETURNING id
+		`).Scan(&anonymizedID)
+		if err != nil {
+			slog.Error("Failed to create anonymized user", "error", err)
+			utils.RespondWithError(c, http.StatusInternalServerError, "failed to prepare deletion", err)
+			return
+		}
+	} else if err != nil {
+		slog.Error("Failed to find anonymized user", "error", err)
+		utils.RespondWithError(c, http.StatusInternalServerError, "failed to prepare deletion", err)
+		return
+	}
+
 	// Start transaction for atomic deletion
 	tx, err := h.db.Begin()
 	if err != nil {
@@ -245,7 +266,6 @@ func (h *GDPRHandler) DeleteAccount(c *gin.Context) {
 
 	// 3. Anonymize matches where user is player1, player2, winner, or submitter
 	// We keep match history but remove personal data linkage
-	anonymizedID := 0 // Use 0 or a special "deleted user" placeholder
 
 	// Anonymize player1
 	_, err = tx.Exec(`
