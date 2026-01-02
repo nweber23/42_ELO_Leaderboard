@@ -15,6 +15,14 @@ export function Terms() {
         </CardHeader>
         <CardContent>
           <section className="legal-section">
+            <h2>Hinweis zur Herkunft</h2>
+            <p>
+              Dieses Projekt ist kein offizielles 42-Projekt und steht in keiner
+              Verbindung zu einer der 42-Schulen oder zur 42-Organisation.
+            </p>
+          </section>
+
+          <section className="legal-section">
             <h2>1. Geltungsbereich</h2>
             <p>
               Diese Nutzungsbedingungen gelten für die Nutzung des ELO Leaderboard
