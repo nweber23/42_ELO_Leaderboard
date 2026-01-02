@@ -16,7 +16,7 @@ func GenerateJWT(userID int, secret string) (string, error) {
 	claims := &Claims{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour * 7)), // 7 days
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)), // 24 hours - GDPR compliant session duration
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}

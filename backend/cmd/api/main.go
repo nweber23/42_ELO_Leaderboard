@@ -81,6 +81,7 @@ func main() {
 	matchHandler := handlers.NewMatchHandler(matchService, matchRepo, reactionRepo, commentRepo)
 	adminHandler := handlers.NewAdminHandler(adminRepo, userRepo, matchRepo)
 	healthHandler := handlers.NewHealthHandler(db)
+	gdprHandler := handlers.NewGDPRHandler(db, userRepo, matchRepo, commentRepo, reactionRepo, matchService)
 
 	// Setup Gin router
 	router := gin.New()
@@ -88,6 +89,12 @@ func main() {
 	// Add recovery middleware with proper error boundaries
 	router.Use(middleware.RecoveryMiddleware())
 	router.Use(gin.Logger())
+
+	// Security headers middleware (HSTS, XSS protection, etc.) - GDPR/security compliance
+	router.Use(middleware.SecurityHeaders(cfg.CookieSecure))
+
+	// HTTPS redirect in production
+	router.Use(middleware.HTTPSRedirect(cfg.CookieSecure))
 
 	// Gzip compression middleware - compress responses for better performance
 	router.Use(gzip.Gzip(gzip.DefaultCompression))
@@ -129,6 +136,10 @@ func main() {
 		// Auth
 		protected.GET("/auth/me", authHandler.Me)
 		protected.GET("/users", authHandler.GetUsers)
+
+		// GDPR endpoints (Art. 15 & 17)
+		protected.GET("/users/me/data-export", gdprHandler.ExportUserData)
+		protected.DELETE("/users/me/delete", gdprHandler.DeleteAccount)
 
 		// Matches - apply strict rate limiting to mutation endpoints
 		protected.POST("/matches", middleware.RateLimitMiddleware(strictLimiter, middleware.CombinedKeyFunc), matchHandler.SubmitMatch)
