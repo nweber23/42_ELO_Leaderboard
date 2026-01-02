@@ -81,11 +81,11 @@ export function Impressum() {
               Die Europäische Kommission stellt eine Plattform zur
               Online-Streitbeilegung (OS) bereit:{' '}
               <a
-                href="https://ec.europa.eu/consumers/odr"
+                href="https://consumer-redress.ec.europa.eu/"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                https://ec.europa.eu/consumers/odr
+                https://consumer-redress.ec.europa.eu/
               </a>
             </p>
           </section>
