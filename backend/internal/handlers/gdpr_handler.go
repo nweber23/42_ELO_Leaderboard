@@ -115,14 +115,14 @@ type DataProcessingInfo struct {
 
 // ExportUserData handles GET /api/users/me/data-export (Art. 15 GDPR - Right to Access)
 func (h *GDPRHandler) ExportUserData(c *gin.Context) {
-	userID, exists := c.Get(middleware.UserIDKey)
+	userID, exists := middleware.GetUserID(c)
 	if !exists {
 		utils.RespondWithError(c, http.StatusUnauthorized, "unauthorized", nil)
 		return
 	}
 
 	// Get user profile
-	user, err := h.userRepo.GetByID(userID.(int))
+	user, err := h.userRepo.GetByID(userID)
 	if err != nil {
 		slog.Error("Failed to get user for data export", "error", err, "user_id", userID)
 		utils.RespondWithError(c, http.StatusInternalServerError, "failed to retrieve user data", err)
@@ -130,7 +130,7 @@ func (h *GDPRHandler) ExportUserData(c *gin.Context) {
 	}
 
 	// Get user's matches
-	matches, err := h.getMatchesForUser(userID.(int))
+	matches, err := h.getMatchesForUser(userID)
 	if err != nil {
 		slog.Error("Failed to get matches for data export", "error", err, "user_id", userID)
 		utils.RespondWithError(c, http.StatusInternalServerError, "failed to retrieve match data", err)
@@ -138,7 +138,7 @@ func (h *GDPRHandler) ExportUserData(c *gin.Context) {
 	}
 
 	// Get user's comments
-	comments, err := h.getCommentsForUser(userID.(int))
+	comments, err := h.getCommentsForUser(userID)
 	if err != nil {
 		slog.Error("Failed to get comments for data export", "error", err, "user_id", userID)
 		utils.RespondWithError(c, http.StatusInternalServerError, "failed to retrieve comment data", err)
@@ -146,7 +146,7 @@ func (h *GDPRHandler) ExportUserData(c *gin.Context) {
 	}
 
 	// Get user's reactions
-	reactions, err := h.getReactionsForUser(userID.(int))
+	reactions, err := h.getReactionsForUser(userID)
 	if err != nil {
 		slog.Error("Failed to get reactions for data export", "error", err, "user_id", userID)
 		utils.RespondWithError(c, http.StatusInternalServerError, "failed to retrieve reaction data", err)
@@ -203,14 +203,14 @@ func (h *GDPRHandler) ExportUserData(c *gin.Context) {
 
 // DeleteAccount handles DELETE /api/users/me/delete (Art. 17 GDPR - Right to Erasure)
 func (h *GDPRHandler) DeleteAccount(c *gin.Context) {
-	userID, exists := c.Get(middleware.UserIDKey)
+	userID, exists := middleware.GetUserID(c)
 	if !exists {
 		utils.RespondWithError(c, http.StatusUnauthorized, "unauthorized", nil)
 		return
 	}
 
 	// Verify user exists
-	user, err := h.userRepo.GetByID(userID.(int))
+	user, err := h.userRepo.GetByID(userID)
 	if err != nil {
 		utils.RespondWithError(c, http.StatusNotFound, "user not found", err)
 		return
