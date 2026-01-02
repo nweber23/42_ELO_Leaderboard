@@ -127,6 +127,10 @@
   --border-subtle: rgba(255, 255, 255, 0.04);
   --border-focus: rgba(255, 255, 255, 0.15);
   --border-highlight: rgba(255, 255, 255, 0.12);
+  --border-danger: rgba(239, 68, 68, 0.3);
+
+  /* Input styling */
+  --input-bg: rgba(255, 255, 255, 0.05);
 
   /* Primary accent - Refined indigo-blue */
   --accent: #6366f1;
@@ -213,6 +217,10 @@
   --border-subtle: rgba(0, 0, 0, 0.04);
   --border-focus: rgba(0, 0, 0, 0.15);
   --border-highlight: rgba(255, 255, 255, 0.8);
+  --border-danger: rgba(220, 38, 38, 0.3);
+
+  /* Input styling */
+  --input-bg: rgba(0, 0, 0, 0.03);
 
   /* Primary accent */
   --accent: #4f46e5;

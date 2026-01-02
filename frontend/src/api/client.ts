@@ -109,6 +109,36 @@ export const authAPI = {
   },
 };
 
+// GDPR API (Art. 15 & 17)
+export const gdprAPI = {
+  // Export all user data (Art. 15 - Right to Access)
+  exportData: async (): Promise<Blob> => {
+    const response = await client.get('/users/me/data-export', {
+      responseType: 'blob',
+    });
+    return response.data;
+  },
+
+  // Download user data as JSON file
+  downloadData: async (): Promise<void> => {
+    const blob = await gdprAPI.exportData();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `my-data-export-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  },
+
+  // Delete account (Art. 17 - Right to Erasure)
+  deleteAccount: async (): Promise<{ message: string }> => {
+    const { data } = await client.delete('/users/me/delete');
+    return data;
+  },
+};
+
 // Users API
 export const usersAPI = {
   getAll: async (): Promise<User[]> => {

@@ -324,11 +324,39 @@
 }
 
 /* ============================================
-   Footer — Hidden on mobile
+   Footer — Hidden on mobile (except legal links)
    ============================================ */
 
 .footer {
   display: none;
+}
+
+/* Mobile legal links - must be accessible for GDPR compliance */
+.footer__legal--mobile {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-4) var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  margin-top: var(--space-6);
+}
+
+.footer__legal--mobile a {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.footer__legal--mobile a:hover {
+  color: var(--accent);
+}
+
+/* Hide mobile legal links on desktop (use full footer instead) */
+@media (min-width: 768px) {
+  .footer__legal--mobile {
+    display: none;
+  }
 }
 
 /* ============================================
@@ -429,6 +457,14 @@
     padding: var(--space-5) 0;
     font-size: var(--text-xs);
     color: var(--muted);
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+
+  .footer__legal {
+    display: flex;
+    gap: var(--space-4);
+    align-items: center;
   }
 
   .footer__link {

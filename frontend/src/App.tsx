@@ -5,6 +5,7 @@ import type { User } from './types';
 import { AppShell } from './layout/AppShell';
 import { Spinner } from './ui';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { CookieConsentBanner } from './components/CookieConsent';
 
 // Lazy load pages for code splitting
 const Login = lazy(() => import('./pages/Login'));
@@ -13,6 +14,12 @@ const Matches = lazy(() => import('./pages/Matches'));
 const SubmitMatch = lazy(() => import('./pages/SubmitMatch'));
 const PlayerProfile = lazy(() => import('./pages/PlayerProfile'));
 const Admin = lazy(() => import('./pages/Admin').then(m => ({ default: m.Admin })));
+
+// Legal pages (GDPR / DSGVO compliance)
+const Impressum = lazy(() => import('./pages/Impressum'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const Terms = lazy(() => import('./pages/Terms'));
+const Settings = lazy(() => import('./pages/Settings'));
 
 // SECURITY: Extract and clear sensitive params from URL immediately, before any rendering
 // This minimizes the time the token is visible in the browser's URL bar
@@ -82,10 +89,17 @@ function App() {
               <Route path="/matches" element={user ? <Matches user={user} /> : <Navigate to="/login" replace />} />
               <Route path="/submit" element={user ? <SubmitMatch user={user} /> : <Navigate to="/login" replace />} />
               <Route path="/admin" element={user ? <Admin user={user} /> : <Navigate to="/login" replace />} />
+              <Route path="/settings" element={user ? <Settings user={user} onLogout={handleLogout} /> : <Navigate to="/login" replace />} />
+              {/* Legal pages (GDPR / DSGVO compliance) */}
+              <Route path="/impressum" element={<Impressum />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
             </Route>
             <Route path="/login" element={<Login onLogin={setUser} />} />
           </Routes>
         </Suspense>
+        {/* Cookie consent banner - GDPR requirement */}
+        <CookieConsentBanner />
       </Router>
     </ErrorBoundary>
   );

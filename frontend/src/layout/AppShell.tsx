@@ -12,6 +12,7 @@ const icons = {
   submit: "➕",
   admin: "⚙️",
   profile: "👤",
+  settings: "🔧",
 };
 
 export function AppShell({
@@ -102,6 +103,12 @@ export function AppShell({
         <div className="container main__inner">
           <Outlet />
         </div>
+        {/* Mobile Legal Links - GDPR compliance requires these to be accessible */}
+        <div className="footer__legal--mobile" aria-label="Legal links">
+          <NavLink to="/impressum">Impressum</NavLink>
+          <NavLink to="/privacy">Datenschutz</NavLink>
+          <NavLink to="/terms">AGB</NavLink>
+        </div>
       </main>
 
       {/* Mobile Bottom Navigation */}
@@ -115,6 +122,13 @@ export function AppShell({
             >
               <span className="nav__icon">{icons.profile}</span>
               <span className="nav__label">Profile</span>
+            </NavLink>
+            <NavLink
+              to="/settings"
+              className={location.pathname === '/settings' ? "nav__link nav__link--active" : "nav__link"}
+            >
+              <span className="nav__icon">{icons.settings}</span>
+              <span className="nav__label">Settings</span>
             </NavLink>
             <button
               onClick={onLogout}
@@ -149,6 +163,11 @@ export function AppShell({
               @nweber
             </a>
           </span>
+          <nav className="footer__legal" aria-label="Legal links">
+            <NavLink to="/impressum" className="footer__link">Impressum</NavLink>
+            <NavLink to="/privacy" className="footer__link">Datenschutz</NavLink>
+            <NavLink to="/terms" className="footer__link">Nutzungsbedingungen</NavLink>
+          </nav>
           <span className="faint">Fast · Clean · Fair</span>
         </div>
       </footer>

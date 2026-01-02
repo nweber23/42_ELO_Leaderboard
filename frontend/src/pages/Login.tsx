@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { authAPI } from '../api/client';
 import type { User } from '../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/Card';
@@ -132,7 +133,17 @@ function Login({ onLogin }: LoginProps) {
               </Button>
 
               <div className="login__smallprint">
-                By continuing you agree to have your public 42 profile data stored for leaderboard features.
+                By signing in, you consent to the storage and processing of your public 42 profile data
+                for leaderboard and match history purposes in accordance with our{' '}
+                <Link to="/privacy" className="login__link">Privacy Policy</Link>.
+              </div>
+
+              <div className="login__legal">
+                <Link to="/privacy">Datenschutz</Link>
+                <span>·</span>
+                <Link to="/terms">Nutzungsbedingungen</Link>
+                <span>·</span>
+                <Link to="/impressum">Impressum</Link>
               </div>
             </CardContent>
           </Card>
