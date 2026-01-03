@@ -311,14 +311,15 @@ func (h *GDPRHandler) DeleteAccount(c *gin.Context) {
 		return
 	}
 
-	// 4. Delete audit log entries related to this user (admin actions on this user)
-	_, err = tx.Exec("DELETE FROM admin_audit_log WHERE target_user_id = $1", userID)
+	// 5. Delete audit log entries related to this user (admin actions on this user)
+	// Note: target_type must be 'user' and target_id matches userID
+	_, err = tx.Exec("DELETE FROM admin_audit_log WHERE target_type = 'user' AND target_id = $1", userID)
 	if err != nil {
 		slog.Error("Failed to delete audit log entries", "error", err, "user_id", userID)
 		// Non-critical, continue
 	}
 
-	// 5. Delete the user account
+	// 6. Delete the user account
 	_, err = tx.Exec("DELETE FROM users WHERE id = $1", userID)
 	if err != nil {
 		slog.Error("Failed to delete user", "error", err, "user_id", userID)
