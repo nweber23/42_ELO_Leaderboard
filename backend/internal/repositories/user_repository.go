@@ -159,6 +159,7 @@ func (r *UserRepository) GetAll() ([]models.User, error) {
 		       table_tennis_elo, table_football_elo, is_admin, is_banned,
 		       ban_reason, banned_at, banned_by, created_at, updated_at
 		FROM users
+		WHERE intra_id != -1
 		ORDER BY login
 	`
 
