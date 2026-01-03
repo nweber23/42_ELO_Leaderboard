@@ -222,6 +222,7 @@ func (r *MatchRepository) GetLeaderboardEntries(sport string) ([]models.Leaderbo
 			LEFT JOIN matches m ON (m.player1_id = u.id OR m.player2_id = u.id)
 				AND m.sport = $1
 				AND m.status = $2
+			WHERE u.intra_id != -1
 			GROUP BY u.id, u.intra_id, u.login, u.display_name, u.avatar_url, u.campus,
 				u.table_tennis_elo, u.table_football_elo, u.created_at, u.updated_at
 		)
