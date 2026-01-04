@@ -19,7 +19,6 @@ type GDPRHandler struct {
 	userRepo     *repositories.UserRepository
 	matchRepo    *repositories.MatchRepository
 	commentRepo  *repositories.CommentRepository
-	reactionRepo *repositories.ReactionRepository
 	matchService *services.MatchService
 }
 
@@ -29,7 +28,6 @@ func NewGDPRHandler(
 	userRepo *repositories.UserRepository,
 	matchRepo *repositories.MatchRepository,
 	commentRepo *repositories.CommentRepository,
-	reactionRepo *repositories.ReactionRepository,
 	matchService *services.MatchService,
 ) *GDPRHandler {
 	return &GDPRHandler{
@@ -37,7 +35,6 @@ func NewGDPRHandler(
 		userRepo:     userRepo,
 		matchRepo:    matchRepo,
 		commentRepo:  commentRepo,
-		reactionRepo: reactionRepo,
 		matchService: matchService,
 	}
 }
@@ -49,7 +46,6 @@ type UserDataExport struct {
 	Profile       UserProfileExport      `json:"profile"`
 	Matches       []MatchExport          `json:"matches"`
 	Comments      []CommentExport        `json:"comments"`
-	Reactions     []ReactionExport       `json:"reactions"`
 	DataInfo      DataProcessingInfo     `json:"data_processing_info"`
 }
 
@@ -95,14 +91,6 @@ type CommentExport struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-// ReactionExport contains reaction data for export
-type ReactionExport struct {
-	ID        int       `json:"id"`
-	MatchID   int       `json:"match_id"`
-	Emoji     string    `json:"emoji"`
-	CreatedAt time.Time `json:"created_at"`
-}
-
 // DataProcessingInfo provides information about data processing (Art. 13/14 GDPR)
 type DataProcessingInfo struct {
 	Purpose           string   `json:"purpose"`
@@ -145,14 +133,6 @@ func (h *GDPRHandler) ExportUserData(c *gin.Context) {
 		return
 	}
 
-	// Get user's reactions
-	reactions, err := h.getReactionsForUser(userID)
-	if err != nil {
-		slog.Error("Failed to get reactions for data export", "error", err, "user_id", userID)
-		utils.RespondWithError(c, http.StatusInternalServerError, "failed to retrieve reaction data", err)
-		return
-	}
-
 	export := UserDataExport{
 		ExportDate:    time.Now().UTC().Format(time.RFC3339),
 		ExportVersion: "1.0",
@@ -172,7 +152,6 @@ func (h *GDPRHandler) ExportUserData(c *gin.Context) {
 		},
 		Matches:   matches,
 		Comments:  comments,
-		Reactions: reactions,
 		DataInfo: DataProcessingInfo{
 			Purpose:         "ELO Leaderboard ranking system for table tennis and table football at 42 Heilbronn",
 			LegalBasis:      "Art. 6(1)(a) GDPR - Consent, Art. 6(1)(b) GDPR - Contract performance",
@@ -193,7 +172,7 @@ func (h *GDPRHandler) ExportUserData(c *gin.Context) {
 		},
 	}
 
-	slog.Info("User data exported", "user_id", userID, "matches", len(matches), "comments", len(comments), "reactions", len(reactions))
+	slog.Info("User data exported", "user_id", userID, "matches", len(matches), "comments", len(comments))
 
 	// Set headers for download
 	c.Header("Content-Disposition", "attachment; filename=my-data-export.json")
@@ -248,15 +227,7 @@ func (h *GDPRHandler) DeleteAccount(c *gin.Context) {
 	}
 	defer tx.Rollback()
 
-	// 1. Delete all reactions by this user
-	_, err = tx.Exec("DELETE FROM reactions WHERE user_id = $1", userID)
-	if err != nil {
-		slog.Error("Failed to delete reactions", "error", err, "user_id", userID)
-		utils.RespondWithError(c, http.StatusInternalServerError, "failed to delete reactions", err)
-		return
-	}
-
-	// 2. Delete all comments by this user
+	// 1. Delete all comments by this user
 	_, err = tx.Exec("DELETE FROM comments WHERE user_id = $1", userID)
 	if err != nil {
 		slog.Error("Failed to delete comments", "error", err, "user_id", userID)
@@ -264,7 +235,7 @@ func (h *GDPRHandler) DeleteAccount(c *gin.Context) {
 		return
 	}
 
-	// 3. Anonymize matches where user is player1, player2, winner, or submitter
+	// 2. Anonymize matches where user is player1, player2, winner, or submitter
 	// We keep match history but remove personal data linkage
 
 	// Anonymize player1
@@ -344,7 +315,6 @@ func (h *GDPRHandler) DeleteAccount(c *gin.Context) {
 		"deleted": gin.H{
 			"user_id":            userID,
 			"comments_deleted":   true,
-			"reactions_deleted":  true,
 			"matches_anonymized": true,
 		},
 	})
@@ -463,30 +433,4 @@ func (h *GDPRHandler) getCommentsForUser(userID int) ([]CommentExport, error) {
 	}
 
 	return comments, rows.Err()
-}
-
-func (h *GDPRHandler) getReactionsForUser(userID int) ([]ReactionExport, error) {
-	query := `
-		SELECT id, match_id, emoji, created_at
-		FROM reactions
-		WHERE user_id = $1
-		ORDER BY created_at DESC
-	`
-
-	rows, err := h.db.Query(query, userID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var reactions []ReactionExport
-	for rows.Next() {
-		var r ReactionExport
-		if err := rows.Scan(&r.ID, &r.MatchID, &r.Emoji, &r.CreatedAt); err != nil {
-			return nil, err
-		}
-		reactions = append(reactions, r)
-	}
-
-	return reactions, rows.Err()
 }
