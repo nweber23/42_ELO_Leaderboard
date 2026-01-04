@@ -249,11 +249,20 @@ function Matches({ user }: MatchesProps) {
                       </Link>
                     ) : 'Player 2'}: {match.player2_score}
                   </div>
-                  {match.status === 'confirmed' && match.player1_elo_delta !== undefined && (
-                    <div className="elo-changes">
-                      {player1?.display_name || 'P1'} {match.player1_elo_delta > 0 ? '+' : ''}{match.player1_elo_delta} · {player2?.display_name || 'P2'} {match.player2_elo_delta! > 0 ? '+' : ''}{match.player2_elo_delta}
+
+                  {match.context && (
+                    <div className="match-context">
+                      "{match.context}"
                     </div>
                   )}
+
+                  <div className="meta">
+                    {match.status === 'confirmed' && match.player1_elo_delta !== undefined && (
+                      <div className="elo-changes">
+                        {player1?.display_name || 'P1'} {match.player1_elo_delta > 0 ? '+' : ''}{match.player1_elo_delta} · {player2?.display_name || 'P2'} {match.player2_elo_delta! > 0 ? '+' : ''}{match.player2_elo_delta}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {canRespond && (

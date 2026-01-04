@@ -237,3 +237,15 @@
     box-shadow: var(--shadow-md);
   }
 }
+
+/* Match Context */
+.match-context {
+  margin-top: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-hover);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--muted);
+  font-style: italic;
+  border-left: 3px solid var(--accent);
+}

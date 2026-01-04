@@ -89,6 +89,7 @@ function SubmitMatch({ user }: SubmitMatchProps) {
         opponent_id: opponentId,
         player_score: pScore,
         opponent_score: oScore,
+        context: notes,
       });
       navigate('/matches');
     } catch (err: unknown) {
