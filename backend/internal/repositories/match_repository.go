@@ -21,8 +21,8 @@ func (r *MatchRepository) Create(tx *sql.Tx, match *models.Match) error {
 	query := `
 		INSERT INTO matches (
 			sport, player1_id, player2_id, player1_score, player2_score,
-			winner_id, status, submitted_by
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+			winner_id, status, submitted_by, context
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 		RETURNING id, created_at, updated_at
 	`
 
@@ -41,6 +41,7 @@ func (r *MatchRepository) Create(tx *sql.Tx, match *models.Match) error {
 			match.WinnerID,
 			match.Status,
 			match.SubmittedBy,
+			match.Context,
 		)
 	} else {
 		scanner = r.db.QueryRow(
@@ -53,6 +54,7 @@ func (r *MatchRepository) Create(tx *sql.Tx, match *models.Match) error {
 			match.WinnerID,
 			match.Status,
 			match.SubmittedBy,
+			match.Context,
 		)
 	}
 
@@ -64,7 +66,7 @@ func (r *MatchRepository) GetByID(id int) (*models.Match, error) {
 	match := &models.Match{}
 	query := `
 		SELECT id, sport, player1_id, player2_id, player1_score, player2_score,
-		       winner_id, status, player1_elo_before, player1_elo_after, player1_elo_delta,
+		       winner_id, status, context, player1_elo_before, player1_elo_after, player1_elo_delta,
 		       player2_elo_before, player2_elo_after, player2_elo_delta,
 		       submitted_by, confirmed_at, denied_at, created_at, updated_at
 		FROM matches WHERE id = $1
@@ -79,6 +81,7 @@ func (r *MatchRepository) GetByID(id int) (*models.Match, error) {
 		&match.Player2Score,
 		&match.WinnerID,
 		&match.Status,
+		&match.Context,
 		&match.Player1ELOBefore,
 		&match.Player1ELOAfter,
 		&match.Player1ELODelta,
@@ -104,7 +107,7 @@ func (r *MatchRepository) GetPendingMatchBetweenPlayers(player1ID, player2ID int
 	match := &models.Match{}
 	query := `
 		SELECT id, sport, player1_id, player2_id, player1_score, player2_score,
-		       winner_id, status, player1_elo_before, player1_elo_after, player1_elo_delta,
+		       winner_id, status, context, player1_elo_before, player1_elo_after, player1_elo_delta,
 		       player2_elo_before, player2_elo_after, player2_elo_delta,
 		       submitted_by, confirmed_at, denied_at, created_at, updated_at
 		FROM matches
@@ -123,6 +126,7 @@ func (r *MatchRepository) GetPendingMatchBetweenPlayers(player1ID, player2ID int
 		&match.Player2Score,
 		&match.WinnerID,
 		&match.Status,
+		&match.Context,
 		&match.Player1ELOBefore,
 		&match.Player1ELOAfter,
 		&match.Player1ELODelta,
@@ -298,7 +302,7 @@ func (r *MatchRepository) CancelMatch(matchID int) error {
 func (r *MatchRepository) GetMatches(userID *int, sport *string, status *string, limit int, offset int) ([]models.Match, error) {
 	query := `
 		SELECT id, sport, player1_id, player2_id, player1_score, player2_score,
-		       winner_id, status, player1_elo_before, player1_elo_after, player1_elo_delta,
+		       winner_id, status, context, player1_elo_before, player1_elo_after, player1_elo_delta,
 		       player2_elo_before, player2_elo_after, player2_elo_delta,
 		       submitted_by, confirmed_at, denied_at, created_at, updated_at
 		FROM matches
@@ -348,6 +352,7 @@ func (r *MatchRepository) GetMatches(userID *int, sport *string, status *string,
 			&match.Player2Score,
 			&match.WinnerID,
 			&match.Status,
+			&match.Context,
 			&match.Player1ELOBefore,
 			&match.Player1ELOAfter,
 			&match.Player1ELODelta,
@@ -372,7 +377,7 @@ func (r *MatchRepository) GetMatches(userID *int, sport *string, status *string,
 func (r *MatchRepository) GetUserMatches(userID int, sport *string, opponentID *int, won *bool) ([]models.Match, error) {
 	query := `
 		SELECT id, sport, player1_id, player2_id, player1_score, player2_score,
-		       winner_id, status, player1_elo_before, player1_elo_after, player1_elo_delta,
+		       winner_id, status, context, player1_elo_before, player1_elo_after, player1_elo_delta,
 		       player2_elo_before, player2_elo_after, player2_elo_delta,
 		       submitted_by, confirmed_at, denied_at, created_at, updated_at
 		FROM matches
@@ -425,6 +430,7 @@ func (r *MatchRepository) GetUserMatches(userID int, sport *string, opponentID *
 			&match.Player2Score,
 			&match.WinnerID,
 			&match.Status,
+			&match.Context,
 			&match.Player1ELOBefore,
 			&match.Player1ELOAfter,
 			&match.Player1ELODelta,

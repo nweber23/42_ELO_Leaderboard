@@ -45,6 +45,7 @@ type Match struct {
 	Player2Score     int        `json:"player2_score"`
 	WinnerID         int        `json:"winner_id"`
 	Status           string     `json:"status"`
+	Context          string     `json:"context,omitempty"`
 	Player1ELOBefore *int       `json:"player1_elo_before,omitempty"`
 	Player1ELOAfter  *int       `json:"player1_elo_after,omitempty"`
 	Player1ELODelta  *int       `json:"player1_elo_delta,omitempty"`
@@ -116,6 +117,7 @@ type SubmitMatchRequest struct {
 	OpponentID   int    `json:"opponent_id" binding:"required,min=1"`
 	PlayerScore  int    `json:"player_score" binding:"required,min=0"`
 	OpponentScore int   `json:"opponent_score" binding:"required,min=0"`
+	Context      string `json:"context"`
 }
 
 // AddCommentRequest is the request body for adding a comment
