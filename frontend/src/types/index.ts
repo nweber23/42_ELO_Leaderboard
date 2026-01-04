@@ -48,14 +48,6 @@ export interface LeaderboardEntry {
   win_rate: number;
 }
 
-export interface Reaction {
-  id: number;
-  match_id: number;
-  user_id: number;
-  emoji: string;
-  created_at: string;
-}
-
 export interface Comment {
   id: number;
   match_id: number;

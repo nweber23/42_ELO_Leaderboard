@@ -6,7 +6,6 @@ import { SPORT_LABELS } from '../types';
 import { Page } from '../layout/Page';
 import { Card } from '../ui/Card';
 import { StatusPill } from '../ui/StatusPill';
-import Reactions from '../components/Reactions';
 import Comments from '../components/Comments';
 import { getErrorMessage } from '../utils/errorUtils';
 import { useUsers, findUserById } from '../hooks';
@@ -278,7 +277,6 @@ function Matches({ user }: MatchesProps) {
 
                 {match.status === 'confirmed' && (
                   <>
-                    <Reactions matchId={match.id} userId={user.id} />
                     <Comments matchId={match.id} userId={user.id} />
                   </>
                 )}
