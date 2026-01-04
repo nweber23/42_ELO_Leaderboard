@@ -38,48 +38,6 @@ The 42 Heilbronn ELO Leaderboard is a full-stack web application that enables st
 | 📱 **Responsive** | Mobile-friendly design for all devices |
 | ⚡ **Performance** | Gzip compression, caching, code splitting, lazy loading |
 | 🛡️ **Error Handling** | Graceful error boundaries and user-friendly messages |
-| 🇪🇺 **GDPR Compliant** | Full EU data protection compliance |
-
-## 🔒 GDPR / DSGVO Compliance
-
-This application is fully compliant with the EU General Data Protection Regulation (GDPR / DSGVO) for deployment in Germany and the EU.
-
-### Legal Pages
-- **Impressum** (`/impressum`) - Legal notice as required by German law (§ 5 TMG)
-- **Datenschutzerklärung** (`/privacy`) - Privacy policy with data processing details
-- **Nutzungsbedingungen** (`/terms`) - Terms of service and acceptable use
-
-### User Rights Implementation
-
-| Right | Implementation |
-|-------|----------------|
-| **Right to Access (Art. 15)** | `/api/users/me/data-export` - Download all personal data as JSON |
-| **Right to Erasure (Art. 17)** | `/api/users/me/delete` - Delete account and anonymize matches |
-| **Right to Information (Art. 13/14)** | Clear privacy policy describing all data processing |
-| **Cookie Consent** | Banner with accept/reject before any non-essential cookies |
-
-### Data Collected
-| Field | Purpose | Retention |
-|-------|---------|-----------|
-| `intra_id` | User identification | Until deletion |
-| `login` | 42 username display | Until deletion |
-| `display_name` | Profile display | Until deletion |
-| `avatar_url` | Profile picture | Until deletion |
-| `campus` | Campus verification | Until deletion |
-
-### Security Measures
-- ✅ HTTPS enforcement in production (HSTS headers)
-- ✅ Secure cookie settings (`HttpOnly`, `Secure`, `SameSite`)
-- ✅ JWT with 24-hour expiration
-- ✅ Security headers (CSP, XSS protection, etc.)
-- ✅ Input sanitization and validation
-- ✅ Rate limiting on sensitive endpoints
-
-### Production Deployment Checklist
-1. Set `COOKIE_SECURE=true` for HTTPS-only cookies
-2. Configure valid SSL certificate (e.g., Let's Encrypt)
-3. Update legal pages with actual operator information
-4. Update privacy email addresses
 
 ## 🛠️ Tech Stack
 
@@ -297,16 +255,13 @@ Submit Match → Pending → Opponent Confirms → ELO Updated
 ## 🔒 Security
 
 - **OAuth 2.0** authentication via 42 Intra
-- **CSRF protection** for OAuth state validation
 - **Campus validation** ensures only Heilbronn students can access
-- **JWT tokens** with httpOnly cookie option for secure storage
-- **Rate limiting** to prevent API abuse (10-100 req/min by endpoint)
+- **JWT tokens** with httpOnly cookies for secure storage
+- **Rate limiting** to prevent API abuse
 - **Input sanitization** on all user-provided data
 - **SQL injection prevention** via prepared statements
-- **Emoji validation** against whitelist
 - **Ban enforcement** middleware blocks banned users
 - **Error boundaries** prevent cascading UI failures
-- **CORS** properly configured
 
 ## 🛠️ Development
 
