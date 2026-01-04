@@ -431,53 +431,6 @@
   font-size: var(--text-md);
 }
 
-/* ============================================
-   Reactions — Glassmorphism 2.0
-   ============================================ */
-
-.reactions-container {
-  margin-top: var(--space-5);
-  padding-top: var(--space-5);
-  border-top: 1px solid var(--border);
-}
-
-.reactions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.reaction-button {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  background: var(--surface);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-full);
-  font-size: var(--text-sm);
-  transition:
-    all var(--dur-base) var(--ease-out),
-    transform var(--dur-fast) var(--ease-spring);
-}
-
-.reaction-button:hover {
-  background: var(--surface-hover);
-  border-color: var(--border-focus);
-  transform: scale(1.05);
-}
-
-.reaction-button:active {
-  transform: scale(0.95);
-}
-
-.reaction-button.active {
-  background: var(--accent-muted);
-  border-color: var(--accent);
-  box-shadow: 0 0 12px var(--accent-glow);
-}
 
 .reaction-count {
   font-size: var(--text-xs);

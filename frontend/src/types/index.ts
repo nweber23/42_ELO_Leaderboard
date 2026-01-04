@@ -25,6 +25,7 @@ export interface Match {
   player2_score: number;
   winner_id: number;
   status: 'pending' | 'confirmed' | 'denied' | 'cancelled' | 'disputed';
+  context?: string;
   player1_elo_before?: number;
   player1_elo_after?: number;
   player1_elo_delta?: number;
@@ -48,14 +49,6 @@ export interface LeaderboardEntry {
   win_rate: number;
 }
 
-export interface Reaction {
-  id: number;
-  match_id: number;
-  user_id: number;
-  emoji: string;
-  created_at: string;
-}
-
 export interface Comment {
   id: number;
   match_id: number;
@@ -70,6 +63,7 @@ export interface SubmitMatchRequest {
   opponent_id: number;
   player_score: number;
   opponent_score: number;
+  context?: string;
 }
 
 export const SPORTS = {

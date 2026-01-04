@@ -82,6 +82,7 @@ func (s *MatchService) SubmitMatch(req *models.SubmitMatchRequest, submitterID i
 		WinnerID:     winnerID,
 		Status:       models.StatusPending,
 		SubmittedBy:  submitterID,
+		Context:      req.Context,
 	}
 
 	if err := s.matchRepo.Create(nil, match); err != nil {

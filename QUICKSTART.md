@@ -71,7 +71,7 @@ openssl rand -hex 32
 
 The API has built-in rate limiting to prevent abuse:
 - **Strict** (10 req/min): Match submission, confirm/deny/cancel
-- **Moderate** (30 req/min): Reactions, comments
+- **Moderate** (30 req/min): Comments
 - **Loose** (100 req/min): Read operations
 
 ## Development
@@ -145,10 +145,8 @@ docker-compose up --build
 │   │   ├── api/            # API client (Axios)
 │   │   ├── components/     # Reusable components
 │   │   │   ├── Comments.tsx      # Match comments
-│   │   │   ├── EmojiPicker.tsx   # Emoji picker
 │   │   │   ├── ErrorBoundary.tsx # Error handling
 │   │   │   ├── LazyImage.tsx     # Lazy-loaded images
-│   │   │   ├── Reactions.tsx     # Match reactions
 │   │   │   └── StatsDashboard.tsx # Statistics charts
 │   │   ├── hooks/          # Custom hooks (useUsers, usePerformance)
 │   │   ├── layout/         # App shell and page layouts
@@ -189,8 +187,8 @@ docker-compose up --build
 | **Admin Panel** | Manage users, revert matches, ban players |
 | **Statistics** | ELO history, win rates, head-to-head |
 | **Social** | React with emojis and comment on matches |
-
-## Support
+| **Statistics** | ELO history, win rates, head-to-head |
+| **Social** | Comment on matches |
 
 - Check the full README.md for detailed documentation
 - Backend API docs: http://localhost:8080/health

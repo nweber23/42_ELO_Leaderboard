@@ -1,6 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import type {
-  User, Match, LeaderboardEntry, Reaction, Comment, SubmitMatchRequest,
+  User, Match, LeaderboardEntry, Comment, SubmitMatchRequest,
   SystemHealth, ELOAdjustment, AdminAuditLog, AdjustELORequest, BanUserRequest
 } from '../types';
 
@@ -188,23 +188,6 @@ export const leaderboardAPI = {
   get: async (sport: string): Promise<LeaderboardEntry[]> => {
     const { data } = await client.get(`/leaderboard/${sport}`);
     return data;
-  },
-};
-
-// Reaction API
-export const reactionAPI = {
-  add: async (matchId: number, emoji: string): Promise<Reaction> => {
-    const { data } = await client.post(`/matches/${matchId}/reactions`, { emoji });
-    return data;
-  },
-
-  list: async (matchId: number): Promise<Reaction[]> => {
-    const { data } = await client.get(`/matches/${matchId}/reactions`);
-    return data;
-  },
-
-  remove: async (matchId: number, emoji: string): Promise<void> => {
-    await client.delete(`/matches/${matchId}/reactions/${emoji}`);
   },
 };
 

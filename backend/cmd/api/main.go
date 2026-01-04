@@ -68,7 +68,6 @@ func main() {
 	// Initialize repositories
 	userRepo := repositories.NewUserRepository(db)
 	matchRepo := repositories.NewMatchRepository(db)
-	reactionRepo := repositories.NewReactionRepository(db)
 	commentRepo := repositories.NewCommentRepository(db)
 	adminRepo := repositories.NewAdminRepository(db)
 
@@ -78,10 +77,10 @@ func main() {
 
 	// Initialize handlers
 	authHandler := handlers.NewAuthHandler(cfg, userRepo, matchService)
-	matchHandler := handlers.NewMatchHandler(matchService, matchRepo, reactionRepo, commentRepo)
+	matchHandler := handlers.NewMatchHandler(matchService, matchRepo, commentRepo)
 	adminHandler := handlers.NewAdminHandler(adminRepo, userRepo, matchRepo)
 	healthHandler := handlers.NewHealthHandler(db)
-	gdprHandler := handlers.NewGDPRHandler(db, userRepo, matchRepo, commentRepo, reactionRepo, matchService)
+	gdprHandler := handlers.NewGDPRHandler(db, userRepo, matchRepo, commentRepo, matchService)
 
 	// Setup Gin router
 	router := gin.New()
@@ -110,7 +109,7 @@ func main() {
 
 	// Initialize rate limiters
 	strictLimiter := middleware.NewStrictRateLimiter()   // 10 req/min for match submission
-	moderateLimiter := middleware.NewModerateRateLimiter() // 30 req/min for reactions/comments
+	moderateLimiter := middleware.NewModerateRateLimiter() // 30 req/min for comments
 	looseLimiter := middleware.NewLooseRateLimiter()     // 100 req/min for reads
 
 	// Public routes
@@ -148,11 +147,6 @@ func main() {
 		protected.POST("/matches/:id/confirm", middleware.RateLimitMiddleware(strictLimiter, middleware.CombinedKeyFunc), matchHandler.ConfirmMatch)
 		protected.POST("/matches/:id/deny", middleware.RateLimitMiddleware(strictLimiter, middleware.CombinedKeyFunc), matchHandler.DenyMatch)
 		protected.POST("/matches/:id/cancel", middleware.RateLimitMiddleware(strictLimiter, middleware.CombinedKeyFunc), matchHandler.CancelMatch)
-
-		// Reactions - moderate rate limiting
-		protected.POST("/matches/:id/reactions", middleware.RateLimitMiddleware(moderateLimiter, middleware.CombinedKeyFunc), matchHandler.AddReaction)
-		protected.GET("/matches/:id/reactions", middleware.RateLimitMiddleware(looseLimiter, middleware.IPKeyFunc), matchHandler.GetReactions)
-		protected.DELETE("/matches/:id/reactions/:emoji", middleware.RateLimitMiddleware(moderateLimiter, middleware.CombinedKeyFunc), matchHandler.RemoveReaction)
 
 		// Comments - moderate rate limiting
 		protected.POST("/matches/:id/comments", middleware.RateLimitMiddleware(moderateLimiter, middleware.CombinedKeyFunc), matchHandler.AddComment)

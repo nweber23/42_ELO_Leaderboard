@@ -31,7 +31,7 @@ The 42 Heilbronn ELO Leaderboard is a full-stack web application that enables st
 | 🔍 **Player Search** | Search players by display name or intra login |
 | 📈 **Statistics** | Win streaks, highest ELO, win rates, and more |
 | 📜 **Match History** | Filter by sport, opponent, date range, and outcome |
-| 💬 **Social** | React with emojis and comment on matches |
+| 💬 **Social** | Comment on matches |
 | 📊 **Statistics Dashboard** | Charts for ELO history, win rates, and trends |
 | 🎯 **ELO Prediction** | See predicted rating change before match submission |
 | 👨‍💼 **Admin Panel** | Manage users, revert matches, ban players |
@@ -248,7 +248,6 @@ Submit Match → Pending → Opponent Confirms → ELO Updated
 |-------|-------------|
 | `users` | Player profiles with dual ELO ratings, admin flags, ban status |
 | `matches` | Match records with scores, status, ELO deltas, and notes |
-| `reactions` | Emoji reactions on matches |
 | `comments` | Text comments on matches with pagination |
 
 ## 📡 API Reference
@@ -269,10 +268,9 @@ Submit Match → Pending → Opponent Confirms → ELO Updated
 | `POST` | `/api/matches/:id/confirm` | Confirm a match |
 | `POST` | `/api/matches/:id/deny` | Deny a match |
 | `POST` | `/api/matches/:id/cancel` | Cancel a match |
+| `POST` | `/api/matches/:id/cancel` | Cancel a match |
 | `GET` | `/api/matches` | List matches (with filters) |
-| `POST` | `/api/matches/:id/reactions` | Add emoji reaction |
 | `GET` | `/api/matches/:id/comments` | Get comments (paginated) |
-| `POST` | `/api/matches/:id/comments` | Add comment |
 | `GET` | `/api/users/:id` | Get player profile |
 | `GET` | `/api/users/:id/stats` | Get player statistics |
 

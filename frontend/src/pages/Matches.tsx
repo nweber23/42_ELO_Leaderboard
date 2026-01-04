@@ -6,7 +6,6 @@ import { SPORT_LABELS } from '../types';
 import { Page } from '../layout/Page';
 import { Card } from '../ui/Card';
 import { StatusPill } from '../ui/StatusPill';
-import Reactions from '../components/Reactions';
 import Comments from '../components/Comments';
 import { getErrorMessage } from '../utils/errorUtils';
 import { useUsers, findUserById } from '../hooks';
@@ -250,11 +249,20 @@ function Matches({ user }: MatchesProps) {
                       </Link>
                     ) : 'Player 2'}: {match.player2_score}
                   </div>
-                  {match.status === 'confirmed' && match.player1_elo_delta !== undefined && (
-                    <div className="elo-changes">
-                      {player1?.display_name || 'P1'} {match.player1_elo_delta > 0 ? '+' : ''}{match.player1_elo_delta} · {player2?.display_name || 'P2'} {match.player2_elo_delta! > 0 ? '+' : ''}{match.player2_elo_delta}
+
+                  {match.context && (
+                    <div className="match-context">
+                      "{match.context}"
                     </div>
                   )}
+
+                  <div className="meta">
+                    {match.status === 'confirmed' && match.player1_elo_delta !== undefined && (
+                      <div className="elo-changes">
+                        {player1?.display_name || 'P1'} {match.player1_elo_delta > 0 ? '+' : ''}{match.player1_elo_delta} · {player2?.display_name || 'P2'} {match.player2_elo_delta! > 0 ? '+' : ''}{match.player2_elo_delta}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {canRespond && (
@@ -278,7 +286,6 @@ function Matches({ user }: MatchesProps) {
 
                 {match.status === 'confirmed' && (
                   <>
-                    <Reactions matchId={match.id} userId={user.id} />
                     <Comments matchId={match.id} userId={user.id} />
                   </>
                 )}

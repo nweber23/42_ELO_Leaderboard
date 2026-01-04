@@ -45,6 +45,7 @@ type Match struct {
 	Player2Score     int        `json:"player2_score"`
 	WinnerID         int        `json:"winner_id"`
 	Status           string     `json:"status"`
+	Context          string     `json:"context,omitempty"`
 	Player1ELOBefore *int       `json:"player1_elo_before,omitempty"`
 	Player1ELOAfter  *int       `json:"player1_elo_after,omitempty"`
 	Player1ELODelta  *int       `json:"player1_elo_delta,omitempty"`
@@ -65,15 +66,6 @@ type MatchWithPlayers struct {
 	Player2      User `json:"player2"`
 	Winner       User `json:"winner"`
 	SubmittedBy_ User `json:"submitted_by_user"`
-}
-
-// Reaction represents an emoji reaction to a match
-type Reaction struct {
-	ID        int       `json:"id"`
-	MatchID   int       `json:"match_id"`
-	UserID    int       `json:"user_id"`
-	Emoji     string    `json:"emoji"`
-	CreatedAt time.Time `json:"created_at"`
 }
 
 // Comment represents a comment on a match
@@ -125,11 +117,7 @@ type SubmitMatchRequest struct {
 	OpponentID   int    `json:"opponent_id" binding:"required,min=1"`
 	PlayerScore  int    `json:"player_score" binding:"required,min=0"`
 	OpponentScore int   `json:"opponent_score" binding:"required,min=0"`
-}
-
-// AddReactionRequest is the request body for adding a reaction
-type AddReactionRequest struct {
-	Emoji string `json:"emoji" binding:"required,max=10"`
+	Context      string `json:"context"`
 }
 
 // AddCommentRequest is the request body for adding a comment

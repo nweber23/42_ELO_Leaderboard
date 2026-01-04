@@ -16,20 +16,17 @@ import (
 type MatchHandler struct {
 	matchService *services.MatchService
 	matchRepo    *repositories.MatchRepository
-	reactionRepo *repositories.ReactionRepository
 	commentRepo  *repositories.CommentRepository
 }
 
 func NewMatchHandler(
 	matchService *services.MatchService,
 	matchRepo *repositories.MatchRepository,
-	reactionRepo *repositories.ReactionRepository,
 	commentRepo *repositories.CommentRepository,
 ) *MatchHandler {
 	return &MatchHandler{
 		matchService: matchService,
 		matchRepo:    matchRepo,
-		reactionRepo: reactionRepo,
 		commentRepo:  commentRepo,
 	}
 }
@@ -231,63 +228,6 @@ func maskUserData(user models.User) models.User {
 	}
 }
 
-// AddReaction adds a reaction to a match
-func (h *MatchHandler) AddReaction(c *gin.Context) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		utils.RespondWithError(c, http.StatusUnauthorized, "unauthorized", nil)
-		return
-	}
-
-	matchID, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		utils.RespondWithError(c, http.StatusBadRequest, "invalid match ID", err)
-		return
-	}
-
-	var req models.AddReactionRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.RespondWithError(c, http.StatusBadRequest, err.Error(), err)
-		return
-	}
-
-	// Validate emoji against whitelist for security
-	if !utils.ValidateEmojiWhitelist(req.Emoji) {
-		utils.RespondWithError(c, http.StatusBadRequest, "invalid emoji: not in allowed list", nil)
-		return
-	}
-
-	reaction := &models.Reaction{
-		MatchID: matchID,
-		UserID:  userID,
-		Emoji:   req.Emoji,
-	}
-
-	if err := h.reactionRepo.Add(reaction); err != nil {
-		utils.RespondWithError(c, http.StatusInternalServerError, err.Error(), err)
-		return
-	}
-
-	utils.RespondWithJSON(c, http.StatusCreated, reaction)
-}
-
-// GetReactions retrieves reactions for a match
-func (h *MatchHandler) GetReactions(c *gin.Context) {
-	matchID, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		utils.RespondWithError(c, http.StatusBadRequest, "invalid match ID", err)
-		return
-	}
-
-	reactions, err := h.reactionRepo.GetByMatchID(matchID)
-	if err != nil {
-		utils.RespondWithError(c, http.StatusInternalServerError, err.Error(), err)
-		return
-	}
-
-	utils.RespondWithJSON(c, http.StatusOK, reactions)
-}
-
 // AddComment adds a comment to a match
 func (h *MatchHandler) AddComment(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
@@ -374,34 +314,6 @@ func (h *MatchHandler) GetComments(c *gin.Context) {
 	}
 
 	utils.RespondWithJSON(c, http.StatusOK, comments)
-}
-
-// RemoveReaction removes a user's reaction from a match
-func (h *MatchHandler) RemoveReaction(c *gin.Context) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		utils.RespondWithError(c, http.StatusUnauthorized, "unauthorized", nil)
-		return
-	}
-
-	matchID, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		utils.RespondWithError(c, http.StatusBadRequest, "invalid match ID", err)
-		return
-	}
-
-	emoji := c.Param("emoji")
-	if emoji == "" {
-		utils.RespondWithError(c, http.StatusBadRequest, "emoji is required", nil)
-		return
-	}
-
-	if err := h.reactionRepo.Delete(matchID, userID, emoji); err != nil {
-		utils.RespondWithError(c, http.StatusInternalServerError, err.Error(), err)
-		return
-	}
-
-	utils.RespondWithJSON(c, http.StatusOK, gin.H{"message": "reaction removed"})
 }
 
 // DeleteComment deletes a comment

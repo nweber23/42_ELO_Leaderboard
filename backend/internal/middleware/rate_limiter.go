@@ -149,7 +149,7 @@ func NewStrictRateLimiter() *RateLimiter {
 	return NewRateLimiter(10, time.Minute)
 }
 
-// NewModerateRateLimiter for regular endpoints (e.g., reactions, comments)
+// NewModerateRateLimiter for regular endpoints (e.g., comments)
 // 30 requests per minute
 func NewModerateRateLimiter() *RateLimiter {
 	return NewRateLimiter(30, time.Minute)
