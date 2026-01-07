@@ -281,7 +281,7 @@ func (r *AdminRepository) GetAuditLog(limit int) ([]models.AdminAuditLog, error)
 // GetBannedUsers returns all banned users
 func (r *AdminRepository) GetBannedUsers() ([]models.User, error) {
 	query := `
-		SELECT id, intra_id, login, display_name, avatar_url, campus,
+		SELECT id, id, login, display_name, avatar_url, campus,
 		       table_tennis_elo, table_football_elo, is_admin, is_banned,
 		       ban_reason, banned_at, banned_by, created_at, updated_at
 		FROM users
@@ -348,7 +348,7 @@ func (r *AdminRepository) ExportMatchesCSV() ([]models.Match, error) {
 // ExportUsersCSV returns all users for CSV export
 func (r *AdminRepository) ExportUsersCSV() ([]models.User, error) {
 	query := `
-		SELECT id, intra_id, login, display_name, avatar_url, campus,
+		SELECT id, id, login, display_name, avatar_url, campus,
 		       table_tennis_elo, table_football_elo, is_admin, is_banned,
 		       ban_reason, banned_at, banned_by, created_at, updated_at
 		FROM users

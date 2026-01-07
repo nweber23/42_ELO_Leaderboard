@@ -18,9 +18,9 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 // CreateOrUpdate creates a new user or updates if exists
 func (r *UserRepository) CreateOrUpdate(user *models.User) error {
 	query := `
-		INSERT INTO users (intra_id, login, display_name, avatar_url, campus)
+		INSERT INTO users (id, login, display_name, avatar_url, campus)
 		VALUES ($1, $2, $3, $4, $5)
-		ON CONFLICT (intra_id) DO UPDATE SET
+		ON CONFLICT (id) DO UPDATE SET
 			login = EXCLUDED.login,
 			display_name = EXCLUDED.display_name,
 			avatar_url = EXCLUDED.avatar_url,
@@ -49,7 +49,7 @@ func (r *UserRepository) CreateOrUpdate(user *models.User) error {
 func (r *UserRepository) GetByID(id int) (*models.User, error) {
 	user := &models.User{}
 	query := `
-		SELECT id, intra_id, login, display_name, avatar_url, campus,
+		SELECT id, id, login, display_name, avatar_url, campus,
 		       table_tennis_elo, table_football_elo, is_admin, is_banned,
 		       ban_reason, banned_at, banned_by, created_at, updated_at
 		FROM users WHERE id = $1
@@ -84,10 +84,10 @@ func (r *UserRepository) GetByID(id int) (*models.User, error) {
 func (r *UserRepository) GetByIntraID(intraID int) (*models.User, error) {
 	user := &models.User{}
 	query := `
-		SELECT id, intra_id, login, display_name, avatar_url, campus,
+		SELECT id, id, login, display_name, avatar_url, campus,
 		       table_tennis_elo, table_football_elo, is_admin, is_banned,
 		       ban_reason, banned_at, banned_by, created_at, updated_at
-		FROM users WHERE intra_id = $1
+		FROM users WHERE id = $1
 	`
 
 	err := r.db.QueryRow(query, intraID).Scan(
@@ -120,7 +120,7 @@ func (r *UserRepository) GetByIntraID(intraID int) (*models.User, error) {
 func (r *UserRepository) GetByIDForUpdate(tx *sql.Tx, id int) (*models.User, error) {
 	user := &models.User{}
 	query := `
-		SELECT id, intra_id, login, display_name, avatar_url, campus,
+		SELECT id, id, login, display_name, avatar_url, campus,
 		       table_tennis_elo, table_football_elo, is_admin, is_banned,
 		       ban_reason, banned_at, banned_by, created_at, updated_at
 		FROM users WHERE id = $1
@@ -155,11 +155,11 @@ func (r *UserRepository) GetByIDForUpdate(tx *sql.Tx, id int) (*models.User, err
 // GetAll retrieves all users
 func (r *UserRepository) GetAll() ([]models.User, error) {
 	query := `
-		SELECT id, intra_id, login, display_name, avatar_url, campus,
+		SELECT id, id, login, display_name, avatar_url, campus,
 		       table_tennis_elo, table_football_elo, is_admin, is_banned,
 		       ban_reason, banned_at, banned_by, created_at, updated_at
 		FROM users
-		WHERE intra_id != -1
+		WHERE id != -1
 		ORDER BY login
 	`
 

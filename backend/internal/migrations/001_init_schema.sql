@@ -2,8 +2,7 @@
 
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
-    id SERIAL PRIMARY KEY,
-    intra_id INTEGER UNIQUE NOT NULL,
+    id INTEGER PRIMARY KEY,
     login VARCHAR(255) NOT NULL,
     display_name VARCHAR(255) NOT NULL,
     avatar_url TEXT,
@@ -14,8 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create index on intra_id for fast lookups
-CREATE INDEX idx_users_intra_id ON users(intra_id);
+-- Create index on login for fast lookups
 CREATE INDEX idx_users_login ON users(login);
 
 -- Create matches table
