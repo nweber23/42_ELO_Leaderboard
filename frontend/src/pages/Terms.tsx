@@ -6,147 +6,147 @@ import './Legal.css';
 export function Terms() {
   return (
     <Page
-      title="Nutzungsbedingungen"
+      title="Terms of Service"
       subtitle="Terms of Service for using the ELO Leaderboard"
     >
       <Card className="legal-card">
         <CardHeader>
-          <CardTitle>Nutzungsbedingungen (Terms of Service)</CardTitle>
+          <CardTitle>Terms of Service</CardTitle>
         </CardHeader>
         <CardContent>
           <section className="legal-section">
-            <h2>Hinweis zur Herkunft</h2>
+            <h2>Notice on Usage</h2>
             <p>
-              Dieses Projekt ist kein offizielles 42-Projekt und steht in keiner
-              Verbindung zu einer der 42-Schulen oder zur 42-Organisation.
+              This project is not an official 42 project and is not affiliated
+              with any of the 42 schools or the 42 organization.
             </p>
           </section>
 
           <section className="legal-section">
-            <h2>1. Geltungsbereich</h2>
+            <h2>1. Scope</h2>
             <p>
-              Diese Nutzungsbedingungen gelten für die Nutzung des ELO Leaderboard
-              für Tischtennis und Tischfußball ("der Dienst"). Mit der Registrierung
-              und Nutzung akzeptieren Sie diese Bedingungen.
+              These Terms of Service apply to the use of the ELO Leaderboard
+              for Table Tennis and Table Football ("the Service"). By registering
+              and using it, you accept these conditions.
             </p>
           </section>
 
           <section className="legal-section">
-            <h2>2. Beschreibung des Dienstes</h2>
+            <h2>2. Description of Service</h2>
             <p>
-              Der Dienst ermöglicht 42-Studenten:
+              The Service allows 42 students to:
             </p>
             <ul>
-              <li>Die Erfassung von Tischtennis- und Tischfußball-Matches</li>
-              <li>Die Berechnung und Anzeige von ELO-Ranglisten</li>
-              <li>Kommentare und Reaktionen auf bestätigte Matches</li>
-              <li>Die Einsicht in Spielerprofile und Statistiken</li>
+              <li>Record Table Tennis and Table Football matches</li>
+              <li>Calculate and view ELO rankings</li>
+              <li>Comment and react to confirmed matches</li>
+              <li>View player profiles and statistics</li>
             </ul>
           </section>
 
           <section className="legal-section">
-            <h2>3. Zugangsvoraussetzungen</h2>
+            <h2>3. Access Requirements</h2>
             <ul>
-              <li>Sie müssen ein aktiver 42-Student mit gültigem Intra-Account sein</li>
-              <li>Sie müssen dem Campus Heilbronn zugeordnet sein</li>
-              <li>Sie müssen mindestens 18 Jahre alt sein</li>
+              <li>You must be an active 42 student with a valid Intra account</li>
+              <li>You must be assigned to Campus Heilbronn</li>
+              <li>You must be at least 18 years old</li>
             </ul>
           </section>
 
           <section className="legal-section">
-            <h2>4. Regeln für Match-Einreichungen</h2>
+            <h2>4. Rules for Match Submissions</h2>
 
-            <h3>4.1 Ehrlichkeit</h3>
+            <h3>4.1 Honesty</h3>
             <p>
-              Sie verpflichten sich, nur korrekte Match-Ergebnisse einzureichen.
-              Die Manipulation von Ergebnissen ist verboten.
+              You undertake to submit only correct match results.
+              Manipulation of results is prohibited.
             </p>
 
-            <h3>4.2 Bestätigungspflicht</h3>
+            <h3>4.2 Confirmation Requirement</h3>
             <p>
-              Matches müssen vom Gegner bestätigt werden. Nur bestätigte Matches
-              fließen in die ELO-Berechnung ein.
+              Matches must be confirmed by the opponent. Only confirmed matches
+              are included in the ELO calculation.
             </p>
 
-            <h3>4.3 Verbotene Handlungen</h3>
+            <h3>4.3 Prohibited Actions</h3>
             <ul>
-              <li>Einreichen von nicht stattgefundenen Matches</li>
-              <li>Absprachen zur Manipulation der Rangliste ("Boosting")</li>
-              <li>Einreichen von Matches unter falschen Identitäten</li>
-              <li>Absichtliches Verlieren zur Manipulation ("Win Trading")</li>
+              <li>Submitting matches that did not take place</li>
+              <li>Collusion to manipulate the ranking ("Boosting")</li>
+              <li>Submitting matches under false identities</li>
+              <li>Intentionally losing to manipulate ("Win Trading")</li>
             </ul>
           </section>
 
           <section className="legal-section">
-            <h2>5. Akzeptables Verhalten</h2>
+            <h2>5. Acceptable Behavior</h2>
 
-            <h3>5.1 Kommentare</h3>
+            <h3>5.1 Comments</h3>
             <p>
-              Bei Kommentaren zu Matches sind folgende Inhalte verboten:
+              The following content is prohibited in comments on matches:
             </p>
             <ul>
-              <li>Beleidigungen, Hassrede oder Diskriminierung</li>
-              <li>Spam oder unerwünschte Werbung</li>
-              <li>Persönliche Angriffe gegen andere Nutzer</li>
-              <li>Unangemessene oder anstößige Inhalte</li>
-              <li>Verbreitung von Falschinformationen</li>
+              <li>Insults, hate speech, or discrimination</li>
+              <li>Spam or unwanted advertising</li>
+              <li>Personal attacks against other users</li>
+              <li>Inappropriate or offensive content</li>
+              <li>Dissemination of false information</li>
             </ul>
 
             <h3>5.2 Fair Play</h3>
             <p>
-              Wir erwarten sportliches und faires Verhalten. Der Dienst soll
-              Spaß machen und die Community stärken.
+              We expect sportsmanship and fair behavior. The service should
+              be fun and strengthen the community.
             </p>
           </section>
 
           <section className="legal-section">
-            <h2>6. Moderationsrechte der Administratoren</h2>
+            <h2>6. Moderation Rights of Administrators</h2>
             <p>
-              Die Administratoren des Dienstes haben das Recht:
+              The administrators of the service have the right to:
             </p>
             <ul>
               <li>
-                <strong>Matches zu überprüfen und zu korrigieren:</strong>{' '}
-                Bei Verdacht auf Manipulation können Matches rückgängig gemacht
-                oder gelöscht werden.
+                <strong>Review and correct matches:</strong>{' '}
+                In case of suspected manipulation, matches can be undone
+                or deleted.
               </li>
               <li>
-                <strong>ELO-Werte anzupassen:</strong>{' '}
-                Bei nachgewiesener Manipulation können ELO-Werte korrigiert werden.
+                <strong>Adjust ELO values:</strong>{' '}
+                In case of proven manipulation, ELO values can be corrected.
               </li>
               <li>
-                <strong>Kommentare zu löschen:</strong>{' '}
-                Unangemessene Kommentare können ohne Vorwarnung entfernt werden.
+                <strong>Delete comments:</strong>{' '}
+                Inappropriate comments can be removed without prior warning.
               </li>
               <li>
-                <strong>Nutzer zu sperren:</strong>{' '}
-                Bei schweren oder wiederholten Verstößen können Nutzer temporär
-                oder dauerhaft gesperrt werden.
+                <strong>Ban users:</strong>{' '}
+                In case of serious or repeated violations, users can be
+                temporarily or permanently banned.
               </li>
               <li>
-                <strong>Konten zu löschen:</strong>{' '}
-                Bei gravierenden Verstößen kann ein Konto vollständig gelöscht werden.
+                <strong>Delete accounts:</strong>{' '}
+                In case of serious violations, an account can be completely deleted.
               </li>
             </ul>
           </section>
 
           <section className="legal-section">
-            <h2>7. Missbrauchshandhabung</h2>
+            <h2>7. Abuse Handling</h2>
 
-            <h3>7.1 Meldung von Verstößen</h3>
+            <h3>7.1 Reporting Violations</h3>
             <p>
-              Wenn Sie einen Verstoß gegen diese Nutzungsbedingungen beobachten,
-              melden Sie diesen bitte an:{' '}
+              If you observe a violation of these Terms of Service,
+              please report it to:{' '}
               <a href="mailto:abuse@example.com">abuse@example.com</a>
             </p>
 
-            <h3>7.2 Sanktionen</h3>
-            <p>Je nach Schwere des Verstoßes können folgende Maßnahmen ergriffen werden:</p>
+            <h3>7.2 Sanctions</h3>
+            <p>Depending on the severity of the violation, the following measures may be taken:</p>
             <ul>
-              <li><strong>Verwarnung:</strong> Schriftliche Ermahnung per E-Mail</li>
-              <li><strong>Temporäre Sperre:</strong> Zeitlich begrenzte Sperrung des Kontos</li>
-              <li><strong>ELO-Korrektur:</strong> Zurücksetzen des ELO auf Startwert</li>
-              <li><strong>Permanente Sperre:</strong> Dauerhafte Sperrung des Kontos</li>
+              <li><strong>Warning:</strong> Written warning via email</li>
+              <li><strong>Temporary Ban:</strong> Temporary suspension of the account</li>
+              <li><strong>ELO Correction:</strong> Resetting the ELO to the starting value</li>
+              <li><strong>Permanent Ban:</strong> Permanent suspension of the account</li>
             </ul>
 
             <h3>7.3 Einspruchsrecht</h3>
@@ -218,13 +218,13 @@ export function Terms() {
 
           <section className="legal-section">
             <p>
-              <strong>Stand:</strong> Januar 2026
+              <strong>Status:</strong> January 2026
             </p>
           </section>
 
           <div className="legal-links">
-            <Link to="/impressum">Impressum</Link>
-            <Link to="/privacy">Datenschutzerklärung</Link>
+            <Link to="/impressum">Imprint</Link>
+            <Link to="/privacy">Privacy Policy</Link>
           </div>
         </CardContent>
       </Card>

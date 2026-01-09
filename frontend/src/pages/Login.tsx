@@ -137,16 +137,21 @@ function Login({ onLogin }: LoginProps) {
                 for leaderboard and match history purposes in accordance with our{' '}
                 <Link to="/privacy" className="login__link">Privacy Policy</Link>.
               </div>
-
-              <div className="login__legal">
-                <Link to="/privacy">Datenschutz</Link>
-                <span>·</span>
-                <Link to="/terms">Nutzungsbedingungen</Link>
-                <span>·</span>
-                <Link to="/impressum">Impressum</Link>
-              </div>
             </CardContent>
           </Card>
+
+          <footer className="login-footer">
+            <nav className="login-footer__nav">
+              <Link to="/privacy">Privacy</Link>
+              <span>·</span>
+              <Link to="/terms">Terms</Link>
+              <span>·</span>
+              <Link to="/impressum">Imprint</Link>
+            </nav>
+            <p className="login-footer__copy">
+              &copy; 2026 ELO Leaderboard. Not affiliated with 42.
+            </p>
+          </footer>
         </aside>
       </div>
 

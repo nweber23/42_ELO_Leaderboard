@@ -163,11 +163,11 @@ export function AppShell({
               @nweber
             </a>
           </span>
-          <nav className="footer__legal" aria-label="Legal links">
-            <NavLink to="/impressum" className="footer__link">Impressum</NavLink>
-            <NavLink to="/privacy" className="footer__link">Datenschutz</NavLink>
-            <NavLink to="/terms" className="footer__link">Nutzungsbedingungen</NavLink>
-          </nav>
+                    <div className="footer__links">
+            <NavLink to="/imprint" className="footer__link">Imprint</NavLink>
+            <NavLink to="/privacy" className="footer__link">Privacy</NavLink>
+            <NavLink to="/terms" className="footer__link">Terms</NavLink>
+          </div>
           <span className="faint">Fast · Clean · Fair</span>
         </div>
       </footer>

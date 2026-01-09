@@ -5,81 +5,73 @@ import './Legal.css';
 export function Impressum() {
   return (
     <Page
-      title="Impressum"
+      title="Imprint"
       subtitle="Legal information as required by German law (§ 5 TMG)"
     >
       <Card className="legal-card">
         <CardHeader>
-          <CardTitle>Impressum</CardTitle>
+          <CardTitle>Imprint</CardTitle>
         </CardHeader>
         <CardContent>
           <section className="legal-section">
-            <h2>Angaben gemäß § 5 TMG</h2>
+            <h2>Information pursuant to § 5 TMG</h2>
             <p>
-              <strong>Betreiber:</strong><br />
+              <strong>Operator:</strong><br />
               {/* TODO: Replace with actual operator information */}
-              [Vollständiger Name]<br />
-              [Straße und Hausnummer]<br />
-              [PLZ und Stadt]<br />
-              Deutschland
+              [Full Name]<br />
+              [Street and House Number]<br />
+              [Postal Code and City]<br />
+              Germany
             </p>
           </section>
 
           <section className="legal-section">
-            <h2>Kontakt</h2>
+            <h2>Contact</h2>
             <p>
-              <strong>E-Mail:</strong>{' '}
+              <strong>Email:</strong>{' '}
               <a href="mailto:contact@example.com">contact@example.com</a>
             </p>
           </section>
 
           <section className="legal-section">
-            <h2>Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h2>
+            <h2>Responsible for content according to § 55 Abs. 2 RStV</h2>
             <p>
               {/* TODO: Replace with actual responsible person */}
-              [Vollständiger Name]<br />
-              [Adresse wie oben]
+              [Full Name]<br />
+              [Address as above]
             </p>
           </section>
 
           <section className="legal-section">
-            <h2>Haftungsausschluss</h2>
+            <h2>Disclaimer</h2>
 
-            <h3>Haftung für Inhalte</h3>
+            <h3>Liability for Contents</h3>
             <p>
-              Die Inhalte unserer Seiten wurden mit größter Sorgfalt erstellt.
-              Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte
-              können wir jedoch keine Gewähr übernehmen. Als Diensteanbieter sind
-              wir gemäß § 7 Abs.1 TMG für eigene Inhalte auf diesen Seiten nach
-              den allgemeinen Gesetzen verantwortlich.
+              The contents of our pages were created with great care.
+              However, we cannot guarantee the correctness, completeness, and topicality of the contents.
+              As a service provider, we are responsible for our own content on these pages in accordance with general laws pursuant to § 7 Abs.1 TMG.
             </p>
 
-            <h3>Haftung für Links</h3>
+            <h3>Liability for Links</h3>
             <p>
-              Unser Angebot enthält Links zu externen Webseiten Dritter, auf deren
-              Inhalte wir keinen Einfluss haben. Deshalb können wir für diese
-              fremden Inhalte auch keine Gewähr übernehmen. Für die Inhalte der
-              verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber
-              der Seiten verantwortlich.
+              Our offer contains links to external third-party websites, on whose contents we have no influence.
+              Therefore, we cannot assume any liability for these external contents.
+              The respective provider or operator of the pages is always responsible for the contents of the linked pages.
             </p>
           </section>
 
           <section className="legal-section">
-            <h2>Urheberrecht</h2>
+            <h2>Copyright</h2>
             <p>
-              Die durch die Seitenbetreiber erstellten Inhalte und Werke auf
-              diesen Seiten unterliegen dem deutschen Urheberrecht. Die
-              Vervielfältigung, Bearbeitung, Verbreitung und jede Art der
-              Verwertung außerhalb der Grenzen des Urheberrechtes bedürfen der
-              schriftlichen Zustimmung des jeweiligen Autors bzw. Erstellers.
+              The contents and works created by the site operators on these pages are subject to German copyright law.
+              Duplication, processing, distribution, and any kind of exploitation outside the limits of copyright law require the written consent of the respective author or creator.
             </p>
           </section>
 
           <section className="legal-section">
-            <h2>Online-Streitbeilegung</h2>
+            <h2>Online Dispute Resolution</h2>
             <p>
-              Die Europäische Kommission stellt eine Plattform zur
-              Online-Streitbeilegung (OS) bereit:{' '}
+              The European Commission provides a platform for Online Dispute Resolution (ODR):{' '}
               <a
                 href="https://consumer-redress.ec.europa.eu/"
                 target="_blank"
