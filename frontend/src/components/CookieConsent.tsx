@@ -71,12 +71,12 @@ export function CookieConsentBanner({ onConsentChange }: CookieConsentBannerProp
     <div className="cookie-consent" role="dialog" aria-label="Cookie consent">
       <div className="cookie-consent__content">
         <div className="cookie-consent__text">
-          <h3 className="cookie-consent__title">🍪 Cookie-Hinweis</h3>
+          <h3 className="cookie-consent__title">Cookie Notice</h3>
           <p className="cookie-consent__message">
-            Diese Website verwendet technisch notwendige Cookies für die
-            Authentifizierung. Wir verwenden keine Tracking- oder Werbe-Cookies.{' '}
+            This website uses technically necessary cookies for
+            authentication. We do not use tracking or advertising cookies.{' '}
             <Link to="/privacy" className="cookie-consent__link">
-              Mehr erfahren
+              Learn more
             </Link>
           </p>
         </div>
@@ -87,7 +87,7 @@ export function CookieConsentBanner({ onConsentChange }: CookieConsentBannerProp
             onClick={handleReject}
             className="cookie-consent__btn"
           >
-            Ablehnen
+            Decline
           </Button>
           <Button
             variant="primary"
@@ -95,7 +95,7 @@ export function CookieConsentBanner({ onConsentChange }: CookieConsentBannerProp
             onClick={handleAccept}
             className="cookie-consent__btn"
           >
-            Akzeptieren
+            Accept
           </Button>
         </div>
       </div>

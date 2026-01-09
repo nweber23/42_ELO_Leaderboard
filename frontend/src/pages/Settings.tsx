@@ -33,10 +33,10 @@ export function Settings({ user, onLogout }: SettingsProps) {
     setIsExporting(true);
     try {
       await gdprAPI.downloadData();
-      showToast('Ihre Daten wurden heruntergeladen', 'success');
+      showToast('Your data has been downloaded', 'success');
     } catch (error) {
       console.error('Failed to export data:', error);
-      showToast('Fehler beim Herunterladen der Daten', 'error');
+      showToast('Error downloading data', 'error');
     } finally {
       setIsExporting(false);
     }
@@ -44,79 +44,79 @@ export function Settings({ user, onLogout }: SettingsProps) {
 
   const handleDeleteAccount = async () => {
     if (deleteConfirmText !== user.login) {
-      showToast('Bitte geben Sie Ihren Benutzernamen korrekt ein', 'error');
+      showToast('Please enter your username correctly', 'error');
       return;
     }
 
     setIsDeleting(true);
     try {
       await gdprAPI.deleteAccount();
-      showToast('Ihr Konto wurde gelöscht', 'success');
+      showToast('Your account has been deleted', 'success');
       // Clear local storage and redirect
       localStorage.removeItem('token');
       onLogout();
       setTimeout(() => navigate('/login'), 1500);
     } catch (error) {
       console.error('Failed to delete account:', error);
-      showToast('Fehler beim Löschen des Kontos', 'error');
+      showToast('Error deleting account', 'error');
       setIsDeleting(false);
     }
   };
 
   return (
-    <Page title="Einstellungen" subtitle="Verwalten Sie Ihr Konto und Ihre Daten">
+    <Page title="Settings" subtitle="Manage your account and data">
       <div className="settings-grid">
         {/* User Rights Section (GDPR) */}
         <Card className="settings-card">
           <CardHeader>
-            <CardTitle>🔐 Ihre Datenschutzrechte (DSGVO)</CardTitle>
+            <CardTitle>🔐 Your Data Rights (GDPR)</CardTitle>
             <CardDescription>
-              Gemäß der Datenschutz-Grundverordnung haben Sie folgende Rechte
+              Under the General Data Protection Regulation, you have the following rights
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="settings-section">
-              <h3>Auskunftsrecht (Art. 15 DSGVO)</h3>
+              <h3>Right of Access (Art. 15 GDPR)</h3>
               <p>
-                Sie haben das Recht zu erfahren, welche personenbezogenen Daten
-                wir über Sie speichern. Laden Sie alle Ihre Daten als JSON-Datei herunter.
+                You have the right to know what personal data we store about you.
+                Download all your data as a JSON file.
               </p>
               <Button
                 variant="secondary"
                 onClick={handleExportData}
                 disabled={isExporting}
               >
-                {isExporting ? 'Wird heruntergeladen...' : '📥 Meine Daten herunterladen'}
+                {isExporting ? 'Downloading...' : '📥 Download my data'}
               </Button>
             </div>
 
             <div className="settings-section">
-              <h3>Recht auf Löschung (Art. 17 DSGVO)</h3>
+              <h3>Right to Erasure (Art. 17 GDPR)</h3>
               <p>
-                Sie haben das Recht, die Löschung Ihrer Daten zu verlangen.
-                Diese Aktion ist unwiderruflich.
+                You have the right to request the deletion of your data.
+                This action is irreversible.
               </p>
               {!showDeleteConfirm ? (
                 <Button
                   variant="danger"
                   onClick={() => setShowDeleteConfirm(true)}
                 >
-                  🗑️ Konto löschen
+                  🗑️ Delete Account
                 </Button>
               ) : (
                 <div className="delete-confirm">
                   <div className="delete-warning">
-                    <strong>⚠️ Warnung:</strong> Diese Aktion kann nicht rückgängig
-                    gemacht werden. Alle Ihre Daten werden unwiderruflich gelöscht:
+                    <strong>⚠️ Warning:</strong> This action cannot be undone.
+                    All your data will be irrevocably deleted:
                     <ul>
-                      <li>Ihr Benutzerprofil</li>
-                      <li>Alle Ihre Kommentare</li>
-                      <li>Alle Ihre Reaktionen</li>
-                      <li>Ihre Matches werden anonymisiert</li>
+                      <li>Your user profile</li>
+                      <li>All your comments</li>
+                      <li>All your reactions</li>
+                      <li>Your matches will be anonymized</li>
                     </ul>
                   </div>
                   <label className="delete-confirm-label">
-                    Geben Sie <strong>{user.login}</strong> ein, um zu bestätigen:
+                    Enter <strong>{user.login}</strong> to confirm:
                     <input
                       type="text"
                       value={deleteConfirmText}
@@ -134,14 +134,14 @@ export function Settings({ user, onLogout }: SettingsProps) {
                         setDeleteConfirmText('');
                       }}
                     >
-                      Abbrechen
+                      Cancel
                     </Button>
                     <Button
                       variant="danger"
                       onClick={handleDeleteAccount}
                       disabled={isDeleting || deleteConfirmText !== user.login}
                     >
-                      {isDeleting ? 'Wird gelöscht...' : 'Endgültig löschen'}
+                      {isDeleting ? 'Deleting...' : 'Delete permanently'}
                     </Button>
                   </div>
                 </div>
@@ -149,13 +149,13 @@ export function Settings({ user, onLogout }: SettingsProps) {
             </div>
 
             <div className="settings-section">
-              <h3>Weitere Rechte</h3>
+              <h3>Other Rights</h3>
               <p>
-                Für weitere Datenschutzanfragen (Berichtigung, Einschränkung,
-                Widerspruch) kontaktieren Sie uns bitte per E-Mail.
+                For further privacy inquiries (correction, restriction,
+                objection) please contact us via email.
               </p>
               <p className="settings-links">
-                <Link to="/privacy">📄 Datenschutzerklärung lesen</Link>
+                <Link to="/privacy">📄 Read Privacy Policy</Link>
               </p>
             </div>
           </CardContent>
@@ -164,16 +164,16 @@ export function Settings({ user, onLogout }: SettingsProps) {
         {/* Account Info */}
         <Card className="settings-card">
           <CardHeader>
-            <CardTitle>👤 Kontoinformationen</CardTitle>
+            <CardTitle>👤 Account Information</CardTitle>
           </CardHeader>
           <CardContent>
             <dl className="account-info">
               <div className="account-info-row">
-                <dt>Benutzername</dt>
+                <dt>Username</dt>
                 <dd>{user.login}</dd>
               </div>
               <div className="account-info-row">
-                <dt>Anzeigename</dt>
+                <dt>Display Name</dt>
                 <dd>{user.display_name}</dd>
               </div>
               <div className="account-info-row">
@@ -185,21 +185,21 @@ export function Settings({ user, onLogout }: SettingsProps) {
                 <dd>{user.intra_id}</dd>
               </div>
               <div className="account-info-row">
-                <dt>Tischtennis ELO</dt>
+                <dt>Table Tennis ELO</dt>
                 <dd>{user.table_tennis_elo}</dd>
               </div>
               <div className="account-info-row">
-                <dt>Tischfußball ELO</dt>
+                <dt>Table Football ELO</dt>
                 <dd>{user.table_football_elo}</dd>
               </div>
               <div className="account-info-row">
-                <dt>Registriert seit</dt>
-                <dd>{new Date(user.created_at).toLocaleDateString('de-DE')}</dd>
+                <dt>Registered since</dt>
+                <dd>{new Date(user.created_at).toLocaleDateString('en-GB')}</dd>
               </div>
             </dl>
             <p className="settings-note">
-              Ihre Profildaten stammen von 42 Intra. Um diese zu ändern,
-              aktualisieren Sie Ihr Profil auf der Intra-Plattform.
+              Your profile data comes from 42 Intra. To change these,
+              update your profile on the Intra platform.
             </p>
           </CardContent>
         </Card>
@@ -208,7 +208,7 @@ export function Settings({ user, onLogout }: SettingsProps) {
       <Toast
         open={toastOpen}
         onClose={() => setToastOpen(false)}
-        title={toastType === 'success' ? 'Erfolg' : 'Fehler'}
+        title={toastType === 'success' ? 'Success' : 'Error'}
         message={toastMessage}
         tone={toastType}
       />

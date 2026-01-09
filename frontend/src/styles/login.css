@@ -180,24 +180,36 @@
   color: var(--accent-hover);
 }
 
-.login__legal {
-  display: flex;
-  justify-content: center;
-  gap: var(--space-2);
+.login-footer {
+  margin-top: var(--space-6);
+  text-align: center;
   font-size: var(--text-xs);
   color: var(--muted);
-  padding-top: var(--space-3);
-  border-top: 1px solid var(--border);
+  animation: fade-in var(--dur-slower) var(--ease-out) 0.5s both;
 }
 
-.login__legal a {
+.login-footer__nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.login-footer__nav a {
   color: var(--text-secondary);
   text-decoration: none;
   transition: color var(--dur-base) var(--ease-out);
 }
 
-.login__legal a:hover {
+.login-footer__nav a:hover {
   color: var(--accent);
+  text-shadow: 0 0 12px var(--accent-glow);
+}
+
+.login-footer__copy {
+  margin: 0;
+  opacity: 0.7;
 }
 
 /* ============================================

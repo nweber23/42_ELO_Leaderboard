@@ -6,233 +6,221 @@ import './Legal.css';
 export function Privacy() {
   return (
     <Page
-      title="Datenschutzerklärung"
-      subtitle="Privacy Policy as required by GDPR / DSGVO"
+      title="Privacy Policy"
+      subtitle="Privacy Policy as required by GDPR"
     >
       <Card className="legal-card">
         <CardHeader>
-          <CardTitle>Datenschutzerklärung (Privacy Policy)</CardTitle>
+          <CardTitle>Privacy Policy</CardTitle>
         </CardHeader>
         <CardContent>
           <section className="legal-section">
-            <h2>1. Verantwortlicher</h2>
+            <h2>1. Responsible Person</h2>
             <p>
-              Verantwortlich für die Datenverarbeitung auf dieser Website ist:<br />
+              Responsible for data processing on this website is:<br />
               {/* TODO: Replace with actual operator information */}
-              [Vollständiger Name]<br />
-              [Adresse]<br />
-              E-Mail: <a href="mailto:privacy@example.com">privacy@example.com</a>
+              [Full Name]<br />
+              [Address]<br />
+              Email: <a href="mailto:privacy@example.com">privacy@example.com</a>
             </p>
           </section>
 
           <section className="legal-section">
-            <h2>2. Erhobene Daten</h2>
+            <h2>2. Collected Data</h2>
             <p>
-              Bei der Nutzung unseres Dienstes werden folgende personenbezogene
-              Daten erhoben und verarbeitet:
+              When using our service, the following personal data is collected and processed:
             </p>
             <table className="legal-table">
               <thead>
                 <tr>
-                  <th>Datenfeld</th>
-                  <th>Zweck</th>
-                  <th>Speicherdauer</th>
+                  <th>Data Field</th>
+                  <th>Purpose</th>
+                  <th>Retention Period</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   <td><code>intra_id</code></td>
-                  <td>Eindeutige Benutzeridentifikation</td>
-                  <td>Bis zur Kontolöschung</td>
+                  <td>Unique user identification</td>
+                  <td>Until account deletion</td>
                 </tr>
                 <tr>
                   <td><code>login</code></td>
-                  <td>42-Benutzername zur Anzeige</td>
-                  <td>Bis zur Kontolöschung</td>
+                  <td>42 username for display</td>
+                  <td>Until account deletion</td>
                 </tr>
                 <tr>
                   <td><code>display_name</code></td>
-                  <td>Anzeigename im Leaderboard</td>
-                  <td>Bis zur Kontolöschung</td>
+                  <td>Display name in the leaderboard</td>
+                  <td>Until account deletion</td>
                 </tr>
                 <tr>
                   <td><code>avatar_url</code></td>
-                  <td>Profilbild-URL</td>
-                  <td>Bis zur Kontolöschung</td>
+                  <td>Profile picture URL</td>
+                  <td>Until account deletion</td>
                 </tr>
                 <tr>
                   <td><code>campus</code></td>
-                  <td>Campus-Zugehörigkeit</td>
-                  <td>Bis zur Kontolöschung</td>
+                  <td>Campus affiliation</td>
+                  <td>Until account deletion</td>
                 </tr>
               </tbody>
             </table>
           </section>
 
           <section className="legal-section">
-            <h2>3. Rechtsgrundlage der Verarbeitung (Art. 6 DSGVO)</h2>
-            <p>Die Verarbeitung Ihrer Daten erfolgt auf Grundlage von:</p>
+            <h2>3. Legal Basis for Processing (Art. 6 GDPR)</h2>
+            <p>The processing of your data takes place based on:</p>
             <ul>
               <li>
-                <strong>Art. 6 Abs. 1 lit. a DSGVO (Einwilligung):</strong>{' '}
-                Sie haben bei der Anmeldung über 42 Intra Ihre Einwilligung zur
-                Datenverarbeitung erteilt.
+                <strong>Art. 6 Para. 1 lit. a GDPR (Consent):</strong>{' '}
+                You gave your consent to data processing when logging in via 42 Intra.
               </li>
               <li>
-                <strong>Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung):</strong>{' '}
-                Die Verarbeitung ist erforderlich, um Ihnen die Nutzung der
-                Leaderboard-Funktionen zu ermöglichen.
+                <strong>Art. 6 Para. 1 lit. b GDPR (Contract Performance):</strong>{' '}
+                Processing is necessary to enable you to use the leaderboard functions.
               </li>
               <li>
-                <strong>Art. 6 Abs. 1 lit. f DSGVO (Berechtigtes Interesse):</strong>{' '}
-                Wir haben ein berechtigtes Interesse an der Bereitstellung eines
-                funktionierenden Ranking-Systems für die 42-Community.
+                <strong>Art. 6 Para. 1 lit. f GDPR (Legitimate Interest):</strong>{' '}
+                We have a legitimate interest in providing a functioning ranking system for the 42 community.
               </li>
             </ul>
           </section>
 
           <section className="legal-section">
-            <h2>4. Aufbewahrungsfristen</h2>
+            <h2>4. Retention Periods</h2>
             <ul>
               <li>
-                <strong>Benutzerdaten:</strong> Werden gespeichert, bis Sie Ihr
-                Konto löschen oder die Löschung beantragen.
+                <strong>User Data:</strong> Stored until you delete your account or request deletion.
               </li>
               <li>
-                <strong>Match-Daten:</strong> Werden für die Leaderboard-Historie
-                aufbewahrt. Bei Kontolöschung werden Ihre Matches anonymisiert.
+                <strong>Match Data:</strong> Retained for leaderboard history. Upon account deletion, your matches will be anonymized.
               </li>
               <li>
-                <strong>Kommentare & Reaktionen:</strong> Werden bei Kontolöschung
-                gelöscht.
+                <strong>Comments & Reactions:</strong> Deleted upon account deletion.
               </li>
             </ul>
           </section>
 
           <section className="legal-section">
-            <h2>5. Drittanbieter und Datenübermittlung</h2>
+            <h2>5. Third-Party Providers and Data Transfer</h2>
 
             <h3>5.1 42 Intra API</h3>
             <p>
-              Wir nutzen die 42 Intra API zur Authentifizierung. Dabei werden
-              Ihre öffentlichen Profildaten von 42 abgerufen. Weitere Informationen
-              finden Sie in der Datenschutzerklärung von 42.
+              We use the 42 Intra API for authentication. In doing so, your public profile data is retrieved from 42.
+              For more information, please refer to the privacy policy of 42.
             </p>
 
             <h3>5.2 Hosting</h3>
             <p>
-              Diese Website wird gehostet bei:<br />
+              This website is hosted by:<br />
               {/* TODO: Replace with actual hosting provider */}
-              [Hosting-Anbieter]<br />
-              [Adresse des Hosters]
+              [Hosting Provider]<br />
+              [Address of Host]
             </p>
             <p>
-              Der Hoster verarbeitet personenbezogene Daten (z. B. IP-Adressen) nur im Rahmen der Auftragsverarbeitung gemäß Art. 28 DSGVO.
+              The hoster processes personal data (e.g., IP addresses) only within the scope of order processing according to Art. 28 GDPR.
             </p>
           </section>
 
           <section className="legal-section">
-            <h2>6. Ihre Rechte nach DSGVO</h2>
-            <p>Sie haben folgende Rechte bezüglich Ihrer personenbezogenen Daten:</p>
+            <h2>6. Your Rights under GDPR</h2>
+            <p>You have the following rights regarding your personal data:</p>
 
-            <h3>6.1 Auskunftsrecht (Art. 15 DSGVO)</h3>
+            <h3>6.1 Right of Access (Art. 15 GDPR)</h3>
             <p>
-              Sie haben das Recht, eine Bestätigung darüber zu verlangen, ob
-              personenbezogene Daten verarbeitet werden. Nutzen Sie die
-              "Daten herunterladen"-Funktion in Ihrem Profil.
+              You have the right to request confirmation as to whether personal data is being processed.
+              Use the "Download Data" function in your profile.
             </p>
 
-            <h3>6.2 Recht auf Berichtigung (Art. 16 DSGVO)</h3>
+            <h3>6.2 Right to Rectification (Art. 16 GDPR)</h3>
             <p>
-              Sie haben das Recht auf Berichtigung unrichtiger Daten. Da Ihre
-              Daten von 42 Intra stammen, können Sie diese dort korrigieren.
+              You have the right to rectification of inaccurate data. Since your data comes from 42 Intra, you can correct it there.
             </p>
 
-            <h3>6.3 Recht auf Löschung (Art. 17 DSGVO)</h3>
+            <h3>6.3 Right to Erasure (Art. 17 GDPR)</h3>
             <p>
-              Sie haben das Recht, die Löschung Ihrer Daten zu verlangen.
-              Nutzen Sie die "Konto löschen"-Funktion in Ihrem Profil oder
-              kontaktieren Sie uns per E-Mail.
+              You have the right to request the deletion of your data.
+              Use the "Delete Account" function in your profile or
+              contact us via email.
             </p>
 
-            <h3>6.4 Recht auf Einschränkung der Verarbeitung (Art. 18 DSGVO)</h3>
+            <h3>6.4 Right to Restriction of Processing (Art. 18 GDPR)</h3>
             <p>
-              Sie können die Einschränkung der Verarbeitung Ihrer Daten verlangen.
+              You can request the restriction of the processing of your data.
             </p>
 
-            <h3>6.5 Recht auf Datenübertragbarkeit (Art. 20 DSGVO)</h3>
+            <h3>6.5 Right to Data Portability (Art. 20 GDPR)</h3>
             <p>
-              Sie können Ihre Daten in einem strukturierten, maschinenlesbaren
-              Format erhalten. Nutzen Sie die "Daten herunterladen"-Funktion.
+              You can receive your data in a structured, machine-readable
+              format. Use the "Download Data" function.
             </p>
 
-            <h3>6.6 Widerspruchsrecht (Art. 21 DSGVO)</h3>
+            <h3>6.6 Right to Object (Art. 21 GDPR)</h3>
             <p>
-              Sie können der Verarbeitung Ihrer Daten jederzeit widersprechen.
+              You can object to the processing of your data at any time.
             </p>
           </section>
 
           <section className="legal-section">
             <h2>7. Cookies</h2>
             <p>
-              Diese Website verwendet nur technisch notwendige Cookies für die
-              Authentifizierung. Wir setzen keine Tracking- oder Werbe-Cookies ein.
+              This website uses only technically necessary cookies for
+              authentication. We do not use tracking or advertising cookies.
             </p>
             <table className="legal-table">
               <thead>
                 <tr>
                   <th>Cookie</th>
-                  <th>Zweck</th>
-                  <th>Speicherdauer</th>
+                  <th>Purpose</th>
+                  <th>Retention Period</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   <td>Session Token</td>
-                  <td>Authentifizierung</td>
-                  <td>24 Stunden</td>
+                  <td>Authentication</td>
+                  <td>24 Hours</td>
                 </tr>
                 <tr>
                   <td>Cookie Consent</td>
-                  <td>Speicherung Ihrer Cookie-Präferenz</td>
-                  <td>1 Jahr</td>
+                  <td>Storage of your cookie preference</td>
+                  <td>1 Year</td>
                 </tr>
               </tbody>
             </table>
           </section>
 
           <section className="legal-section">
-            <h2>8. Datensicherheit</h2>
+            <h2>8. Data Security</h2>
             <p>
-              Wir setzen technische und organisatorische Sicherheitsmaßnahmen ein:
+              We implement technical and organizational security measures:
             </p>
             <ul>
-              <li>HTTPS-Verschlüsselung für alle Datenübertragungen</li>
-              <li>Sichere Passwortspeicherung</li>
-              <li>Regelmäßige Sicherheitsupdates</li>
-              <li>Zugriffsbeschränkungen auf Serverebene</li>
+              <li>HTTPS encryption for all data transmissions</li>
+              <li>Secure password storage</li>
+              <li>Regular security updates</li>
+              <li>Access restrictions on server level</li>
             </ul>
           </section>
 
           <section className="legal-section">
-            <h2>9. Kontakt für Datenschutzanfragen</h2>
+            <h2>9. Contact for Privacy Inquiries</h2>
             <p>
-              Für Fragen zum Datenschutz oder zur Ausübung Ihrer Rechte wenden
-              Sie sich bitte an:<br />
-              E-Mail: <a href="mailto:privacy@example.com">privacy@example.com</a>
+              For questions about privacy or to exercise your rights, please contact:<br />
+              Email: <a href="mailto:privacy@example.com">privacy@example.com</a>
             </p>
           </section>
 
           <section className="legal-section">
-            <h2>10. Beschwerderecht</h2>
+            <h2>10. Right to Lodge a Complaint</h2>
             <p>
-              Sie haben das Recht, sich bei einer Datenschutz-Aufsichtsbehörde
-              zu beschweren, wenn Sie der Ansicht sind, dass die Verarbeitung
-              Ihrer Daten gegen die DSGVO verstößt.
+              You have the right to lodge a complaint with a data protection supervisory authority
+              if you believe that the processing of your data violates the GDPR.
             </p>
             <p>
-              Zuständige Aufsichtsbehörde in Baden-Württemberg:<br />
-              Der Landesbeauftragte für den Datenschutz und die Informationsfreiheit<br />
+              Competent supervisory authority in Baden-Württemberg:<br />
+              The State Commissioner for Data Protection and Freedom of Information<br />
               <a
                 href="https://www.baden-wuerttemberg.datenschutz.de"
                 target="_blank"
@@ -244,19 +232,18 @@ export function Privacy() {
           </section>
 
           <section className="legal-section">
-            <h2>11. Änderungen dieser Datenschutzerklärung</h2>
+            <h2>11. Changes to this Privacy Policy</h2>
             <p>
-              Wir behalten uns vor, diese Datenschutzerklärung anzupassen, um sie
-              an geänderte Rechtslagen oder Änderungen des Dienstes anzupassen.
+              We reserve the right to adapt this privacy policy to changed legal situations or changes in the service.
             </p>
             <p>
-              <strong>Stand:</strong> Januar 2026
+              <strong>Status:</strong> January 2026
             </p>
           </section>
 
           <div className="legal-links">
-            <Link to="/impressum">Impressum</Link>
-            <Link to="/terms">Nutzungsbedingungen</Link>
+            <Link to="/impressum">Imprint</Link>
+            <Link to="/terms">Terms of Service</Link>
           </div>
         </CardContent>
       </Card>
