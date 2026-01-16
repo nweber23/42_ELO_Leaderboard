@@ -197,13 +197,13 @@ func (h *GDPRHandler) DeleteAccount(c *gin.Context) {
 
 	slog.Info("Starting account deletion", "user_id", userID, "login", user.Login)
 
-	// Ensure anonymized user exists (IntraID -1)
+	// Ensure anonymized user exists (id = -1)
 	var anonymizedID int
-	err = h.db.QueryRow("SELECT id FROM users WHERE intra_id = -1").Scan(&anonymizedID)
+	err = h.db.QueryRow("SELECT id FROM users WHERE id = -1").Scan(&anonymizedID)
 	if err == sql.ErrNoRows {
 		// Create it
 		err = h.db.QueryRow(`
-			INSERT INTO users (intra_id, login, display_name, avatar_url, campus, is_banned, ban_reason)
+			INSERT INTO users (id, login, display_name, avatar_url, campus, is_banned, ban_reason)
 			VALUES (-1, 'deleted_user', 'Deleted User', '', '42heilbronn', true, 'System account for anonymized data')
 			RETURNING id
 		`).Scan(&anonymizedID)
@@ -235,62 +235,64 @@ func (h *GDPRHandler) DeleteAccount(c *gin.Context) {
 		return
 	}
 
-	// 2. Anonymize matches where user is player1, player2, winner, or submitter
+	// 2. Delete all reactions by this user
+	_, err = tx.Exec("DELETE FROM reactions WHERE user_id = $1", userID)
+	if err != nil {
+		slog.Error("Failed to delete reactions", "error", err, "user_id", userID)
+		utils.RespondWithError(c, http.StatusInternalServerError, "failed to delete reactions", err)
+		return
+	}
+
+	// 3. Anonymize matches where user is player1, player2, winner, or submitter
 	// We keep match history but remove personal data linkage
-
-	// Anonymize player1
+	// Note: Must update player IDs and winner_id together to satisfy the
+	// valid_winner CHECK constraint (winner_id = player1_id OR winner_id = player2_id)
 	_, err = tx.Exec(`
-		UPDATE matches SET player1_id = $1
-		WHERE player1_id = $2
+		UPDATE matches SET
+			player1_id = CASE WHEN player1_id = $2 THEN $1 ELSE player1_id END,
+			player2_id = CASE WHEN player2_id = $2 THEN $1 ELSE player2_id END,
+			winner_id = CASE WHEN winner_id = $2 THEN $1 ELSE winner_id END,
+			submitted_by = CASE WHEN submitted_by = $2 THEN $1 ELSE submitted_by END
+		WHERE player1_id = $2 OR player2_id = $2 OR winner_id = $2 OR submitted_by = $2
 	`, anonymizedID, userID)
 	if err != nil {
-		slog.Error("Failed to anonymize matches (player1)", "error", err, "user_id", userID)
+		slog.Error("Failed to anonymize matches", "error", err, "user_id", userID)
 		utils.RespondWithError(c, http.StatusInternalServerError, "failed to anonymize matches", err)
 		return
 	}
 
-	// Anonymize player2
-	_, err = tx.Exec(`
-		UPDATE matches SET player2_id = $1
-		WHERE player2_id = $2
-	`, anonymizedID, userID)
+	// 4. Anonymize ELO adjustments made by this user (adjusted_by foreign key)
+	_, err = tx.Exec("UPDATE elo_adjustments SET adjusted_by = $1 WHERE adjusted_by = $2", anonymizedID, userID)
 	if err != nil {
-		slog.Error("Failed to anonymize matches (player2)", "error", err, "user_id", userID)
-		utils.RespondWithError(c, http.StatusInternalServerError, "failed to anonymize matches", err)
+		slog.Error("Failed to anonymize ELO adjustments", "error", err, "user_id", userID)
+		utils.RespondWithError(c, http.StatusInternalServerError, "failed to anonymize elo adjustments", err)
 		return
 	}
 
-	// Anonymize winner_id
-	_, err = tx.Exec(`
-		UPDATE matches SET winner_id = $1
-		WHERE winner_id = $2
-	`, anonymizedID, userID)
+	// 5. Clear banned_by references (users banned by this user)
+	_, err = tx.Exec("UPDATE users SET banned_by = NULL WHERE banned_by = $1", userID)
 	if err != nil {
-		slog.Error("Failed to anonymize matches (winner)", "error", err, "user_id", userID)
-		utils.RespondWithError(c, http.StatusInternalServerError, "failed to anonymize matches", err)
+		slog.Error("Failed to clear banned_by references", "error", err, "user_id", userID)
+		utils.RespondWithError(c, http.StatusInternalServerError, "failed to clear ban references", err)
 		return
 	}
 
-	// Anonymize submitted_by
-	_, err = tx.Exec(`
-		UPDATE matches SET submitted_by = $1
-		WHERE submitted_by = $2
-	`, anonymizedID, userID)
+	// 6. Delete audit log entries where this user was the admin (admin_id foreign key)
+	_, err = tx.Exec("DELETE FROM admin_audit_log WHERE admin_id = $1", userID)
 	if err != nil {
-		slog.Error("Failed to anonymize matches (submitted_by)", "error", err, "user_id", userID)
-		utils.RespondWithError(c, http.StatusInternalServerError, "failed to anonymize matches", err)
+		slog.Error("Failed to delete admin audit log entries", "error", err, "user_id", userID)
+		utils.RespondWithError(c, http.StatusInternalServerError, "failed to delete audit entries", err)
 		return
 	}
 
-	// 5. Delete audit log entries related to this user (admin actions on this user)
-	// Note: target_type must be 'user' and target_id matches userID
+	// 7. Delete audit log entries related to this user (admin actions on this user)
 	_, err = tx.Exec("DELETE FROM admin_audit_log WHERE target_type = 'user' AND target_id = $1", userID)
 	if err != nil {
-		slog.Error("Failed to delete audit log entries", "error", err, "user_id", userID)
+		slog.Error("Failed to delete audit log entries targeting user", "error", err, "user_id", userID)
 		// Non-critical, continue
 	}
 
-	// 6. Delete the user account
+	// 8. Delete the user account
 	_, err = tx.Exec("DELETE FROM users WHERE id = $1", userID)
 	if err != nil {
 		slog.Error("Failed to delete user", "error", err, "user_id", userID)
