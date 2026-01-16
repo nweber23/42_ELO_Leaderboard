@@ -1,13 +1,12 @@
 /* ============================================
-   Button Component — Mobile First
+   Button Component — Engineered Interface
    ============================================ */
 
 .btn {
-  --_bg: var(--accent);
-  --_fg: white;
-  --_bg-hover: var(--accent-hover);
+  --_bg: var(--fg);
+  --_fg: var(--bg-base);
+  --_bg-hover: var(--fg);
   --_border: transparent;
-  --_glow: var(--accent-glow);
 
   position: relative;
   display: inline-flex;
@@ -16,13 +15,12 @@
   gap: var(--space-2);
 
   border: 1px solid var(--_border);
-  border-radius: var(--radius-lg);
-  /* Mobile: Touch target 48px */
-  min-height: 48px;
-  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
+  min-height: 44px;
+  padding: var(--space-2\.5) var(--space-4);
 
-  font-size: var(--text-base);
-  font-weight: var(--weight-semibold);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
   line-height: 1;
   white-space: nowrap;
 
@@ -31,165 +29,101 @@
   background: var(--_bg);
   color: var(--_fg);
 
-  /* Mobile: Touch improvements */
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 
   transition:
-    background var(--dur-base) var(--ease-out),
-    border-color var(--dur-base) var(--ease-out),
-    transform var(--dur-fast) var(--ease-out),
-    box-shadow var(--dur-base) var(--ease-out);
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    opacity var(--dur-fast) var(--ease-out);
 }
 
-/* Mobile: Active state instead of hover */
+.btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
 .btn:active:not(:disabled) {
-  transform: scale(0.97);
-  background: var(--_bg-hover);
+  opacity: 0.8;
 }
 
 .btn:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px var(--ring-offset), 0 0 0 4px var(--ring);
+  outline: 1px solid var(--ring);
+  outline-offset: 2px;
 }
 
 .btn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
-/* Desktop: Hover states and smaller touch targets */
-@media (min-width: 768px) {
-  .btn {
-    min-height: auto;
-    font-size: var(--text-sm);
-  }
-
-  .btn:hover:not(:disabled) {
-    background: var(--_bg-hover);
-    box-shadow: 0 4px 20px var(--_glow);
-    transform: translateY(-1px);
-  }
-
-  .btn:active:not(:disabled) {
-    transform: translateY(0) scale(0.98);
-    box-shadow: none;
-  }
-}
-
-/* Sizes — Mobile First */
+/* Sizes */
 .btn--sm {
-  min-height: 44px;
-  padding: var(--space-2) var(--space-4);
-  font-size: var(--text-sm);
-  border-radius: var(--radius-md);
+  min-height: 32px;
+  padding: var(--space-1\.5) var(--space-3);
+  font-size: var(--text-xs);
+  border-radius: var(--radius-sm);
 }
 
 .btn--md {
-  min-height: 48px;
-  padding: var(--space-3) var(--space-5);
-  font-size: var(--text-base);
+  min-height: 40px;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
 }
 
 .btn--lg {
-  min-height: 52px;
-  padding: var(--space-4) var(--space-8);
-  font-size: var(--text-lg);
-  border-radius: var(--radius-xl);
-}
-
-/* Desktop: Smaller touch targets */
-@media (min-width: 768px) {
-  .btn--sm {
-    min-height: auto;
-    font-size: var(--text-xs);
-  }
-
-  .btn--md {
-    min-height: auto;
-    font-size: var(--text-sm);
-  }
-
-  .btn--lg {
-    min-height: auto;
-    font-size: var(--text-base);
-  }
+  min-height: 48px;
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--text-base);
 }
 
 /* Variants */
 .btn--primary {
-  --_bg: var(--accent);
-  --_fg: white;
-  --_bg-hover: var(--accent-hover);
-  --_glow: var(--accent-glow);
+  --_bg: var(--fg);
+  --_fg: var(--bg-base);
 }
 
 .btn--secondary {
-  --_bg: var(--surface);
-  --_fg: var(--text);
-  --_bg-hover: var(--surface-hover);
+  --_bg: var(--bg-muted);
+  --_fg: var(--fg);
   --_border: var(--border);
-  --_glow: transparent;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 .btn--secondary:hover:not(:disabled) {
-  border-color: var(--border-focus);
+  --_border: var(--border-focus);
+  opacity: 1;
 }
 
 .btn--ghost {
   --_bg: transparent;
-  --_fg: var(--text-secondary);
-  --_bg-hover: var(--surface-hover);
-  --_border: transparent;
-  --_glow: transparent;
+  --_fg: var(--fg-muted);
 }
 
 .btn--ghost:hover:not(:disabled) {
-  color: var(--text);
-  transform: none;
+  --_bg: var(--hover-bg);
+  --_fg: var(--fg);
+  opacity: 1;
 }
 
 .btn--danger {
-  --_bg: var(--danger);
+  --_bg: var(--negative);
   --_fg: white;
-  --_bg-hover: var(--danger-text);
-  --_glow: var(--danger-muted);
 }
 
 .btn--outline {
   --_bg: transparent;
-  --_fg: var(--text);
-  --_bg-hover: var(--surface);
+  --_fg: var(--fg);
   --_border: var(--border);
-  --_glow: transparent;
 }
 
 .btn--outline:hover:not(:disabled) {
-  border-color: var(--border-focus);
+  --_bg: var(--hover-bg);
+  --_border: var(--border-focus);
+  opacity: 1;
 }
 
-.btn--success {
-  --_bg: var(--success);
-  --_fg: white;
-  --_bg-hover: var(--success-text);
-  --_glow: var(--success-muted);
-}
-
-/* Glass variant */
-.btn--glass {
-  --_bg: var(--glass-bg);
-  --_fg: var(--text);
-  --_bg-hover: var(--surface-hover);
-  --_border: var(--glass-border);
-  --_glow: transparent;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-.btn--glass:hover:not(:disabled) {
-  border-color: var(--border-highlight);
+.btn--accent {
+  --_bg: var(--accent);
+  --_fg: var(--bg-base);
 }
 
 /* Spinner */
@@ -197,16 +131,10 @@
   width: 14px;
   height: 14px;
   border-radius: var(--radius-full);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  opacity: 0.6;
   animation: btn-spin 0.7s linear infinite;
-}
-
-.btn--secondary .btn__spinner,
-.btn--ghost .btn__spinner,
-.btn--glass .btn__spinner {
-  border-color: var(--border);
-  border-top-color: var(--text);
 }
 
 .btn__label {

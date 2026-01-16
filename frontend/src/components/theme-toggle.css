@@ -7,63 +7,41 @@
   width: 36px;
   height: 36px;
   padding: 0;
-  border: 1px solid var(--border);
+  border: none;
   border-radius: var(--radius-md);
-  background: var(--surface);
-  color: var(--text-secondary);
+  background: transparent;
+  color: var(--fg-muted);
   cursor: pointer;
   transition: all var(--dur-fast) var(--ease-out);
 }
 
 .theme-toggle:hover {
-  background: var(--surface-hover);
-  border-color: var(--border-focus);
-  color: var(--text);
+  background: var(--hover-bg);
+  color: var(--fg);
 }
 
 .theme-toggle:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px var(--ring);
-  border-color: var(--accent);
+  outline: 1px solid var(--ring);
+  outline-offset: 2px;
 }
 
 .theme-toggle__icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform var(--dur-base) var(--ease-spring);
-}
-
-.theme-toggle:hover .theme-toggle__icon {
-  transform: rotate(15deg);
 }
 
 .theme-toggle__indicator {
   position: absolute;
-  bottom: -2px;
-  right: -2px;
+  bottom: 4px;
+  right: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 12px;
-  height: 12px;
+  width: 8px;
+  height: 8px;
   background: var(--accent);
   border-radius: 50%;
   color: white;
-  font-size: 6px;
-  box-shadow: 0 0 0 2px var(--bg);
-}
-
-/* Animation for theme change */
-@keyframes theme-rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.theme-toggle:active .theme-toggle__icon {
-  animation: theme-rotate 0.3s var(--ease-out);
+  font-size: 4px;
 }

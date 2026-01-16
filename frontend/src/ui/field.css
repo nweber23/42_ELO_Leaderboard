@@ -1,10 +1,10 @@
 /* ============================================
-   Field Component — Mobile First
+   Field Component — Engineered Interface
    ============================================ */
 
 .field {
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-1\.5);
 }
 
 .field__top {
@@ -18,92 +18,85 @@
 .field__label {
   font-size: var(--text-sm);
   font-weight: var(--weight-medium);
-  color: var(--text);
+  color: var(--fg);
 }
 
 .field__hint {
   font-size: var(--text-xs);
-  color: var(--muted);
+  color: var(--fg-subtle);
 }
 
 .field__error {
   font-size: var(--text-sm);
-  color: var(--danger-text);
+  color: var(--negative);
 }
 
-/* Input & Select — Mobile First */
+/* Input & Select */
 .input,
 .select {
   width: 100%;
-  /* Mobile: Touch target 48px */
-  min-height: 48px;
-  padding: var(--space-3) var(--space-4);
-  background: var(--surface);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  min-height: 44px;
+  padding: var(--space-2\.5) var(--space-3);
+  background: var(--bg-elevated);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  /* 16px prevents iOS zoom on focus */
-  font-size: 16px;
-  color: var(--text);
+  border-radius: var(--radius-md);
+  font-size: 16px; /* Prevents iOS zoom */
+  color: var(--fg);
   -webkit-appearance: none;
   appearance: none;
   transition:
-    border-color var(--dur-base) var(--ease-out),
-    box-shadow var(--dur-base) var(--ease-out),
-    background var(--dur-base) var(--ease-out);
+    border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out);
 }
 
 .input::placeholder {
-  color: var(--muted);
+  color: var(--fg-faint);
 }
 
 .input:focus,
 .select:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--ring);
-  background: var(--surface-hover);
+  background: var(--bg-subtle);
 }
 
-/* Desktop: Hover states */
+/* Desktop adjustments */
 @media (min-width: 768px) {
   .input,
   .select {
-    min-height: auto;
+    min-height: 40px;
     font-size: var(--text-base);
   }
 
   .input:hover,
   .select:hover {
     border-color: var(--border-focus);
-    background: var(--surface-hover);
   }
 }
 
 /* Error state */
 .field--error .input,
 .field--error .select {
-  border-color: var(--danger);
+  border-color: var(--negative);
 }
 
 .field--error .input:focus,
 .field--error .select:focus {
-  box-shadow: 0 0 0 3px var(--danger-muted);
+  border-color: var(--negative);
 }
 
 /* Select styling */
 .select {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23737373' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right var(--space-3) center;
   padding-right: var(--space-10);
 }
 
 .select option {
-  background: var(--surface-solid);
-  color: var(--text);
+  background: var(--bg-elevated);
+  color: var(--fg);
 }
 
 .select option:checked {
@@ -114,7 +107,7 @@
 /* Light theme select options */
 [data-theme="light"] .select option {
   background: #ffffff;
-  color: #1f2937;
+  color: #0c0c0c;
 }
 
 [data-theme="light"] .select option:checked {

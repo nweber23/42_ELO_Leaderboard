@@ -1,5 +1,5 @@
 /* ============================================
-   Login Page — Mobile-First Glassmorphism
+   Login Page — Engineered Interface
    ============================================ */
 
 .login {
@@ -9,35 +9,8 @@
   align-items: center;
   justify-content: center;
   padding: var(--space-4);
-  background: var(--bg);
-  background-image: var(--bg-gradient);
+  background: var(--bg-base);
   position: relative;
-  overflow: hidden;
-}
-
-/* Ambient background orbs */
-.login::before {
-  content: '';
-  position: absolute;
-  top: -20%;
-  left: -10%;
-  width: 60%;
-  height: 60%;
-  background: radial-gradient(ellipse, var(--accent-glow) 0%, transparent 70%);
-  pointer-events: none;
-  opacity: 0.5;
-}
-
-.login::after {
-  content: '';
-  position: absolute;
-  bottom: -20%;
-  right: -10%;
-  width: 50%;
-  height: 50%;
-  background: radial-gradient(ellipse, rgba(20, 184, 166, 0.15) 0%, transparent 70%);
-  pointer-events: none;
-  opacity: 0.5;
 }
 
 .login__grid {
@@ -49,7 +22,7 @@
   align-items: center;
   width: 100%;
   max-width: 100%;
-  animation: fade-in var(--dur-slower) var(--ease-out);
+  animation: fade-in var(--dur-slow) var(--ease-out);
   text-align: center;
 }
 
@@ -65,14 +38,12 @@
   display: inline-flex;
   align-items: center;
   width: fit-content;
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-full);
-  background: var(--accent-muted);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  padding: var(--space-1\.5) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--bg-muted);
   border: 1px solid var(--border);
-  color: var(--accent-text);
-  font-size: var(--text-xs);
+  color: var(--fg-muted);
+  font-size: var(--text-2xs);
   font-weight: var(--weight-semibold);
   letter-spacing: var(--tracking-caps);
   text-transform: uppercase;
@@ -81,31 +52,28 @@
 .login__title {
   margin: 0;
   font-size: var(--text-2xl);
-  font-weight: var(--weight-bold);
-  letter-spacing: var(--tracking-tight);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tighter);
   line-height: var(--leading-tight);
-  color: var(--text);
-  background: linear-gradient(135deg, var(--text) 0%, var(--text-secondary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--fg);
+  max-width: 20ch;
 }
 
 .login__subtitle {
   margin: 0;
   font-size: var(--text-base);
   line-height: var(--leading-relaxed);
-  color: var(--text-secondary);
+  color: var(--fg-muted);
   max-width: 100%;
 }
 
 .login__bullets {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-2);
   margin: 0;
   padding-left: 0;
-  color: var(--text-secondary);
+  color: var(--fg-subtle);
   font-size: var(--text-sm);
   line-height: var(--leading-relaxed);
   list-style: none;
@@ -119,54 +87,77 @@
 }
 
 .login__bullets li::before {
-  content: '✓';
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: var(--radius-full);
-  background: var(--accent-muted);
-  color: var(--accent-text);
-  font-size: var(--text-xs);
-  font-weight: var(--weight-bold);
+  content: '—';
+  color: var(--fg-faint);
   flex-shrink: 0;
-  margin-top: 2px;
 }
 
 .login__hint {
   font-size: var(--text-xs);
-  color: var(--muted);
+  color: var(--fg-faint);
   max-width: 100%;
   line-height: var(--leading-relaxed);
   text-align: center;
 }
 
-/* Panel / Card — Glass card */
+/* Panel */
 .login__panel {
   width: 100%;
   max-width: 100%;
 }
 
 .login__panel .card {
-  padding: var(--space-2);
-  animation: scale-in var(--dur-slower) var(--ease-out);
+  padding: var(--space-4);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
 }
 
 .login__panel .card__header {
   text-align: center;
   padding-bottom: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.login__panel .card__title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-medium);
+  color: var(--fg);
+  margin: 0 0 var(--space-1) 0;
+}
+
+.login__panel .card__description {
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+  margin: 0;
 }
 
 .login__panel .card__content {
   display: grid;
-  gap: var(--space-5);
+  gap: var(--space-4);
+}
+
+/* Login button override */
+.login__panel .btn {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--bg-base);
+  background: var(--fg);
+  border: none;
+  border-radius: var(--radius-md);
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.login__panel .btn:hover {
+  opacity: 0.9;
 }
 
 .login__smallprint {
   font-size: var(--text-xs);
   line-height: var(--leading-relaxed);
-  color: var(--muted);
+  color: var(--fg-faint);
   text-align: center;
 }
 
@@ -184,8 +175,7 @@
   margin-top: var(--space-6);
   text-align: center;
   font-size: var(--text-xs);
-  color: var(--muted);
-  animation: fade-in var(--dur-slower) var(--ease-out) 0.5s both;
+  color: var(--fg-faint);
 }
 
 .login-footer__nav {
@@ -197,23 +187,25 @@
 }
 
 .login-footer__nav a {
-  color: var(--text-secondary);
+  color: var(--fg-subtle);
   text-decoration: none;
-  transition: color var(--dur-base) var(--ease-out);
+  transition: color var(--dur-fast) var(--ease-out);
 }
 
 .login-footer__nav a:hover {
-  color: var(--accent);
-  text-shadow: 0 0 12px var(--accent-glow);
+  color: var(--fg);
+}
+
+.login-footer__nav span {
+  color: var(--fg-faint);
 }
 
 .login-footer__copy {
   margin: 0;
-  opacity: 0.7;
 }
 
 /* ============================================
-   Tablet Responsive (≥600px)
+   Tablet (≥600px)
    ============================================ */
 
 @media (min-width: 600px) {
@@ -231,7 +223,7 @@
 }
 
 /* ============================================
-   Desktop Responsive (≥900px)
+   Desktop (≥900px)
    ============================================ */
 
 @media (min-width: 900px) {
@@ -240,7 +232,7 @@
     grid-template-columns: 1.2fr 1fr;
     gap: var(--space-16);
     text-align: left;
-    max-width: 1100px;
+    max-width: 1000px;
     align-items: center;
   }
 
@@ -249,25 +241,26 @@
   }
 
   .login__title {
-    font-size: 3.25rem;
+    font-size: var(--text-4xl);
+    max-width: 16ch;
   }
 
   .login__subtitle {
-    font-size: var(--text-lg);
-    max-width: 48ch;
+    font-size: var(--text-md);
+    max-width: 42ch;
   }
 
   .login__bullets {
-    font-size: var(--text-md);
+    font-size: var(--text-base);
   }
 
   .login__hint {
     text-align: left;
-    max-width: 50ch;
+    max-width: 44ch;
   }
 
   .login__panel {
     justify-self: end;
-    max-width: 440px;
+    max-width: 380px;
   }
 }
