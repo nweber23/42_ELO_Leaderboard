@@ -17,6 +17,9 @@ html {
   scroll-behavior: smooth;
   color-scheme: dark;
   overflow-x: hidden;
+  /* Safari iOS fix: prevent horizontal scroll */
+  position: relative;
+  width: 100%;
 }
 
 [data-theme="light"] {
@@ -27,6 +30,8 @@ body {
   min-height: 100%;
   overflow-x: hidden;
   width: 100%;
+  max-width: 100%;
+  position: relative;
   font-family: var(--font-sans);
   font-size: var(--text-base);
   font-weight: var(--weight-normal);
@@ -47,6 +52,8 @@ body {
   isolation: isolate;
   position: relative;
   overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
 }
 
 /* ============================================

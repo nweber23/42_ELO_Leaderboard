@@ -7,12 +7,20 @@
   flex-direction: column;
   gap: var(--space-4);
   width: 100%;
+  max-width: 100%;
+  min-width: 0; /* Safari flexbox fix */
 }
 
 .submit-form__scores {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-3);
+  width: 100%;
+}
+
+/* Safari grid fix: ensure children don't overflow */
+.submit-form__scores > * {
+  min-width: 0;
 }
 
 .submit-form__elo-panel {
@@ -23,6 +31,10 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0; /* Safari flexbox fix */
+  overflow: hidden;
 }
 
 .submit-form__elo-row {
@@ -31,6 +43,22 @@
   align-items: center;
   gap: var(--space-2);
   font-size: var(--text-sm);
+  width: 100%;
+  min-width: 0; /* Safari flexbox fix */
+}
+
+/* Truncate long names on mobile */
+.submit-form__elo-row > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.submit-form__elo-row > span:last-child,
+.submit-form__elo-row > strong {
+  flex-shrink: 0;
 }
 
 .submit-form__elo-label {
@@ -38,6 +66,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
+  flex: 1;
 }
 
 .submit-form__elo-prediction {

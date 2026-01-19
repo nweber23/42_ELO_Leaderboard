@@ -8,8 +8,9 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 100vw;
+  max-width: 100%; /* Use 100% instead of 100vw for Safari iOS */
   overflow-x: hidden;
+  position: relative;
 }
 
 /* ============================================
@@ -26,7 +27,7 @@
   border-bottom: 1px solid var(--glass-border);
   /* Prevent horizontal overflow */
   width: 100%;
-  max-width: 100vw;
+  max-width: 100%; /* Use 100% instead of 100vw for Safari iOS */
 }
 
 /* Top highlight edge */
@@ -314,13 +315,16 @@
   padding-bottom: calc(var(--space-4) + var(--mobile-nav-height) + var(--safe-area-bottom));
   animation: fade-in var(--dur-slower) var(--ease-out);
   width: 100%;
-  max-width: 100vw;
+  max-width: 100%; /* Use 100% instead of 100vw for Safari iOS */
   overflow-x: hidden;
+  position: relative;
 }
 
 .main__inner {
   min-height: 50vh;
   width: 100%;
+  max-width: 100%;
+  min-width: 0; /* Safari flexbox fix */
 }
 
 /* ============================================
