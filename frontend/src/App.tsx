@@ -23,17 +23,16 @@ const Terms = lazy(() => import('./pages/Terms'));
 const PlayerProfileRedirect = lazy(() => import('./pages/PlayerProfileRedirect'));
 
 // Extract and clear sensitive params from URL immediately
-function extractAndClearUrlParams(): { token: string | null; error: string | null; authSuccess: boolean } {
+function extractAndClearUrlParams(): { token: string | null; error: string | null } {
   const params = new URLSearchParams(window.location.search);
   const token = params.get('token');
   const error = params.get('error');
-  const authSuccess = params.get('auth') === 'success';
 
-  if (token || error || authSuccess) {
+  if (token || error) {
     window.history.replaceState({}, '', window.location.pathname);
   }
 
-  return { token, error, authSuccess };
+  return { token, error };
 }
 
 const initialUrlParams = extractAndClearUrlParams();
@@ -43,7 +42,7 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { token: tokenFromUrl, error, authSuccess } = initialUrlParams;
+    const { token: tokenFromUrl, error } = initialUrlParams;
 
     if (error) {
       alert('Login failed: ' + error);
@@ -55,17 +54,15 @@ function App() {
       localStorage.setItem('token', tokenFromUrl);
     }
 
-    const token = localStorage.getItem('token');
-    if (token || authSuccess) {
-      authAPI.me()
-        .then(setUser)
-        .catch(() => {
-          localStorage.removeItem('token');
-        })
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
+    // Always attempt to fetch user - the server will check httpOnly cookies
+    // or Bearer token to determine auth status
+    authAPI.me()
+      .then(setUser)
+      .catch(() => {
+        // Only remove token if we had one and auth failed
+        localStorage.removeItem('token');
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const handleLogout = useCallback(() => {

@@ -44,8 +44,11 @@ client.interceptors.response.use(
     // Handle 401 errors
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
-      // Only redirect if not already on login page to avoid loops
-      if (!window.location.pathname.includes('/login')) {
+      // Don't redirect for /auth/me - that's used for session restoration
+      // and 401 there just means "not logged in", not "session expired"
+      const isAuthCheck = error.config?.url === '/auth/me';
+      // Only redirect if not on login page and not doing initial auth check
+      if (!isAuthCheck && !window.location.pathname.includes('/login')) {
         window.location.href = '/login';
       }
     }
