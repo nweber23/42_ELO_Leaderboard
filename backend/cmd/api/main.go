@@ -70,10 +70,12 @@ func main() {
 	matchRepo := repositories.NewMatchRepository(db)
 	commentRepo := repositories.NewCommentRepository(db)
 	adminRepo := repositories.NewAdminRepository(db)
+	userSportsRepo := repositories.NewUserSportsRepository(db)
 
 	// Initialize services
 	eloService := services.NewELOService(cfg.ELOKFactor)
-	matchService := services.NewMatchService(db, matchRepo, userRepo, eloService)
+	sportService := services.NewSportService(db)
+	matchService := services.NewMatchService(db, matchRepo, userRepo, userSportsRepo, sportService, eloService)
 
 	// Initialize handlers
 	authHandler := handlers.NewAuthHandler(cfg, userRepo, matchService)
@@ -81,6 +83,7 @@ func main() {
 	adminHandler := handlers.NewAdminHandler(adminRepo, userRepo, matchRepo)
 	healthHandler := handlers.NewHealthHandler(db)
 	gdprHandler := handlers.NewGDPRHandler(db, userRepo, matchRepo, commentRepo, matchService)
+	sportHandler := handlers.NewSportHandler(sportService)
 
 	// Setup Gin router
 	router := gin.New()
@@ -121,6 +124,13 @@ func main() {
 			auth.GET("/login", authHandler.Login)
 			auth.GET("/callback", authHandler.Callback)
 			auth.POST("/logout", authHandler.Logout) // Logout endpoint to clear httpOnly cookie
+		}
+
+		// Sports configuration - public endpoint for dynamic sport list
+		sports := api.Group("/sports")
+		{
+			sports.GET("", sportHandler.GetAllSports)
+			sports.GET("/:id", sportHandler.GetSport)
 		}
 
 		// Public leaderboard - with optional auth to show real data to logged-in users

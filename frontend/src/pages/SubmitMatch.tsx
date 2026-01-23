@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { matchAPI, usersAPI } from '../api/client';
 import type { User } from '../types';
-import { SPORTS, SPORT_LABELS } from '../types';
 import { Page } from '../layout/Page';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/Card';
 import { Field, Select, Input } from '../ui/Field';
@@ -10,6 +9,7 @@ import { Button } from '../ui/Button';
 import { getErrorMessage } from '../utils/errorUtils';
 import { calculateELOChange, formatEloDelta } from '../utils/eloUtils';
 import { SCORE_MIN } from '../constants';
+import { getSports, type SportConfig } from '../config/sports';
 import './SubmitMatch.css';
 
 interface SubmitMatchProps {
@@ -18,7 +18,8 @@ interface SubmitMatchProps {
 
 function SubmitMatch({ user }: SubmitMatchProps) {
   const navigate = useNavigate();
-  const [sport, setSport] = useState<'table_tennis' | 'table_football'>('table_tennis');
+  const [sports, setSports] = useState<SportConfig[]>([]);
+  const [sport, setSport] = useState<string>('');
   const [opponentId, setOpponentId] = useState<number>(0);
   const [playerScore, setPlayerScore] = useState<string>('');
   const [opponentScore, setOpponentScore] = useState<string>('');
@@ -27,13 +28,20 @@ function SubmitMatch({ user }: SubmitMatchProps) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>('');
 
+  // Load sports and users
   useEffect(() => {
+    getSports().then(loadedSports => {
+      setSports(loadedSports);
+      if (loadedSports.length > 0 && !sport) {
+        setSport(loadedSports[0].id);
+      }
+    });
     usersAPI.getAll()
       .then(users => {
         setPlayers(users.filter(u => u.id !== user.id));
       })
       .catch(console.error);
-  }, [user.id]);
+  }, [user.id, sport]);
 
   // Get selected opponent
   const selectedOpponent = useMemo(() => {
@@ -41,10 +49,19 @@ function SubmitMatch({ user }: SubmitMatchProps) {
   }, [players, opponentId]);
 
   // Get current ELO ratings based on selected sport
-  const playerELO = sport === 'table_tennis' ? user.table_tennis_elo : user.table_football_elo;
-  const opponentELO = selectedOpponent
-    ? (sport === 'table_tennis' ? selectedOpponent.table_tennis_elo : selectedOpponent.table_football_elo)
-    : null;
+  // Uses new sports map if available, falls back to legacy fields
+  const getELO = (u: User, sportId: string): number => {
+    if (u.sports?.[sportId]) {
+      return u.sports[sportId].current_elo;
+    }
+    // Fallback to legacy fields
+    if (sportId === 'table_tennis') return u.table_tennis_elo;
+    if (sportId === 'table_football') return u.table_football_elo;
+    return 1000; // Default for unknown sports
+  };
+
+  const playerELO = getELO(user, sport);
+  const opponentELO = selectedOpponent ? getELO(selectedOpponent, sport) : null;
 
   // Calculate predicted ELO changes
   const eloPrediction = useMemo(() => {
@@ -113,10 +130,11 @@ function SubmitMatch({ user }: SubmitMatchProps) {
             <Field label="Sport">
               <Select
                 value={sport}
-                onChange={(e) => setSport(e.target.value as 'table_tennis' | 'table_football')}
+                onChange={(e) => setSport(e.target.value)}
               >
-                <option value={SPORTS.TABLE_TENNIS}>{SPORT_LABELS.table_tennis}</option>
-                <option value={SPORTS.TABLE_FOOTBALL}>{SPORT_LABELS.table_football}</option>
+                {sports.map(s => (
+                  <option key={s.id} value={s.id}>{s.display_name}</option>
+                ))}
               </Select>
             </Field>
 
