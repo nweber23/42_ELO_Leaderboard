@@ -1,7 +1,8 @@
 import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { useState, useCallback, createContext, useContext } from "react";
+import { useState, useCallback, useEffect, createContext, useContext } from "react";
 import type { User } from "../types";
 import { ThemeToggle } from "../components/ThemeToggle";
+import { getSports, type SportConfig } from "../config/sports";
 import "./shell.css";
 
 // Panel context for triggering player panel from anywhere
@@ -25,6 +26,7 @@ interface ShellProps {
 export function Shell({ user, onLogout }: ShellProps) {
   const location = useLocation();
   const [panelPlayerId, setPanelPlayerId] = useState<number | null>(null);
+  const [sports, setSports] = useState<SportConfig[]>([]);
 
   const openPlayer = useCallback((id: number) => {
     setPanelPlayerId(id);
@@ -34,10 +36,15 @@ export function Shell({ user, onLogout }: ShellProps) {
     setPanelPlayerId(null);
   }, []);
 
+  // Load sports configuration
+  useEffect(() => {
+    getSports().then(setSports);
+  }, []);
+
   // Determine current sport from URL
-  const currentSport = location.pathname.includes("table_football")
-    ? "table_football"
-    : "table_tennis";
+  const currentSport = sports.find(s => location.pathname.includes(s.id))?.id
+    || sports[0]?.id
+    || "table_tennis";
 
   const isArena =
     location.pathname.startsWith("/leaderboard") ||
@@ -64,22 +71,19 @@ export function Shell({ user, onLogout }: ShellProps) {
             <div className="shell__context">
               {isArena && (
                 <div className="shell__sport-switch">
-                  <NavLink
-                    to="/leaderboard/table_tennis"
-                    className={`shell__sport ${currentSport === "table_tennis" ? "shell__sport--active" : ""}`}
-                    data-sport="tt"
-                  >
-                    <span className="shell__sport-label">Table Tennis</span>
-                    <span className="shell__sport-abbr">TT</span>
-                  </NavLink>
-                  <NavLink
-                    to="/leaderboard/table_football"
-                    className={`shell__sport ${currentSport === "table_football" ? "shell__sport--active" : ""}`}
-                    data-sport="tf"
-                  >
-                    <span className="shell__sport-label">Table Football</span>
-                    <span className="shell__sport-abbr">TF</span>
-                  </NavLink>
+                  {sports.map(sport => (
+                    <NavLink
+                      key={sport.id}
+                      to={`/leaderboard/${sport.id}`}
+                      className={`shell__sport ${currentSport === sport.id ? "shell__sport--active" : ""}`}
+                      data-sport={sport.id.substring(0, 2)}
+                    >
+                      <span className="shell__sport-label">{sport.display_name}</span>
+                      <span className="shell__sport-abbr">
+                        {sport.display_name.split(' ').map(w => w[0]).join('').toUpperCase()}
+                      </span>
+                    </NavLink>
+                  ))}
                 </div>
               )}
               {isPersonal && (

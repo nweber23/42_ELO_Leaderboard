@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { NavLink, useOutletContext, useNavigate } from "react-router-dom";
 import { matchAPI, usersAPI } from "../api/client";
 import type { Match, User } from "../types";
+import { getSports, getSportLabel, type SportConfig } from "../config/sports";
 import "./activity.css";
 
 interface OutletContext {
@@ -17,7 +18,8 @@ export default function Activity() {
   const [users, setUsers] = useState<Map<number, User>>(new Map());
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "pending" | "confirmed">("all");
-  const [sportFilter, setSportFilter] = useState<"all" | "table_tennis" | "table_football">("all");
+  const [sportFilter, setSportFilter] = useState<string>("all");
+  const [sports, setSports] = useState<SportConfig[]>([]);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
 
   // Redirect if not logged in
@@ -26,6 +28,11 @@ export default function Activity() {
       navigate("/login");
     }
   }, [user, navigate]);
+
+  // Load sports configuration
+  useEffect(() => {
+    getSports().then(setSports);
+  }, []);
 
   // Fetch matches and users
   useEffect(() => {
@@ -216,9 +223,9 @@ export default function Activity() {
                     <div className="activity__pending-info">
                       <span
                         className="activity__pending-sport"
-                        data-sport={match.sport === "table_tennis" ? "tt" : "tf"}
+                        data-sport={match.sport.substring(0, 2)}
                       >
-                        {match.sport === "table_tennis" ? "TT" : "TF"}
+                        {getSportLabel(match.sport).split(' ').map(w => w[0]).join('').toUpperCase()}
                       </span>
                       <span
                         className="activity__pending-opponent"
@@ -280,22 +287,18 @@ export default function Activity() {
               className={`activity__filter ${sportFilter === "all" ? "activity__filter--active" : ""}`}
               onClick={() => setSportFilter("all")}
             >
-              Both
+              All
             </button>
-            <button
-              className={`activity__filter ${sportFilter === "table_tennis" ? "activity__filter--active" : ""}`}
-              onClick={() => setSportFilter("table_tennis")}
-              data-sport="tt"
-            >
-              TT
-            </button>
-            <button
-              className={`activity__filter ${sportFilter === "table_football" ? "activity__filter--active" : ""}`}
-              onClick={() => setSportFilter("table_football")}
-              data-sport="tf"
-            >
-              TF
-            </button>
+            {sports.map(sport => (
+              <button
+                key={sport.id}
+                className={`activity__filter ${sportFilter === sport.id ? "activity__filter--active" : ""}`}
+                onClick={() => setSportFilter(sport.id)}
+                data-sport={sport.id.substring(0, 2)}
+              >
+                {sport.display_name.split(' ').map(w => w[0]).join('').toUpperCase()}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -319,9 +322,9 @@ export default function Activity() {
                   <div className="activity__match-left">
                     <span
                       className="activity__match-sport"
-                      data-sport={match.sport === "table_tennis" ? "tt" : "tf"}
+                      data-sport={match.sport.substring(0, 2)}
                     >
-                      {match.sport === "table_tennis" ? "TT" : "TF"}
+                      {getSportLabel(match.sport).split(' ').map(w => w[0]).join('').toUpperCase()}
                     </span>
                     <span
                       className="activity__match-opponent"

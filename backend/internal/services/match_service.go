@@ -15,25 +15,31 @@ import (
 const leaderboardCacheTTL = 5 * time.Minute
 
 type MatchService struct {
-	db              *sql.DB
-	matchRepo       *repositories.MatchRepository
-	userRepo        *repositories.UserRepository
-	eloService      *ELOService
-	cache           *cache.Cache
+	db             *sql.DB
+	matchRepo      *repositories.MatchRepository
+	userRepo       *repositories.UserRepository
+	userSportsRepo *repositories.UserSportsRepository
+	sportService   *SportService
+	eloService     *ELOService
+	cache          *cache.Cache
 }
 
 func NewMatchService(
 	db *sql.DB,
 	matchRepo *repositories.MatchRepository,
 	userRepo *repositories.UserRepository,
+	userSportsRepo *repositories.UserSportsRepository,
+	sportService *SportService,
 	eloService *ELOService,
 ) *MatchService {
 	return &MatchService{
-		db:         db,
-		matchRepo:  matchRepo,
-		userRepo:   userRepo,
-		eloService: eloService,
-		cache:      cache.NewCache(leaderboardCacheTTL, 1*time.Minute),
+		db:             db,
+		matchRepo:      matchRepo,
+		userRepo:       userRepo,
+		userSportsRepo: userSportsRepo,
+		sportService:   sportService,
+		eloService:     eloService,
+		cache:          cache.NewCache(leaderboardCacheTTL, 1*time.Minute),
 	}
 }
 
@@ -117,24 +123,15 @@ func (s *MatchService) ConfirmMatch(matchID, userID int) error {
 		return fmt.Errorf("you are not part of this match")
 	}
 
-	// Get current ELO ratings
-	player1, err := s.userRepo.GetByID(match.Player1ID)
+	// Get current ELO ratings from user_sports table (generic for any sport)
+	player1ELO, err := s.userSportsRepo.GetUserELO(match.Player1ID, match.Sport)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get player1 ELO: %w", err)
 	}
 
-	player2, err := s.userRepo.GetByID(match.Player2ID)
+	player2ELO, err := s.userSportsRepo.GetUserELO(match.Player2ID, match.Sport)
 	if err != nil {
-		return err
-	}
-
-	var player1ELO, player2ELO int
-	if match.Sport == models.SportTableTennis {
-		player1ELO = player1.TableTennisELO
-		player2ELO = player2.TableTennisELO
-	} else {
-		player1ELO = player1.TableFootballELO
-		player2ELO = player2.TableFootballELO
+		return fmt.Errorf("failed to get player2 ELO: %w", err)
 	}
 
 	// Calculate new ELO ratings
@@ -158,23 +155,13 @@ func (s *MatchService) ConfirmMatch(matchID, userID int) error {
 
 	// Re-fetch ELO values within transaction to ensure consistency
 	// This is necessary because the ELO might have changed between our initial read and now
-	player1Current, err := s.userRepo.GetByIDForUpdate(tx, match.Player1ID)
+	player1CurrentELO, err := s.userSportsRepo.GetUserELOForUpdate(tx, match.Player1ID, match.Sport)
 	if err != nil {
 		return fmt.Errorf("failed to lock player1: %w", err)
 	}
-	player2Current, err := s.userRepo.GetByIDForUpdate(tx, match.Player2ID)
+	player2CurrentELO, err := s.userSportsRepo.GetUserELOForUpdate(tx, match.Player2ID, match.Sport)
 	if err != nil {
 		return fmt.Errorf("failed to lock player2: %w", err)
-	}
-
-	// Recalculate ELO with locked values to ensure consistency
-	var player1CurrentELO, player2CurrentELO int
-	if match.Sport == models.SportTableTennis {
-		player1CurrentELO = player1Current.TableTennisELO
-		player2CurrentELO = player2Current.TableTennisELO
-	} else {
-		player1CurrentELO = player1Current.TableFootballELO
-		player2CurrentELO = player2Current.TableFootballELO
 	}
 
 	// If ELO changed between reads, recalculate
@@ -202,13 +189,22 @@ func (s *MatchService) ConfirmMatch(matchID, userID int) error {
 		return err
 	}
 
-	// Update user ELO ratings
-	if err := s.userRepo.UpdateELO(tx, match.Player1ID, match.Sport, player1NewELO); err != nil {
+	// Update user ELO ratings in user_sports table
+	if err := s.userSportsRepo.UpdateUserELO(tx, match.Player1ID, match.Sport, player1NewELO); err != nil {
 		return err
 	}
 
-	if err := s.userRepo.UpdateELO(tx, match.Player2ID, match.Sport, player2NewELO); err != nil {
+	if err := s.userSportsRepo.UpdateUserELO(tx, match.Player2ID, match.Sport, player2NewELO); err != nil {
 		return err
+	}
+
+	// Update match statistics
+	if err := s.userSportsRepo.IncrementMatchStats(tx, match.Player1ID, match.Sport, player1Won); err != nil {
+		return fmt.Errorf("failed to update player1 stats: %w", err)
+	}
+
+	if err := s.userSportsRepo.IncrementMatchStats(tx, match.Player2ID, match.Sport, !player1Won); err != nil {
+		return fmt.Errorf("failed to update player2 stats: %w", err)
 	}
 
 	// Commit transaction

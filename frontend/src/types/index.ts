@@ -1,3 +1,12 @@
+// Per-sport statistics for a user
+export interface UserSportData {
+  current_elo: number;
+  highest_elo: number;
+  matches_played: number;
+  wins: number;
+  losses: number;
+}
+
 export interface User {
   id: number;
   intra_id: number;
@@ -5,6 +14,7 @@ export interface User {
   display_name: string;
   avatar_url: string;
   campus: string;
+  // Legacy ELO fields (kept for backward compatibility during migration)
   table_tennis_elo: number;
   table_football_elo: number;
   is_admin?: boolean;
@@ -14,6 +24,8 @@ export interface User {
   banned_by?: number;
   created_at: string;
   updated_at: string;
+  // New: Per-sport statistics (will be populated after migration)
+  sports?: Record<string, UserSportData>;
 }
 
 export interface Match {
@@ -59,22 +71,26 @@ export interface Comment {
 }
 
 export interface SubmitMatchRequest {
-  sport: 'table_tennis' | 'table_football';
+  sport: string; // Dynamic - validated by backend against sports table
   opponent_id: number;
   player_score: number;
   opponent_score: number;
   context?: string;
 }
 
+// Legacy constants - kept for backward compatibility
+// Prefer using getSports() from config/sports.ts for dynamic sport list
 export const SPORTS = {
   TABLE_TENNIS: 'table_tennis',
   TABLE_FOOTBALL: 'table_football',
 } as const;
 
-export const SPORT_LABELS = {
+// Legacy labels - kept for backward compatibility
+// Prefer using getSportLabel() from config/sports.ts
+export const SPORT_LABELS: Record<string, string> = {
   table_tennis: 'Table Tennis',
   table_football: 'Table Football',
-} as const;
+};
 
 // Admin types
 export interface SystemHealth {

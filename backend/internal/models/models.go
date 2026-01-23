@@ -16,6 +16,15 @@ const (
 	StatusCancelled = "cancelled"
 )
 
+// UserSportData represents a user's statistics for a specific sport
+type UserSportData struct {
+	CurrentELO    int `json:"current_elo"`
+	HighestELO    int `json:"highest_elo"`
+	MatchesPlayed int `json:"matches_played"`
+	Wins          int `json:"wins"`
+	Losses        int `json:"losses"`
+}
+
 // User represents a 42 student
 type User struct {
 	ID               int        `json:"id"`
@@ -33,6 +42,8 @@ type User struct {
 	BannedBy         *int       `json:"banned_by,omitempty"`
 	CreatedAt        time.Time  `json:"created_at"`
 	UpdatedAt        time.Time  `json:"updated_at"`
+	// Sports contains per-sport ELO and statistics (new modular system)
+	Sports map[string]UserSportData `json:"sports,omitempty"`
 }
 
 // Match represents a game between two players

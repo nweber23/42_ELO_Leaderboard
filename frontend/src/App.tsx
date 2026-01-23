@@ -6,6 +6,7 @@ import { Shell } from './layout/Shell';
 import { Spinner } from './ui';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { CookieConsentBanner } from './components/CookieConsent';
+import { getDefaultSportId, preloadSports } from './config/sports';
 
 // Lazy load pages for code splitting
 const Login = lazy(() => import('./pages/Login'));
@@ -37,6 +38,21 @@ function extractAndClearUrlParams(): { token: string | null; error: string | nul
 
 const initialUrlParams = extractAndClearUrlParams();
 
+// Default redirect component that uses dynamic sport configuration
+function DefaultRedirect() {
+  const [defaultSport, setDefaultSport] = useState<string | null>(null);
+
+  useEffect(() => {
+    getDefaultSportId().then(setDefaultSport);
+  }, []);
+
+  if (!defaultSport) {
+    return <Spinner />;
+  }
+
+  return <Navigate to={`/leaderboard/${defaultSport}`} replace />;
+}
+
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,15 +70,16 @@ function App() {
       localStorage.setItem('token', tokenFromUrl);
     }
 
-    // Always attempt to fetch user - the server will check httpOnly cookies
-    // or Bearer token to determine auth status
-    authAPI.me()
-      .then(setUser)
-      .catch(() => {
-        // Only remove token if we had one and auth failed
-        localStorage.removeItem('token');
-      })
-      .finally(() => setLoading(false));
+    // Preload sports configuration and fetch user in parallel
+    Promise.all([
+      preloadSports(),
+      authAPI.me()
+        .then(setUser)
+        .catch(() => {
+          // Only remove token if we had one and auth failed
+          localStorage.removeItem('token');
+        })
+    ]).finally(() => setLoading(false));
   }, []);
 
   const handleLogout = useCallback(() => {
@@ -79,8 +96,8 @@ function App() {
           <Routes>
             {/* Main app routes */}
             <Route element={<Shell user={user} onLogout={handleLogout} />}>
-              {/* Arena (Leaderboard) */}
-              <Route index element={<Navigate to="/leaderboard/table_tennis" replace />} />
+              {/* Arena (Leaderboard) - Default route redirects to first active sport */}
+              <Route index element={<DefaultRedirect />} />
               <Route path="/leaderboard/:sport" element={<Arena />} />
 
               {/* Activity (Personal) */}
