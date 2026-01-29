@@ -149,7 +149,7 @@ function Login({ onLogin }: LoginProps) {
               <Link to="/impressum">Imprint</Link>
             </nav>
             <p className="login-footer__copy">
-              &copy; 2026 ELO Leaderboard. Not affiliated with 42.
+              &copy; {new Date().getFullYear()} ELO Leaderboard. Not affiliated with 42.
             </p>
           </footer>
         </aside>
