@@ -58,13 +58,6 @@ export function CookieConsentBanner({ onConsentChange }: CookieConsentBannerProp
     onConsentChange?.(true);
   };
 
-  const handleReject = () => {
-    setCookieConsent('rejected');
-    setVisible(false);
-    onConsentChange?.(false);
-    // Clear any existing non-essential cookies/storage here if needed
-  };
-
   if (!visible) return null;
 
   return (
@@ -82,20 +75,12 @@ export function CookieConsentBanner({ onConsentChange }: CookieConsentBannerProp
         </div>
         <div className="cookie-consent__actions">
           <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleReject}
-            className="cookie-consent__btn"
-          >
-            Decline
-          </Button>
-          <Button
             variant="primary"
             size="sm"
             onClick={handleAccept}
             className="cookie-consent__btn"
           >
-            Accept
+            I Understand
           </Button>
         </div>
       </div>
