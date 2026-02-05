@@ -114,6 +114,7 @@ func main() {
 	strictLimiter := middleware.NewStrictRateLimiter()   // 10 req/min for match submission
 	moderateLimiter := middleware.NewModerateRateLimiter() // 30 req/min for comments
 	looseLimiter := middleware.NewLooseRateLimiter()     // 100 req/min for reads
+	exportLimiter := middleware.NewRateLimiter(1, time.Hour) // 1 req/hour for data export and delete
 
 	// Public routes
 	api := router.Group("/api")
@@ -147,8 +148,8 @@ func main() {
 		protected.GET("/users", authHandler.GetUsers)
 
 		// GDPR endpoints (Art. 15 & 17)
-		protected.GET("/users/me/data-export", gdprHandler.ExportUserData)
-		protected.DELETE("/users/me/delete", gdprHandler.DeleteAccount)
+		protected.GET("/users/me/data-export", middleware.RateLimitMiddleware(exportLimiter, middleware.UserOrIPKeyFunc), gdprHandler.ExportUserData)
+		protected.DELETE("/users/me/delete", middleware.RateLimitMiddleware(exportLimiter, middleware.UserOrIPKeyFunc), gdprHandler.DeleteAccount)
 
 		// Matches - apply strict rate limiting to mutation endpoints
 		protected.POST("/matches", middleware.RateLimitMiddleware(strictLimiter, middleware.CombinedKeyFunc), matchHandler.SubmitMatch)
@@ -215,6 +216,7 @@ func main() {
 	srv.RegisterSimple("strict_rate_limiter", strictLimiter.Stop)
 	srv.RegisterSimple("moderate_rate_limiter", moderateLimiter.Stop)
 	srv.RegisterSimple("loose_rate_limiter", looseLimiter.Stop)
+	srv.RegisterSimple("export_rate_limiter", exportLimiter.Stop)
 	srv.ShutdownManager().RegisterDatabase(db)
 
 	// Start server with graceful shutdown
