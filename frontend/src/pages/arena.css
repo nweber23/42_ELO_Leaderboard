@@ -554,7 +554,7 @@
   padding: var(--space-2) var(--space-1\.5);
   vertical-align: middle;
   border-bottom: 1px solid var(--border-subtle);
-  height: 52px; /* Fixed height ensures all rows align perfectly */
+  height: 48px; /* Fixed height ensures all rows align perfectly */
 }
 
 .arena__td--rank {
@@ -565,13 +565,10 @@
 .arena__td--player {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
   /* Reduce gap on mobile */
   gap: var(--space-2);
   /* Ensure text truncation works */
   min-width: 0;
-  width: 100%; /* Fill cell */
-  height: 100%; /* Fill cell height */
 }
 
 .arena__td--elo {
