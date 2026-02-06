@@ -206,38 +206,30 @@ func (r *MatchRepository) DenyMatch(matchID int) error {
 // GetLeaderboardEntries retrieves all users with their match statistics in a single optimized query
 // This eliminates the N+1 query problem by using aggregation
 func (r *MatchRepository) GetLeaderboardEntries(sport string) ([]models.LeaderboardEntry, error) {
-	// Single query that gets all users and their match statistics
+	// Single query that gets all users and their sport-specific statistics
+	// Uses user_sports table for sport-specific ELO data
 	query := `
-		WITH user_stats AS (
-			SELECT
-				u.id,
-				u.id as intra_id,
-				u.login,
-				u.display_name,
-				u.avatar_url,
-				u.campus,
-				u.table_tennis_elo,
-				u.table_football_elo,
-				u.created_at,
-				u.updated_at,
-				COALESCE(COUNT(m.id), 0) as matches_played,
-				COALESCE(SUM(CASE WHEN m.winner_id = u.id THEN 1 ELSE 0 END), 0) as wins
-			FROM users u
-			LEFT JOIN matches m ON (m.player1_id = u.id OR m.player2_id = u.id)
-				AND m.sport = $1
-				AND m.status = $2
-			WHERE u.id != -1
-			GROUP BY u.id, u.login, u.display_name, u.avatar_url, u.campus,
-				u.table_tennis_elo, u.table_football_elo, u.created_at, u.updated_at
-		)
 		SELECT
-			id, intra_id, login, display_name, avatar_url, campus,
-			table_tennis_elo, table_football_elo, created_at, updated_at,
-			matches_played, wins
-		FROM user_stats
+			u.id,
+			u.id as intra_id,
+			u.login,
+			u.display_name,
+			u.avatar_url,
+			u.campus,
+			u.table_tennis_elo,
+			u.table_football_elo,
+			u.created_at,
+			u.updated_at,
+			COALESCE(us.current_elo, 1000) as current_elo,
+			COALESCE(us.matches_played, 0) as matches_played,
+			COALESCE(us.wins, 0) as wins,
+			COALESCE(us.losses, 0) as losses
+		FROM users u
+		LEFT JOIN user_sports us ON u.id = us.user_id AND us.sport_id = $1
+		WHERE u.id != -1
 	`
 
-	rows, err := r.db.Query(query, sport, models.StatusConfirmed)
+	rows, err := r.db.Query(query, sport)
 	if err != nil {
 		return nil, err
 	}
@@ -246,7 +238,7 @@ func (r *MatchRepository) GetLeaderboardEntries(sport string) ([]models.Leaderbo
 	var entries []models.LeaderboardEntry
 	for rows.Next() {
 		var user models.User
-		var matchesPlayed, wins int
+		var currentELO, matchesPlayed, wins, losses int
 
 		if err := rows.Scan(
 			&user.ID,
@@ -259,28 +251,22 @@ func (r *MatchRepository) GetLeaderboardEntries(sport string) ([]models.Leaderbo
 			&user.TableFootballELO,
 			&user.CreatedAt,
 			&user.UpdatedAt,
+			&currentELO,
 			&matchesPlayed,
 			&wins,
+			&losses,
 		); err != nil {
 			return nil, err
 		}
 
-		losses := matchesPlayed - wins
 		winRate := 0.0
 		if matchesPlayed > 0 {
 			winRate = float64(wins) / float64(matchesPlayed) * 100
 		}
 
-		var elo int
-		if sport == models.SportTableTennis {
-			elo = user.TableTennisELO
-		} else {
-			elo = user.TableFootballELO
-		}
-
 		entries = append(entries, models.LeaderboardEntry{
 			User:          user,
-			ELO:           elo,
+			ELO:           currentELO,
 			MatchesPlayed: matchesPlayed,
 			Wins:          wins,
 			Losses:        losses,

@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import { forwardRef, useId } from "react";
 import "./field.css";
 
 export const Field = ({ label, hint, error, children }: { label: string; hint?: string; error?: string; children: React.ReactNode }) => {
@@ -15,15 +15,23 @@ export const Field = ({ label, hint, error, children }: { label: string; hint?: 
 };
 
 export const Input = forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(function Input(
-  { className, ...props },
+  { className, id, name, ...props },
   ref
 ) {
-  return <input ref={ref} className={["input", className].filter(Boolean).join(" ")} {...props} />;
+  const autoId = useId();
+  const fieldId = id || autoId;
+  const fieldName = name || fieldId;
+
+  return <input ref={ref} id={fieldId} name={fieldName} className={["input", className].filter(Boolean).join(" ")} {...props} />;
 });
 
 export const Select = forwardRef<HTMLSelectElement, React.SelectHTMLAttributes<HTMLSelectElement>>(function Select(
-  { className, ...props },
+  { className, id, name, ...props },
   ref
 ) {
-  return <select ref={ref} className={["select", className].filter(Boolean).join(" ")} {...props} />;
+  const autoId = useId();
+  const fieldId = id || autoId;
+  const fieldName = name || fieldId;
+
+  return <select ref={ref} id={fieldId} name={fieldName} className={["select", className].filter(Boolean).join(" ")} {...props} />;
 });

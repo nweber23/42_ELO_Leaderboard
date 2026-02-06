@@ -124,10 +124,10 @@ type PlayerStats struct {
 
 // SubmitMatchRequest is the request body for submitting a match
 type SubmitMatchRequest struct {
-	Sport        string `json:"sport" binding:"required,oneof=table_tennis table_football"`
+	Sport        string `json:"sport" binding:"required,oneof=table_tennis table_football super_smash_bros chess"`
 	OpponentID   int    `json:"opponent_id" binding:"required,min=1"`
-	PlayerScore  int    `json:"player_score" binding:"required,min=0"`
-	OpponentScore int   `json:"opponent_score" binding:"required,min=0"`
+	PlayerScore  int    `json:"player_score" binding:"min=0"`
+	OpponentScore int   `json:"opponent_score" binding:"min=0"`
 	Context      string `json:"context"`
 }
 
@@ -141,7 +141,7 @@ type AddCommentRequest struct {
 // AdjustELORequest is the request body for manually adjusting a user's ELO
 type AdjustELORequest struct {
 	UserID int    `json:"user_id" binding:"required,min=1"`
-	Sport  string `json:"sport" binding:"required,oneof=table_tennis table_football"`
+	Sport  string `json:"sport" binding:"required,oneof=table_tennis table_football super_smash_bros chess"`
 	NewELO int    `json:"new_elo" binding:"required,min=0,max=5000"`
 	Reason string `json:"reason" binding:"required,min=5,max=500"`
 }

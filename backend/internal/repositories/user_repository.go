@@ -152,7 +152,7 @@ func (r *UserRepository) GetByIDForUpdate(tx *sql.Tx, id int) (*models.User, err
 	return user, err
 }
 
-// GetAll retrieves all users
+// GetAll retrieves all users with their sport-specific data
 func (r *UserRepository) GetAll() ([]models.User, error) {
 	query := `
 		SELECT id, id, login, display_name, avatar_url, campus,
@@ -170,6 +170,7 @@ func (r *UserRepository) GetAll() ([]models.User, error) {
 	defer rows.Close()
 
 	var users []models.User
+	userMap := make(map[int]*models.User)
 	for rows.Next() {
 		var user models.User
 		if err := rows.Scan(
@@ -191,10 +192,49 @@ func (r *UserRepository) GetAll() ([]models.User, error) {
 		); err != nil {
 			return nil, err
 		}
+		user.Sports = make(map[string]models.UserSportData)
 		users = append(users, user)
+		userMap[user.ID] = &users[len(users)-1]
 	}
 
-	return users, rows.Err()
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// Fetch all user_sports data and populate the Sports map
+	sportsQuery := `
+		SELECT user_id, sport_id, current_elo, highest_elo, matches_played, wins, losses
+		FROM user_sports
+	`
+	sportsRows, err := r.db.Query(sportsQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer sportsRows.Close()
+
+	for sportsRows.Next() {
+		var userID int
+		var sportID string
+		var sportData models.UserSportData
+
+		if err := sportsRows.Scan(
+			&userID,
+			&sportID,
+			&sportData.CurrentELO,
+			&sportData.HighestELO,
+			&sportData.MatchesPlayed,
+			&sportData.Wins,
+			&sportData.Losses,
+		); err != nil {
+			return nil, err
+		}
+
+		if user, exists := userMap[userID]; exists {
+			user.Sports[sportID] = sportData
+		}
+	}
+
+	return users, sportsRows.Err()
 }
 
 // UpdateELO updates a user's ELO rating for a specific sport

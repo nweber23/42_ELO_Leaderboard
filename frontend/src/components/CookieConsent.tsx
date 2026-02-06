@@ -69,7 +69,7 @@ export function CookieConsentBanner({ onConsentChange }: CookieConsentBannerProp
             This website uses technically necessary cookies for
             authentication. We do not use tracking or advertising cookies.{' '}
             <Link to="/privacy" className="cookie-consent__link">
-              Learn more
+              Read our privacy policy
             </Link>
           </p>
         </div>

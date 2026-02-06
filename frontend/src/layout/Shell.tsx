@@ -96,8 +96,7 @@ export function Shell({ user, onLogout }: ShellProps) {
 
             {/* Center: Brand (hidden on mobile) */}
             <NavLink to="/" className="shell__brand">
-              <span className="shell__brand-mark">42</span>
-              <span className="shell__brand-text">ELO</span>
+              <span className="shell__brand-text">ELO Leaderboard</span>
             </NavLink>
 
             {/* Right: User actions */}

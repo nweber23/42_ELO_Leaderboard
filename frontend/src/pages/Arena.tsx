@@ -5,6 +5,8 @@ import type { LeaderboardEntry, User } from "../types";
 import { useDebounce } from "../hooks";
 import { calculateELOChange, formatEloDelta } from "../utils/eloUtils";
 import { PlayerPanel } from "../components/PlayerPanel";
+import { SEO } from "../components/SEO";
+import { getSportLabel } from "../config/sports";
 import "./arena.css";
 
 type SortField = "rank" | "elo" | "matches" | "wins" | "winrate";
@@ -151,9 +153,15 @@ export default function Arena() {
   }, [leaderboard, user]);
 
   const userElo = useMemo(() => {
-    return sport === "table_tennis"
-      ? user?.table_tennis_elo
-      : user?.table_football_elo;
+    if (!user) return null;
+    // Use new sports map if available, falls back to legacy fields
+    if (user.sports?.[sport]) {
+      return user.sports[sport].current_elo;
+    }
+    // Fallback to legacy fields
+    if (sport === "table_tennis") return user.table_tennis_elo;
+    if (sport === "table_football") return user.table_football_elo;
+    return 1000; // Default for unknown sports
   }, [user, sport]);
 
   // ELO prediction for quick log
@@ -165,10 +173,16 @@ export default function Arena() {
     if (isNaN(pScore) || isNaN(oScore) || pScore === oScore) return null;
 
     const playerELO = userElo || 1000;
-    const opponentELO =
-      sport === "table_tennis"
-        ? opponent.table_tennis_elo
-        : opponent.table_football_elo;
+
+    // Get opponent ELO using new sports map or legacy fields
+    let opponentELO = 1000;
+    if (opponent.sports?.[sport]) {
+      opponentELO = opponent.sports[sport].current_elo;
+    } else if (sport === "table_tennis") {
+      opponentELO = opponent.table_tennis_elo;
+    } else if (sport === "table_football") {
+      opponentELO = opponent.table_football_elo;
+    }
 
     const playerWins = pScore > oScore;
     return calculateELOChange(playerELO, opponentELO, playerWins);
@@ -196,7 +210,7 @@ export default function Arena() {
 
     try {
       await matchAPI.submit({
-        sport: sport as "table_tennis" | "table_football",
+        sport,
         opponent_id: opponent.id,
         player_score: pScore,
         opponent_score: oScore,
@@ -257,10 +271,21 @@ export default function Arena() {
     );
   }
 
+  const sportName = getSportLabel(sport);
+  const seoTitle = `${sportName} Leaderboard`;
+  const seoDescription = `View the ${sportName} ELO leaderboard at 42 Heilbronn. Track rankings, submit matches, and compete with fellow students in ${sportName.toLowerCase()}.`;
+
   return (
-    <div className="arena">
-      {/* Personal status bar */}
-      {user && (
+    <>
+      <SEO
+        title={seoTitle}
+        description={seoDescription}
+        path={`/leaderboard/${sport}`}
+        keywords={`${sportName}, leaderboard, 42 Heilbronn, ELO rating, rankings, ${sport}`}
+      />
+      <div className="arena">
+        {/* Personal status bar */}
+        {user && (
         <div className="arena__status">
           <div className="arena__status-inner">
             <div className="arena__status-left">
@@ -560,6 +585,7 @@ export default function Arena() {
           currentUser={user}
         />
       )}
-    </div>
+      </div>
+    </>
   );
 }

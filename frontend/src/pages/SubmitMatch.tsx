@@ -8,7 +8,6 @@ import { Field, Select, Input } from '../ui/Field';
 import { Button } from '../ui/Button';
 import { getErrorMessage } from '../utils/errorUtils';
 import { calculateELOChange, formatEloDelta } from '../utils/eloUtils';
-import { SCORE_MIN } from '../constants';
 import { getSports, type SportConfig } from '../config/sports';
 import './SubmitMatch.css';
 
@@ -47,6 +46,11 @@ function SubmitMatch({ user }: SubmitMatchProps) {
   const selectedOpponent = useMemo(() => {
     return players.find(p => p.id === opponentId) || null;
   }, [players, opponentId]);
+
+  // Get selected sport config
+  const selectedSportConfig = useMemo(() => {
+    return sports.find(s => s.id === sport) || null;
+  }, [sports, sport]);
 
   // Get current ELO ratings based on selected sport
   // Uses new sports map if available, falls back to legacy fields
@@ -88,13 +92,17 @@ function SubmitMatch({ user }: SubmitMatchProps) {
       return;
     }
 
-    if (pScore === oScore) {
-      setError('Scores cannot be tied');
+    // Get score range from selected sport, or use defaults
+    const minScore = selectedSportConfig?.min_score ?? 0;
+    const maxScore = selectedSportConfig?.max_score ?? 999;
+
+    if (isNaN(pScore) || isNaN(oScore) || pScore < minScore || oScore < minScore || pScore > maxScore || oScore > maxScore) {
+      setError(`Scores must be between ${minScore} and ${maxScore}`);
       return;
     }
 
-    if (pScore < SCORE_MIN || oScore < SCORE_MIN) {
-      setError('Scores must be positive');
+    if (pScore === oScore) {
+      setError('Scores cannot be tied');
       return;
     }
 
@@ -161,7 +169,8 @@ function SubmitMatch({ user }: SubmitMatchProps) {
                   pattern="[0-9]*"
                   value={playerScore}
                   onChange={(e) => setPlayerScore(e.target.value)}
-                  min="0"
+                  min={selectedSportConfig?.min_score ?? 0}
+                  max={selectedSportConfig?.max_score ?? 999}
                   placeholder="0"
                   required
                 />
@@ -174,7 +183,8 @@ function SubmitMatch({ user }: SubmitMatchProps) {
                   pattern="[0-9]*"
                   value={opponentScore}
                   onChange={(e) => setOpponentScore(e.target.value)}
-                  min="0"
+                  min={selectedSportConfig?.min_score ?? 0}
+                  max={selectedSportConfig?.max_score ?? 999}
                   placeholder="0"
                   required
                 />

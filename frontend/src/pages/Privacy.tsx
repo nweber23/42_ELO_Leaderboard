@@ -1,14 +1,22 @@
 import { Link } from 'react-router-dom';
 import { Page } from '../layout/Page';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
+import { SEO } from '../components/SEO';
 import './Legal.css';
 
 export function Privacy() {
   return (
-    <Page
-      title="Privacy Policy"
-      subtitle="Privacy Policy as required by GDPR"
-    >
+    <>
+      <SEO
+        title="Privacy Policy"
+        description="Privacy policy for 42 Heilbronn ELO Leaderboard. Learn how we handle your personal data in compliance with GDPR regulations."
+        path="/privacy"
+        keywords="privacy policy, GDPR, data protection, 42 Heilbronn"
+      />
+      <Page
+        title="Privacy Policy"
+        subtitle="Privacy Policy as required by GDPR"
+      >
       <Card className="legal-card">
         <CardHeader>
           <CardTitle>Privacy Policy</CardTitle>
@@ -18,10 +26,9 @@ export function Privacy() {
             <h2>1. Responsible Person</h2>
             <p>
               Responsible for data processing on this website is:<br />
-              {/* TODO: Replace with actual operator information */}
-              [Full Name]<br />
-              [Address]<br />
-              Email: <a href="mailto:privacy@example.com">privacy@example.com</a>
+              Niklas Weber<br />
+              c/o 42 Heilbronn, Weipertstraße 8-10, 74076 Heilbronn<br />
+              Email: <a href="mailto:nweber@student.42heilbronn.de">nweber@student.42heilbronn.de</a>
             </p>
           </section>
 
@@ -114,9 +121,8 @@ export function Privacy() {
             <h3>5.2 Hosting</h3>
             <p>
               This website is hosted by:<br />
-              {/* TODO: Replace with actual hosting provider */}
-              [Hosting Provider]<br />
-              [Address of Host]
+              Hetzner Online GmbH<br />
+              Industriestr. 25, 91710 Gunzenhausen, Germany
             </p>
             <p>
               The hoster processes personal data (e.g., IP addresses) only within the scope of order processing according to Art. 28 GDPR.
@@ -208,7 +214,7 @@ export function Privacy() {
             <h2>9. Contact for Privacy Inquiries</h2>
             <p>
               For questions about privacy or to exercise your rights, please contact:<br />
-              Email: <a href="mailto:privacy@example.com">privacy@example.com</a>
+              Email: <a href="mailto:nweber@student.42heilbronn.de">nweber@student.42heilbronn.de</a>
             </p>
           </section>
 
@@ -248,6 +254,7 @@ export function Privacy() {
         </CardContent>
       </Card>
     </Page>
+    </>
   );
 }
 

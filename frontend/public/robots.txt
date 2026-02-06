@@ -1,0 +1,12 @@
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://eloleaderboard.de/sitemap.xml
+
+# Disallow sensitive or unnecessary paths
+Disallow: /api/
+Disallow: /admin
+Disallow: /settings
+Disallow: /matches

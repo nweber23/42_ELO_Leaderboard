@@ -2,12 +2,12 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { leaderboardAPI } from '../api/client';
 import type { LeaderboardEntry, User } from '../types';
-import { SPORT_LABELS } from '../types';
 import { Page } from '../layout/Page';
 import { Card, CardContent } from '../ui/Card';
 import { SegmentedNav } from '../ui/Segmented';
 import { LazyImage } from '../components/LazyImage';
 import { useDebounce } from '../hooks';
+import { getSports, getSportLabel, type SportConfig } from '../config/sports';
 import '../styles/leaderboard.css';
 
 interface LeaderboardProps {
@@ -22,6 +22,7 @@ function Leaderboard({ sport: propSport, user }: LeaderboardProps) {
   const { sport: paramSport } = useParams();
   const sport = propSport || paramSport || 'table_tennis';
 
+  const [sports, setSports] = useState<SportConfig[]>([]);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +38,11 @@ function Leaderboard({ sport: propSport, user }: LeaderboardProps) {
 
   // Track if user is authenticated (use user?.id to detect auth state changes)
   const isAuthenticated = !!user;
+
+  // Load sports configuration
+  useEffect(() => {
+    getSports().then(setSports).catch(console.error);
+  }, []);
 
   useEffect(() => {
     isMounted.current = true;
@@ -159,20 +165,25 @@ function Leaderboard({ sport: propSport, user }: LeaderboardProps) {
     );
   }
 
-  const sportLabel = SPORT_LABELS[sport as keyof typeof SPORT_LABELS] || sport;
+  const sportLabel = getSportLabel(sport);
+
+  // Generate navigation items from sports
+  const navItems = sports.map(s => ({
+    to: `/leaderboard/${s.id}`,
+    label: s.display_name,
+  }));
 
   return (
     <Page
       title={sportLabel}
       subtitle="Compare players, open profiles, and track win rates."
       actions={
-        <SegmentedNav
-          ariaLabel="Switch sport leaderboard"
-          items={[
-            { to: '/leaderboard/table_tennis', label: 'Table Tennis' },
-            { to: '/leaderboard/table_football', label: 'Table Football' },
-          ]}
-        />
+        navItems.length > 0 ? (
+          <SegmentedNav
+            ariaLabel="Switch sport leaderboard"
+            items={navItems}
+          />
+        ) : null
       }
     >
       <Card>

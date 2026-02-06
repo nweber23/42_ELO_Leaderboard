@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { leaderboardAPI, matchAPI } from "../api/client";
 import type { User, Match, LeaderboardEntry } from "../types";
-import { SPORT_LABELS } from "../types";
+import { getSports, getSportLabel, type SportConfig } from "../config/sports";
 import "./player-panel.css";
 
 interface PlayerPanelProps {
@@ -13,8 +13,7 @@ interface PlayerPanelProps {
 
 interface PlayerStats {
   user: User;
-  table_tennis: LeaderboardEntry | null;
-  table_football: LeaderboardEntry | null;
+  sportStats: Record<string, LeaderboardEntry>;
 }
 
 export function PlayerPanel({
@@ -27,44 +26,72 @@ export function PlayerPanel({
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeSport, setActiveSport] = useState(sport);
+  const [sports, setSports] = useState<SportConfig[]>([]);
   const panelRef = useRef<HTMLDivElement>(null);
+
+  // Load sports configuration
+  useEffect(() => {
+    getSports().then(setSports).catch(console.error);
+  }, []);
 
   // Fetch player data
   useEffect(() => {
     setLoading(true);
 
-    Promise.all([
-      leaderboardAPI.get("table_tennis"),
-      leaderboardAPI.get("table_football"),
-      matchAPI.list({ status: "confirmed" }),
-    ])
-      .then(([ttLeaderboard, tfLeaderboard, allMatches]) => {
-        const ttEntry = ttLeaderboard.find(
-          (e: LeaderboardEntry) => e.user.id === playerId
-        );
-        const tfEntry = tfLeaderboard.find(
-          (e: LeaderboardEntry) => e.user.id === playerId
-        );
+    // Fetch sports first, then fetch leaderboards for all sports
+    const fetchData = async () => {
+      const sportsConfig = await getSports();
 
-        const user = ttEntry?.user || tfEntry?.user;
+      const leaderboardPromises = sportsConfig.map(async (s) => {
+        const leaderboard = await leaderboardAPI.get(s.id);
+        return { sportId: s.id, leaderboard };
+      });
 
-        if (user) {
-          setStats({
-            user,
-            table_tennis: ttEntry || null,
-            table_football: tfEntry || null,
-          });
+      const leaderboards = await Promise.all(leaderboardPromises);
+
+      // Only fetch matches if user is authenticated
+      let allMatches: Match[] = [];
+      if (currentUser) {
+        try {
+          allMatches = await matchAPI.list({ status: "confirmed" });
+        } catch (error) {
+          // Silently handle auth errors - user is not logged in
+          console.debug("Could not fetch matches (not authenticated)");
         }
+      }
 
-        // Filter matches for this player
-        const playerMatches = allMatches.filter(
-          (m: Match) => m.player1_id === playerId || m.player2_id === playerId
+      // Build sport stats map
+      const sportStats: Record<string, LeaderboardEntry> = {};
+      let foundUser: User | null = null;
+
+      leaderboards.forEach(({ sportId, leaderboard }) => {
+        const entry = leaderboard.find(
+          (e: LeaderboardEntry) => e.user.id === playerId
         );
-        setMatches(playerMatches.slice(0, 10));
-      })
+        if (entry) {
+          sportStats[sportId] = entry;
+          if (!foundUser) foundUser = entry.user;
+        }
+      });
+
+      if (foundUser) {
+        setStats({
+          user: foundUser,
+          sportStats,
+        });
+      }
+
+      // Filter matches for this player
+      const playerMatches = allMatches.filter(
+        (m: Match) => m.player1_id === playerId || m.player2_id === playerId
+      );
+      setMatches(playerMatches.slice(0, 10));
+    };
+
+    fetchData()
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [playerId]);
+  }, [playerId, currentUser]);
 
   // Handle escape key
   useEffect(() => {
@@ -86,8 +113,7 @@ export function PlayerPanel({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose]);
 
-  const activeStats =
-    activeSport === "table_tennis" ? stats?.table_tennis : stats?.table_football;
+  const activeStats = stats?.sportStats[activeSport] || null;
 
   const isCurrentUser = currentUser?.id === playerId;
 
@@ -133,20 +159,16 @@ export function PlayerPanel({
 
             {/* Sport tabs */}
             <div className="panel__tabs">
-              <button
-                className={`panel__tab ${activeSport === "table_tennis" ? "panel__tab--active" : ""}`}
-                onClick={() => setActiveSport("table_tennis")}
-                data-sport="tt"
-              >
-                Table Tennis
-              </button>
-              <button
-                className={`panel__tab ${activeSport === "table_football" ? "panel__tab--active" : ""}`}
-                onClick={() => setActiveSport("table_football")}
-                data-sport="tf"
-              >
-                Table Football
-              </button>
+              {sports.map((s) => (
+                <button
+                  key={s.id}
+                  className={`panel__tab ${activeSport === s.id ? "panel__tab--active" : ""}`}
+                  onClick={() => setActiveSport(s.id)}
+                  data-sport={s.id}
+                >
+                  {s.display_name}
+                </button>
+              ))}
             </div>
 
             {/* Stats grid */}
@@ -187,7 +209,7 @@ export function PlayerPanel({
               </div>
             ) : (
               <div className="panel__no-stats">
-                No {SPORT_LABELS[activeSport as keyof typeof SPORT_LABELS]} matches yet
+                No {getSportLabel(activeSport)} matches yet
               </div>
             )}
 
@@ -243,7 +265,7 @@ export function PlayerPanel({
                   {matches.filter((m) => m.sport === activeSport).length ===
                     0 && (
                     <div className="panel__no-matches">
-                      No recent {SPORT_LABELS[activeSport as keyof typeof SPORT_LABELS]} matches
+                      No recent {getSportLabel(activeSport)} matches
                     </div>
                   )}
                 </div>

@@ -28,18 +28,18 @@ func SecurityHeaders(cookieSecure bool) gin.HandlerFunc {
 		c.Header("Referrer-Policy", "strict-origin-when-cross-origin")
 
 		// Content Security Policy
-		// Adjust this based on your actual resource needs
-		// Note: connect-src allows any http/https for development flexibility
+		// Production-ready: removes unsafe-inline for scripts, restricts to HTTPS only
 		c.Header("Content-Security-Policy",
 			"default-src 'self'; "+
-			"script-src 'self' 'unsafe-inline'; "+
-			"style-src 'self' 'unsafe-inline'; "+
-			"img-src 'self' https://cdn.intra.42.fr data:; "+
-			"font-src 'self'; "+
-			"connect-src 'self' http://localhost:* https://api.intra.42.fr; "+
+			"script-src 'self'; "+
+			"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "+
+			"img-src 'self' https://cdn.intra.42.fr https://api.dicebear.com data:; "+
+			"font-src 'self' https://fonts.gstatic.com; "+
+			"connect-src 'self' https://api.intra.42.fr; "+
 			"frame-ancestors 'none'; "+
 			"base-uri 'self'; "+
-			"form-action 'self'")
+			"form-action 'self'; "+
+			"upgrade-insecure-requests")
 
 		// Permissions Policy (formerly Feature Policy)
 		// Disable access to sensitive browser features

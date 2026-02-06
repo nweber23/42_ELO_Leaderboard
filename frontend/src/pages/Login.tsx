@@ -5,6 +5,7 @@ import type { User } from '../types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Toast } from '../ui/Toast';
+import { SEO } from '../components/SEO';
 
 import '../styles/login.css';
 
@@ -103,8 +104,16 @@ function Login({ onLogin }: LoginProps) {
   );
 
   return (
-    <div className="login">
-      <div className="container login__grid">
+    <>
+      <SEO
+        title="Sign In"
+        description="Sign in to 42 Heilbronn ELO Leaderboard to track your Table Tennis and Table Football rankings. Access your match history and compete with fellow students."
+        path="/login"
+        keywords="login, sign in, 42 Heilbronn, ELO leaderboard, authentication"
+        noindex
+      />
+      <div className="login">
+        <div className="container login__grid">
         <section className="login__hero">
           <div className="login__badge">42 · Heilbronn</div>
           <h1 className="login__title">A clean ELO workspace for daily play.</h1>
@@ -162,7 +171,8 @@ function Login({ onLogin }: LoginProps) {
         message={errorMsg ?? undefined}
         onClose={() => setToastOpen(false)}
       />
-    </div>
+      </div>
+    </>
   );
 }
 

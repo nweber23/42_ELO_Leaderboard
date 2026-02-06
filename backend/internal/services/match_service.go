@@ -45,6 +45,20 @@ func NewMatchService(
 
 // SubmitMatch creates a new pending match
 func (s *MatchService) SubmitMatch(req *models.SubmitMatchRequest, submitterID int) (*models.Match, error) {
+	// Validate sport exists and is active
+	sport, err := s.sportService.GetSport(req.Sport)
+	if err != nil {
+		return nil, fmt.Errorf("invalid sport")
+	}
+
+	// Validate scores are within the sport's allowed range
+	if req.PlayerScore < sport.MinScore || req.PlayerScore > sport.MaxScore {
+		return nil, fmt.Errorf("player score must be between %d and %d", sport.MinScore, sport.MaxScore)
+	}
+	if req.OpponentScore < sport.MinScore || req.OpponentScore > sport.MaxScore {
+		return nil, fmt.Errorf("opponent score must be between %d and %d", sport.MinScore, sport.MaxScore)
+	}
+
 	// Validate: cannot play against yourself
 	if req.OpponentID == submitterID {
 		return nil, fmt.Errorf("cannot submit a match against yourself")

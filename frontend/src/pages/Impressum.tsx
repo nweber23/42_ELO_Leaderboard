@@ -1,13 +1,21 @@
 import { Page } from '../layout/Page';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
+import { SEO } from '../components/SEO';
 import './Legal.css';
 
 export function Impressum() {
   return (
-    <Page
-      title="Imprint"
-      subtitle="Legal information as required by German law (§ 5 TMG)"
-    >
+    <>
+      <SEO
+        title="Imprint"
+        description="Legal information and contact details for 42 Heilbronn ELO Leaderboard as required by German law (§ 5 TMG)."
+        path="/impressum"
+        keywords="imprint, impressum, legal information, 42 Heilbronn, contact"
+      />
+      <Page
+        title="Imprint"
+        subtitle="Legal information as required by German law (§ 5 TMG)"
+      >
       <Card className="legal-card">
         <CardHeader>
           <CardTitle>Imprint</CardTitle>
@@ -17,10 +25,10 @@ export function Impressum() {
             <h2>Information pursuant to § 5 TMG</h2>
             <p>
               <strong>Operator:</strong><br />
-              {/* TODO: Replace with actual operator information */}
-              [Full Name]<br />
-              [Street and House Number]<br />
-              [Postal Code and City]<br />
+              Niklas Weber<br />
+              c/o 42 Heilbronn<br />
+              Weipertstraße 8-10<br />
+              74076 Heilbronn<br />
               Germany
             </p>
           </section>
@@ -29,16 +37,17 @@ export function Impressum() {
             <h2>Contact</h2>
             <p>
               <strong>Email:</strong>{' '}
-              <a href="mailto:contact@example.com">contact@example.com</a>
+              <a href="mailto:nweber@student.42heilbronn.de">nweber@student.42heilbronn.de</a>
             </p>
           </section>
 
           <section className="legal-section">
             <h2>Responsible for content according to § 55 Abs. 2 RStV</h2>
             <p>
-              {/* TODO: Replace with actual responsible person */}
-              [Full Name]<br />
-              [Address as above]
+              Niklas Weber<br />
+              c/o 42 Heilbronn<br />
+              Weipertstraße 8-10<br />
+              74076 Heilbronn
             </p>
           </section>
 
@@ -84,6 +93,7 @@ export function Impressum() {
         </CardContent>
       </Card>
     </Page>
+    </>
   );
 }
 

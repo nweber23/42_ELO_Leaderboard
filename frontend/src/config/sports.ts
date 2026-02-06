@@ -91,6 +91,8 @@ export function getSportLabel(sportId: string): string {
   const fallbackLabels: Record<string, string> = {
     'table_tennis': 'Table Tennis',
     'table_football': 'Table Football',
+    'super_smash_bros': 'Super Smash Bros',
+    'chess': 'Chess',
   };
   return fallbackLabels[sportId] || sportId;
 }
@@ -139,6 +141,28 @@ function getDefaultSports(): SportConfig[] {
       max_score: 999,
       is_active: true,
       sort_order: 2,
+    },
+    {
+      id: 'super_smash_bros',
+      name: 'Super Smash Bros',
+      display_name: 'Super Smash Bros',
+      default_elo: 1000,
+      k_factor: 32,
+      min_score: 0,
+      max_score: 7,
+      is_active: true,
+      sort_order: 3,
+    },
+    {
+      id: 'chess',
+      name: 'Chess',
+      display_name: 'Chess',
+      default_elo: 1000,
+      k_factor: 24,
+      min_score: 0,
+      max_score: 1,
+      is_active: true,
+      sort_order: 4,
     },
   ];
 }

@@ -2,10 +2,10 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { usersAPI, matchAPI } from '../api/client';
 import type { User, Match } from '../types';
-import { SPORT_LABELS } from '../types';
 import { Page } from '../layout/Page';
 import { Card, CardContent } from '../ui/Card';
 import { Button } from '../ui/Button';
+import { getSports, getSportLabel, type SportConfig } from '../config/sports';
 import StatsDashboard from '../components/StatsDashboard';
 import './PlayerProfile.css';
 
@@ -18,12 +18,18 @@ function PlayerProfile({ user: currentUser }: PlayerProfileProps) {
   const [player, setPlayer] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
+  const [sports, setSports] = useState<SportConfig[]>([]);
   const [loading, setLoading] = useState(true);
   // Single filter for both stats and match history to avoid confusion
   const [sportFilter, setSportFilter] = useState<string | null>(null);
 
   // Prevent state updates after unmount
   const isMounted = useRef(true);
+
+  // Load sports
+  useEffect(() => {
+    getSports().then(setSports).catch(console.error);
+  }, []);
 
   useEffect(() => {
     isMounted.current = true;
@@ -141,7 +147,7 @@ function PlayerProfile({ user: currentUser }: PlayerProfileProps) {
           <CardContent>
             <div className="empty">
               <p>Player not found</p>
-              <Link to="/leaderboard/table_tennis">
+              <Link to={`/leaderboard/${sports[0]?.id || 'table_tennis'}`}>
                 <Button variant="secondary" style={{ marginTop: 'var(--space-4)' }}>
                   Back to Leaderboard
                 </Button>
@@ -155,7 +161,7 @@ function PlayerProfile({ user: currentUser }: PlayerProfileProps) {
 
   return (
     <div className="profile">
-      <Link to="/leaderboard/table_tennis" className="profile__back">
+      <Link to={`/leaderboard/${sports[0]?.id || 'table_tennis'}`} className="profile__back">
         ← Back to Leaderboard
       </Link>
 
@@ -178,14 +184,16 @@ function PlayerProfile({ user: currentUser }: PlayerProfileProps) {
           </div>
 
           <div className="profile__elo-grid">
-            <div className="profile__elo-item">
-              <span className="profile__elo-label">Table Tennis</span>
-              <span className="profile__elo-value">{player.table_tennis_elo}</span>
-            </div>
-            <div className="profile__elo-item">
-              <span className="profile__elo-label">Table Football</span>
-              <span className="profile__elo-value">{player.table_football_elo}</span>
-            </div>
+            {sports.map((sport) => {
+              const sportData = player.sports?.[sport.id];
+              const elo = sportData?.current_elo ?? sport.default_elo;
+              return (
+                <div key={sport.id} className="profile__elo-item">
+                  <span className="profile__elo-label">{sport.display_name}</span>
+                  <span className="profile__elo-value">{elo}</span>
+                </div>
+              );
+            })}
           </div>
         </CardContent>
       </Card>
@@ -195,7 +203,7 @@ function PlayerProfile({ user: currentUser }: PlayerProfileProps) {
         <div className="profile__stats-header">
           <h2 className="profile__section-title">Statistics</h2>
           <span className="profile__filter-note">
-            {sportFilter ? SPORT_LABELS[sportFilter as keyof typeof SPORT_LABELS] : 'All Sports'}
+            {sportFilter ? getSportLabel(sportFilter) : 'All Sports'}
           </span>
         </div>
         <CardContent>
@@ -245,18 +253,15 @@ function PlayerProfile({ user: currentUser }: PlayerProfileProps) {
             >
               All
             </button>
-            <button
-              className={sportFilter === 'table_tennis' ? 'active' : ''}
-              onClick={() => setSportFilter('table_tennis')}
-            >
-              Table Tennis
-            </button>
-            <button
-              className={sportFilter === 'table_football' ? 'active' : ''}
-              onClick={() => setSportFilter('table_football')}
-            >
-              Table Football
-            </button>
+            {sports.map(s => (
+              <button
+                key={s.id}
+                className={sportFilter === s.id ? 'active' : ''}
+                onClick={() => setSportFilter(s.id)}
+              >
+                {s.display_name}
+              </button>
+            ))}
           </div>
         </div>
         <CardContent>
@@ -279,7 +284,7 @@ function PlayerProfile({ user: currentUser }: PlayerProfileProps) {
                     </div>
                     <div className="profile__match-details">
                       <span className="profile__match-sport">
-                        {SPORT_LABELS[match.sport as keyof typeof SPORT_LABELS]}
+                        {getSportLabel(match.sport)}
                       </span>
                       <span className="profile__match-date">{formatDate(match.created_at)}</span>
                     </div>

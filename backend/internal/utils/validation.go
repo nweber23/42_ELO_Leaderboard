@@ -28,9 +28,9 @@ func (e *InputValidationError) Error() string {
 
 // ValidateMatchSubmission validates match submission input beyond struct tags
 func ValidateMatchSubmission(sport string, opponentID, playerScore, opponentScore, submitterID int) error {
-	// Validate sport
-	if sport != "table_tennis" && sport != "table_football" {
-		return &InputValidationError{Field: "sport", Message: "must be 'table_tennis' or 'table_football'"}
+	// Validate sport is not empty (actual sport validation happens at service layer)
+	if sport == "" {
+		return &InputValidationError{Field: "sport", Message: "cannot be empty"}
 	}
 
 	// Validate opponent ID
@@ -43,13 +43,13 @@ func ValidateMatchSubmission(sport string, opponentID, playerScore, opponentScor
 		return &InputValidationError{Field: "opponent_id", Message: "cannot submit a match against yourself"}
 	}
 
-	// Validate scores
-	if playerScore < MinScoreValue || playerScore > MaxScoreValue {
-		return &InputValidationError{Field: "player_score", Message: fmt.Sprintf("must be between %d and %d", MinScoreValue, MaxScoreValue)}
+	// Validate scores are non-negative (max score validation happens at service layer based on sport)
+	if playerScore < MinScoreValue {
+		return &InputValidationError{Field: "player_score", Message: fmt.Sprintf("must be at least %d", MinScoreValue)}
 	}
 
-	if opponentScore < MinScoreValue || opponentScore > MaxScoreValue {
-		return &InputValidationError{Field: "opponent_score", Message: fmt.Sprintf("must be between %d and %d", MinScoreValue, MaxScoreValue)}
+	if opponentScore < MinScoreValue {
+		return &InputValidationError{Field: "opponent_score", Message: fmt.Sprintf("must be at least %d", MinScoreValue)}
 	}
 
 	// Scores cannot be equal (someone must win)
@@ -127,9 +127,9 @@ func ValidateELOAdjustment(userID int, sport string, newELO int, reason string, 
 		return &InputValidationError{Field: "user_id", Message: "must be a positive integer"}
 	}
 
-	// Validate sport
-	if sport != "table_tennis" && sport != "table_football" {
-		return &InputValidationError{Field: "sport", Message: "must be 'table_tennis' or 'table_football'"}
+	// Validate sport is not empty (actual sport validation happens at service layer)
+	if sport == "" {
+		return &InputValidationError{Field: "sport", Message: "cannot be empty"}
 	}
 
 	// Validate ELO range

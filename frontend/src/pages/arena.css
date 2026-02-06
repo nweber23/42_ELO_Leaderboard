@@ -8,7 +8,8 @@
   min-height: 100%;
   max-width: var(--container-max);
   margin: 0 auto;
-  padding: var(--space-4);
+  /* Remove horizontal padding on mobile - table handles its own spacing */
+  padding: var(--space-4) 0;
 }
 
 @media (min-width: 768px) {
@@ -38,10 +39,18 @@
 
 .arena__status {
   margin-bottom: var(--space-4);
+  /* Add horizontal margin on mobile since container no longer has padding */
+  margin-inline: var(--space-4);
   padding: var(--space-3) var(--space-4);
   background: var(--bg-subtle);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
+}
+
+@media (min-width: 768px) {
+  .arena__status {
+    margin-inline: 0;
+  }
 }
 
 .arena__status-inner {
@@ -109,17 +118,34 @@
 
 .arena__quick-log {
   margin-bottom: var(--space-4);
-  padding: var(--space-4);
+  /* Add horizontal margin on mobile since container no longer has padding */
+  margin-inline: var(--space-3);
+  /* Reduce padding on mobile to prevent overflow */
+  padding: var(--space-3);
   background: var(--bg-muted);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   animation: slide-up var(--dur-base) var(--ease-out);
 }
 
+@media (min-width: 640px) {
+  .arena__quick-log {
+    margin-inline: var(--space-4);
+    padding: var(--space-4);
+  }
+}
+
+@media (min-width: 768px) {
+  .arena__quick-log {
+    margin-inline: 0;
+  }
+}
+
 .arena__quick-log-inner {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  /* Reduce gap on mobile */
+  gap: var(--space-3);
 }
 
 @media (min-width: 640px) {
@@ -127,6 +153,7 @@
     flex-direction: row;
     align-items: flex-end;
     flex-wrap: wrap;
+    gap: var(--space-4);
   }
 }
 
@@ -135,23 +162,50 @@
   flex-direction: column;
   gap: var(--space-1);
   flex: 1;
-  min-width: 140px;
+  /* Remove min-width on mobile - let it be flexible */
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .arena__quick-log-field {
+    min-width: 140px;
+  }
 }
 
 .arena__quick-log-field--score {
-  flex: 0 0 80px;
-  min-width: 80px;
+  /* Flexible on mobile */
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .arena__quick-log-field--score {
+    flex: 0 0 80px;
+    min-width: 80px;
+  }
 }
 
 .arena__quick-log-select,
 .arena__quick-log-input {
-  padding: var(--space-2) var(--space-3);
-  font-size: var(--text-base);
+  /* Reduce padding on mobile */
+  padding: var(--space-2);
+  font-size: var(--text-sm);
   color: var(--fg);
   background: var(--bg-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   transition: border-color var(--dur-fast) var(--ease-out);
+  /* Ensure inputs don't overflow */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  .arena__quick-log-select,
+  .arena__quick-log-input {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-base);
+  }
 }
 
 .arena__quick-log-select:focus,
@@ -169,7 +223,16 @@
 .arena__quick-log-scores {
   display: flex;
   align-items: flex-end;
-  gap: var(--space-3);
+  /* Reduce gap on mobile to prevent overflow */
+  gap: var(--space-2);
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .arena__quick-log-scores {
+    gap: var(--space-3);
+    width: auto;
+  }
 }
 
 .arena__quick-log-vs {
@@ -233,6 +296,14 @@
 .arena__search {
   position: relative;
   margin-bottom: var(--space-4);
+  /* Add horizontal margin on mobile since container no longer has padding */
+  margin-inline: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .arena__search {
+    margin-inline: 0;
+  }
 }
 
 .arena__search-input {
@@ -285,16 +356,27 @@
   flex: 1;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  /* Add horizontal margin on mobile for visual breathing room */
+  margin-inline: var(--space-2);
+}
+
+@media (min-width: 768px) {
+  .arena__table-wrap {
+    margin-inline: 0;
+  }
 }
 
 .arena__table {
   width: 100%;
   border-collapse: collapse;
   font-size: var(--text-sm);
+  /* Ensure table doesn't expand beyond container */
+  max-width: 100%;
 }
 
 .arena__th {
-  padding: var(--space-2) var(--space-3);
+  /* Reduce padding on mobile to fit more content */
+  padding: var(--space-2) var(--space-1\.5);
   font-size: var(--text-2xs);
   font-weight: var(--weight-medium);
   letter-spacing: var(--tracking-caps);
@@ -311,28 +393,62 @@
   color: var(--fg-muted);
 }
 
+/* Mobile-optimized column widths */
 .arena__th--rank {
-  width: 48px;
+  width: 36px;
   text-align: center;
+  padding-inline: var(--space-1);
 }
 
 .arena__th--player {
   cursor: default;
+  /* Let player column take remaining space */
+  width: auto;
 }
 
 .arena__th--elo {
-  width: 72px;
+  width: 56px;
   text-align: right;
+  padding-inline: var(--space-1\.5);
 }
 
 .arena__th--num {
-  width: 64px;
+  width: 52px;
   text-align: right;
+  padding-inline: var(--space-1\.5);
 }
 
 .arena__th--action {
-  width: 44px;
+  width: 36px;
   cursor: default;
+  padding-inline: var(--space-1);
+}
+
+/* Desktop: restore comfortable padding and widths */
+@media (min-width: 640px) {
+  .arena__th {
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .arena__th--rank {
+    width: 48px;
+    padding-inline: var(--space-3);
+  }
+
+  .arena__th--elo {
+    width: 72px;
+    padding-inline: var(--space-3);
+  }
+
+  .arena__th--num {
+    width: 64px;
+    padding-inline: var(--space-3);
+  }
+
+  .arena__th--action {
+    width: 44px;
+    padding-inline: var(--space-3);
+  }
 }
 
 .arena__th--hide-mobile {
@@ -369,29 +485,36 @@
 }
 
 .arena__td {
-  padding: var(--space-3);
+  /* Reduce padding on mobile to prevent overflow */
+  padding: var(--space-2) var(--space-1\.5);
   vertical-align: middle;
   border-bottom: 1px solid var(--border-subtle);
 }
 
 .arena__td--rank {
   text-align: center;
+  padding-inline: var(--space-1);
 }
 
 .arena__td--player {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  /* Reduce gap on mobile */
+  gap: var(--space-2);
+  /* Ensure text truncation works */
+  min-width: 0;
 }
 
 .arena__td--elo {
   text-align: right;
   font-weight: var(--weight-semibold);
+  padding-inline: var(--space-1\.5);
 }
 
 .arena__td--num {
   text-align: right;
   color: var(--fg-muted);
+  padding-inline: var(--space-1\.5);
 }
 
 .arena__td--hide-mobile {
@@ -402,11 +525,32 @@
   .arena__td--hide-mobile {
     display: table-cell;
   }
+
+  .arena__td {
+    padding: var(--space-3);
+  }
+
+  .arena__td--player {
+    gap: var(--space-3);
+  }
+
+  .arena__td--rank,
+  .arena__td--elo,
+  .arena__td--num,
+  .arena__td--action {
+    padding-inline: var(--space-3);
+  }
 }
 
 .arena__td--action {
   text-align: center;
-  padding: var(--space-2);
+  padding: var(--space-1);
+}
+
+@media (min-width: 640px) {
+  .arena__td--action {
+    padding: var(--space-2);
+  }
 }
 
 /* Rank badge */
@@ -436,10 +580,18 @@
 
 /* Avatar */
 .arena__avatar {
-  width: 32px;
-  height: 32px;
+  /* Slightly smaller on mobile */
+  width: 28px;
+  height: 28px;
   border-radius: var(--radius-full);
   flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+  .arena__avatar {
+    width: 32px;
+    height: 32px;
+  }
 }
 
 /* Player info */
@@ -473,8 +625,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  /* Slightly smaller on mobile for better fit */
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  flex-shrink: 0;
   color: var(--fg-faint);
   background: transparent;
   border: 1px solid transparent;
@@ -488,10 +643,19 @@
   border-color: var(--accent-muted);
 }
 
+@media (min-width: 640px) {
+  .arena__log-btn {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+  }
+}
+
 /* Empty state */
 .arena__empty {
   padding: var(--space-8) var(--space-4);
   text-align: center;
   color: var(--fg-subtle);
   font-size: var(--text-sm);
+  /* Already inside table-wrap which has margin, no need for additional */
 }

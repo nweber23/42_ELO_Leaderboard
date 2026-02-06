@@ -79,7 +79,7 @@ func main() {
 
 	// Initialize handlers
 	authHandler := handlers.NewAuthHandler(cfg, userRepo, matchService)
-	matchHandler := handlers.NewMatchHandler(matchService, matchRepo, commentRepo)
+	matchHandler := handlers.NewMatchHandler(matchService, matchRepo, commentRepo, sportService)
 	adminHandler := handlers.NewAdminHandler(adminRepo, userRepo, matchRepo)
 	healthHandler := handlers.NewHealthHandler(db)
 	gdprHandler := handlers.NewGDPRHandler(db, userRepo, matchRepo, commentRepo, matchService)
@@ -147,7 +147,7 @@ func main() {
 		protected.GET("/auth/me", authHandler.Me)
 		protected.GET("/users", authHandler.GetUsers)
 
-		// GDPR endpoints (Art. 15 & 17)
+		// GDPR endpoints (Art. 15 & 17) - 1 req/hour to prevent resource exhaustion and abuse
 		protected.GET("/users/me/data-export", middleware.RateLimitMiddleware(exportLimiter, middleware.UserOrIPKeyFunc), gdprHandler.ExportUserData)
 		protected.DELETE("/users/me/delete", middleware.RateLimitMiddleware(exportLimiter, middleware.UserOrIPKeyFunc), gdprHandler.DeleteAccount)
 

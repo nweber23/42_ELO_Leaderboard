@@ -5,6 +5,7 @@ import { Spinner } from '../ui/Spinner';
 import { adminAPI, usersAPI } from '../api/client';
 import { useToast } from '../state/useToast';
 import { formatRelativeTime } from '../utils/dateUtils';
+import { getSports, getSportLabel, type SportConfig } from '../config/sports';
 import type { User, Match, SystemHealth, ELOAdjustment, AdminAuditLog } from '../types';
 import './Admin.css';
 
@@ -17,6 +18,7 @@ interface AdminProps {
 export function Admin({ user }: AdminProps) {
   const [activeTab, setActiveTab] = useState<TabType>('health');
   const [loading, setLoading] = useState(true);
+  const [sports, setSports] = useState<SportConfig[]>([]);
   const [health, setHealth] = useState<SystemHealth | null>(null);
   const [bannedUsers, setBannedUsers] = useState<User[]>([]);
   const [allUsers, setAllUsers] = useState<User[]>([]);
@@ -24,6 +26,16 @@ export function Admin({ user }: AdminProps) {
   const [confirmedMatches, setConfirmedMatches] = useState<Match[]>([]);
   const [auditLog, setAuditLog] = useState<AdminAuditLog[]>([]);
   const { show } = useToast();
+
+  // Load sports
+  useEffect(() => {
+    getSports().then(loadedSports => {
+      setSports(loadedSports);
+      if (loadedSports.length > 0 && !eloForm.sport) {
+        setEloForm(f => ({ ...f, sport: loadedSports[0].id }));
+      }
+    }).catch(console.error);
+  }, []);
 
   // Helper to show toast with correct signature
   const showToast = useCallback((message: string, tone: 'success' | 'error' | 'info') => {
@@ -345,8 +357,9 @@ export function Admin({ user }: AdminProps) {
                       value={eloForm.sport}
                       onChange={e => setEloForm(f => ({ ...f, sport: e.target.value }))}
                     >
-                      <option value="table_tennis">Table Tennis</option>
-                      <option value="table_football">Table Football</option>
+                      {sports.map(s => (
+                        <option key={s.id} value={s.id}>{s.display_name}</option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -398,7 +411,7 @@ export function Admin({ user }: AdminProps) {
                       {eloAdjustments.map(adj => (
                         <tr key={adj.id}>
                           <td>{adj.user_login || getUserLogin(adj.user_id)}</td>
-                          <td>{adj.sport === 'table_tennis' ? 'Table Tennis' : 'Table Football'}</td>
+                          <td>{getSportLabel(adj.sport)}</td>
                           <td>{adj.old_elo}</td>
                           <td>{adj.new_elo}</td>
                           <td>{adj.reason}</td>

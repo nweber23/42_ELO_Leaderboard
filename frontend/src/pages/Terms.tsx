@@ -1,14 +1,22 @@
 import { Link } from 'react-router-dom';
 import { Page } from '../layout/Page';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
+import { SEO } from '../components/SEO';
 import './Legal.css';
 
 export function Terms() {
   return (
-    <Page
-      title="Terms of Service"
-      subtitle="Terms of Service for using the ELO Leaderboard"
-    >
+    <>
+      <SEO
+        title="Terms of Service"
+        description="Terms of Service for 42 Heilbronn ELO Leaderboard. Read about acceptable use, user responsibilities, and service guidelines."
+        path="/terms"
+        keywords="terms of service, terms and conditions, user agreement, 42 Heilbronn"
+      />
+      <Page
+        title="Terms of Service"
+        subtitle="Terms of Service for using the ELO Leaderboard"
+      >
       <Card className="legal-card">
         <CardHeader>
           <CardTitle>Terms of Service</CardTitle>
@@ -137,7 +145,7 @@ export function Terms() {
             <p>
               If you observe a violation of these Terms of Service,
               please report it to:{' '}
-              <a href="mailto:abuse@example.com">abuse@example.com</a>
+              <a href="mailto:nweber@student.42heilbronn.de">nweber@student.42heilbronn.de</a>
             </p>
 
             <h3>7.2 Sanctions</h3>
@@ -149,76 +157,75 @@ export function Terms() {
               <li><strong>Permanent Ban:</strong> Permanent suspension of the account</li>
             </ul>
 
-            <h3>7.3 Einspruchsrecht</h3>
+            <h3>7.3 Right of Appeal</h3>
             <p>
-              Bei Sanktionen haben Sie das Recht, Einspruch einzulegen.
-              Senden Sie Ihren Einspruch innerhalb von 14 Tagen an:{' '}
-              <a href="mailto:appeals@example.com">appeals@example.com</a>
+              If sanctions are imposed, you have the right to appeal.
+              Send your appeal within 14 days to:{' '}
+              <a href="mailto:nweber@student.42heilbronn.de">nweber@student.42heilbronn.de</a>
             </p>
           </section>
 
           <section className="legal-section">
-            <h2>8. Haftungsausschluss</h2>
+            <h2>8. Disclaimer</h2>
             <ul>
               <li>
-                Der Dienst wird "wie besehen" bereitgestellt, ohne Garantie auf
-                Verfügbarkeit oder Fehlerfreiheit.
+                The service is provided "as is" without guarantee of availability
+                or error-free operation.
               </li>
               <li>
-                Wir haften nicht für Verluste von ELO-Punkten durch technische Fehler.
+                We are not liable for loss of ELO points due to technical errors.
               </li>
               <li>
-                ELO-Werte und Rankings haben keinen realen Wert und begründen
-                keine Ansprüche.
+                ELO values and rankings have no real monetary value and do not
+                constitute any claims.
               </li>
             </ul>
           </section>
 
           <section className="legal-section">
-            <h2>9. Datenschutz</h2>
+            <h2>9. Privacy</h2>
             <p>
-              Die Verarbeitung Ihrer Daten erfolgt gemäß unserer{' '}
-              <Link to="/privacy">Datenschutzerklärung</Link>, die integraler
-              Bestandteil dieser Nutzungsbedingungen ist.
+              Your data is processed in accordance with our{' '}
+              <Link to="/privacy">Privacy Policy</Link>, which is an integral part
+              of these Terms of Service.
             </p>
           </section>
 
           <section className="legal-section">
-            <h2>10. Änderungen der Nutzungsbedingungen</h2>
+            <h2>10. Changes to Terms of Service</h2>
             <p>
-              Wir behalten uns vor, diese Nutzungsbedingungen zu ändern.
-              Wesentliche Änderungen werden über den Dienst kommuniziert.
-              Die fortgesetzte Nutzung nach einer Änderung gilt als Zustimmung.
+              We reserve the right to modify these Terms of Service.
+              Material changes will be communicated through the service.
+              Continued use following a change constitutes acceptance.
             </p>
           </section>
 
           <section className="legal-section">
-            <h2>11. Kündigung</h2>
+            <h2>11. Account Termination</h2>
             <p>
-              Sie können Ihr Konto jederzeit löschen. Die Löschung ist endgültig
-              und kann nicht rückgängig gemacht werden. Nutzen Sie hierfür die
-              "Konto löschen"-Funktion in Ihrem Profil.
+              You can delete your account at any time. Deletion is permanent and
+              cannot be undone. Use the "Delete Account" function in your profile.
             </p>
           </section>
 
           <section className="legal-section">
-            <h2>12. Anwendbares Recht</h2>
+            <h2>12. Applicable Law</h2>
             <p>
-              Es gilt deutsches Recht. Gerichtsstand ist Heilbronn, Deutschland.
+              German law applies. The place of jurisdiction is Heilbronn, Germany.
             </p>
           </section>
 
           <section className="legal-section">
-            <h2>13. Salvatorische Klausel</h2>
+            <h2>13. Severability Clause</h2>
             <p>
-              Sollten einzelne Bestimmungen dieser Nutzungsbedingungen unwirksam
-              sein, bleibt die Wirksamkeit der übrigen Bestimmungen unberührt.
+              If any provision of these Terms of Service is found to be invalid,
+              the validity of the remaining provisions shall remain unaffected.
             </p>
           </section>
 
           <section className="legal-section">
             <p>
-              <strong>Status:</strong> January 2026
+              <strong>Status:</strong> February 2026
             </p>
           </section>
 
@@ -229,6 +236,7 @@ export function Terms() {
         </CardContent>
       </Card>
     </Page>
+    </>
   );
 }
 

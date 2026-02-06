@@ -115,9 +115,11 @@ export function Settings({ user, onLogout }: SettingsProps) {
                       <li>Your matches will be anonymized</li>
                     </ul>
                   </div>
-                  <label className="delete-confirm-label">
+                  <label className="delete-confirm-label" htmlFor="delete-confirm-input">
                     Enter <strong>{user.login}</strong> to confirm:
                     <input
+                      id="delete-confirm-input"
+                      name="delete-confirm"
                       type="text"
                       value={deleteConfirmText}
                       onChange={(e) => setDeleteConfirmText(e.target.value)}

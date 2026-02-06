@@ -17,17 +17,20 @@ type MatchHandler struct {
 	matchService *services.MatchService
 	matchRepo    *repositories.MatchRepository
 	commentRepo  *repositories.CommentRepository
+	sportService *services.SportService
 }
 
 func NewMatchHandler(
 	matchService *services.MatchService,
 	matchRepo *repositories.MatchRepository,
 	commentRepo *repositories.CommentRepository,
+	sportService *services.SportService,
 ) *MatchHandler {
 	return &MatchHandler{
 		matchService: matchService,
 		matchRepo:    matchRepo,
 		commentRepo:  commentRepo,
+		sportService: sportService,
 	}
 }
 
@@ -184,7 +187,10 @@ func (h *MatchHandler) GetMatch(c *gin.Context) {
 // GetLeaderboard returns leaderboard for a sport
 func (h *MatchHandler) GetLeaderboard(c *gin.Context) {
 	sport := c.Param("sport")
-	if sport != models.SportTableTennis && sport != models.SportTableFootball {
+
+	// Validate sport exists and is active
+	_, err := h.sportService.GetSport(sport)
+	if err != nil {
 		utils.RespondWithError(c, http.StatusBadRequest, "invalid sport", nil)
 		return
 	}
