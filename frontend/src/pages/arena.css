@@ -657,18 +657,25 @@
   /* Slightly smaller on mobile */
   width: 28px;
   height: 28px;
+  min-width: 28px;
+  min-height: 28px;
   border-radius: var(--radius-full);
   flex-shrink: 0;
+  flex-grow: 0;
   display: block; /* Remove inline spacing */
-  aspect-ratio: 1; /* Ensure square */
+  aspect-ratio: 1 / 1; /* Ensure square */
   object-fit: cover; /* Cover the entire area */
   background: var(--bg-subtle); /* Placeholder color while loading */
+  line-height: 1; /* Remove line-height spacing */
+  font-size: 0; /* Remove any text rendering */
 }
 
 @media (min-width: 640px) {
   .arena__avatar {
     width: 32px;
     height: 32px;
+    min-width: 32px;
+    min-height: 32px;
   }
 }
 
@@ -679,8 +686,8 @@
   min-width: 0; /* Critical: allows flex shrinking */
   flex: 1; /* Take available space */
   overflow: hidden; /* Ensure truncation works */
-  line-height: 1.2; /* Consistent line height */
   justify-content: center; /* Center vertically */
+  gap: 0; /* No gap between name and login */
 }
 
 .arena__player-name {

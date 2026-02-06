@@ -539,7 +539,6 @@ export default function Arena() {
                     src={entry.user.avatar_url}
                     alt=""
                     className="arena__avatar"
-                    loading="lazy"
                   />
                   <div className="arena__player-info">
                     <span className="arena__player-name">
