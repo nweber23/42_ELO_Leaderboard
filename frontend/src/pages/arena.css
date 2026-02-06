@@ -563,12 +563,24 @@
 }
 
 .arena__td--player {
-  display: flex;
-  align-items: center;
+  display: table-cell;
+  vertical-align: middle;
   /* Reduce gap on mobile */
-  gap: var(--space-2);
+  padding-left: var(--space-2);
   /* Ensure text truncation works */
   min-width: 0;
+}
+
+.arena__td--player > img {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: var(--space-2);
+}
+
+.arena__td--player > div {
+  display: inline-block;
+  vertical-align: middle;
+  width: calc(100% - 28px - var(--space-2));
 }
 
 .arena__td--elo {
@@ -594,10 +606,19 @@
 
   .arena__td {
     padding: var(--space-3);
+    height: 56px; /* Slightly taller on desktop with more padding */
   }
 
   .arena__td--player {
-    gap: var(--space-3);
+    padding-left: var(--space-3);
+  }
+
+  .arena__td--player > img {
+    margin-right: var(--space-3);
+  }
+
+  .arena__td--player > div {
+    width: calc(100% - 32px - var(--space-3));
   }
 
   .arena__td--rank,
