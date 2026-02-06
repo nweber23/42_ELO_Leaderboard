@@ -8,8 +8,17 @@
   min-height: 100%;
   max-width: var(--container-max);
   margin: 0 auto;
-  /* Remove horizontal padding on mobile - table handles its own spacing */
-  padding: var(--space-4) 0;
+  /* Remove horizontal padding on mobile - child elements handle spacing */
+  padding: var(--space-3) 0;
+  box-sizing: border-box;
+  width: 100%;
+  overflow-x: hidden; /* Prevent horizontal scroll on arena container */
+}
+
+@media (min-width: 480px) {
+  .arena {
+    padding: var(--space-4) 0;
+  }
 }
 
 @media (min-width: 768px) {
@@ -39,12 +48,20 @@
 
 .arena__status {
   margin-bottom: var(--space-4);
-  /* Add horizontal margin on mobile since container no longer has padding */
-  margin-inline: var(--space-4);
-  padding: var(--space-3) var(--space-4);
+  /* Reduced margin on mobile to prevent overflow */
+  margin-inline: var(--space-2);
+  padding: var(--space-3);
   background: var(--bg-subtle);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
+  box-sizing: border-box;
+}
+
+@media (min-width: 480px) {
+  .arena__status {
+    margin-inline: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+  }
 }
 
 @media (min-width: 768px) {
@@ -118,14 +135,25 @@
 
 .arena__quick-log {
   margin-bottom: var(--space-4);
-  /* Add horizontal margin on mobile since container no longer has padding */
-  margin-inline: var(--space-3);
+  /* Minimal margin on small screens to prevent overflow */
+  margin-inline: var(--space-2);
   /* Reduce padding on mobile to prevent overflow */
-  padding: var(--space-3);
+  padding: var(--space-2\.5);
   background: var(--bg-muted);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   animation: slide-up var(--dur-base) var(--ease-out);
+  /* Ensure panel doesn't overflow */
+  box-sizing: border-box;
+  width: auto;
+  max-width: 100%;
+}
+
+@media (min-width: 480px) {
+  .arena__quick-log {
+    margin-inline: var(--space-3);
+    padding: var(--space-3);
+  }
 }
 
 @media (min-width: 640px) {
@@ -173,15 +201,17 @@
 }
 
 .arena__quick-log-field--score {
-  /* Flexible on mobile */
-  flex: 1 1 auto;
+  /* Flexible on mobile with minimum constraint */
+  flex: 1 1 0;
   min-width: 0;
+  max-width: 50%; /* Prevent overwhelming the "vs" separator */
 }
 
 @media (min-width: 640px) {
   .arena__quick-log-field--score {
     flex: 0 0 80px;
     min-width: 80px;
+    max-width: none;
   }
 }
 
@@ -223,9 +253,16 @@
 .arena__quick-log-scores {
   display: flex;
   align-items: flex-end;
-  /* Reduce gap on mobile to prevent overflow */
-  gap: var(--space-2);
+  /* Minimal gap on very small screens */
+  gap: var(--space-1\.5);
   width: 100%;
+  min-width: 0; /* Allow flex shrinking */
+}
+
+@media (min-width: 375px) {
+  .arena__quick-log-scores {
+    gap: var(--space-2);
+  }
 }
 
 @media (min-width: 640px) {
@@ -296,8 +333,14 @@
 .arena__search {
   position: relative;
   margin-bottom: var(--space-4);
-  /* Add horizontal margin on mobile since container no longer has padding */
-  margin-inline: var(--space-4);
+  /* Reduced margin on mobile to prevent overflow */
+  margin-inline: var(--space-2);
+}
+
+@media (min-width: 480px) {
+  .arena__search {
+    margin-inline: var(--space-4);
+  }
 }
 
 @media (min-width: 768px) {
@@ -356,8 +399,14 @@
   flex: 1;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  /* Add horizontal margin on mobile for visual breathing room */
-  margin-inline: var(--space-2);
+  /* Minimal margin on mobile to prevent overflow */
+  margin-inline: var(--space-1);
+}
+
+@media (min-width: 480px) {
+  .arena__table-wrap {
+    margin-inline: var(--space-2);
+  }
 }
 
 @media (min-width: 768px) {
@@ -372,6 +421,14 @@
   font-size: var(--text-sm);
   /* Ensure table doesn't expand beyond container */
   max-width: 100%;
+  table-layout: fixed; /* Fixed layout prevents overflow from long content */
+  box-sizing: border-box;
+}
+
+@media (min-width: 640px) {
+  .arena__table {
+    table-layout: auto; /* Restore auto layout on larger screens */
+  }
 }
 
 .arena__th {
@@ -404,6 +461,7 @@
   cursor: default;
   /* Let player column take remaining space */
   width: auto;
+  min-width: 0; /* Allow flex shrinking for long names */
 }
 
 .arena__th--elo {
@@ -419,7 +477,7 @@
 }
 
 .arena__th--action {
-  width: 36px;
+  width: 44px; /* FIXED: Was 36px - now fits 32px button + 8px padding + 4px buffer */
   cursor: default;
   padding-inline: var(--space-1);
 }
@@ -446,7 +504,7 @@
   }
 
   .arena__th--action {
-    width: 44px;
+    width: 48px; /* Desktop: 28px button + 12px padding + buffer */
     padding-inline: var(--space-3);
   }
 }
@@ -545,11 +603,16 @@
 .arena__td--action {
   text-align: center;
   padding: var(--space-1);
+  /* Ensure action column doesn't overflow */
+  width: 44px;
+  max-width: 44px;
 }
 
 @media (min-width: 640px) {
   .arena__td--action {
     padding: var(--space-2);
+    width: 48px;
+    max-width: 48px;
   }
 }
 
@@ -598,7 +661,9 @@
 .arena__player-info {
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  min-width: 0; /* Critical: allows flex shrinking */
+  flex: 1; /* Take available space */
+  overflow: hidden; /* Ensure truncation works */
 }
 
 .arena__player-name {
@@ -607,11 +672,16 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0; /* Allow shrinking below content size */
 }
 
 .arena__player-login {
   font-size: var(--text-xs);
   color: var(--fg-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0; /* Allow shrinking */
 }
 
 /* W/L separator */

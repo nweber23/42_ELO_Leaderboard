@@ -27,14 +27,22 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: var(--space-4);
+  padding: var(--space-3);
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-2\.5);
   width: 100%;
   max-width: 100%;
   min-width: 0; /* Safari flexbox fix */
   overflow: hidden;
+  box-sizing: border-box;
+}
+
+@media (min-width: 480px) {
+  .submit-form__elo-panel {
+    padding: var(--space-4);
+    gap: var(--space-3);
+  }
 }
 
 .submit-form__elo-row {
@@ -45,20 +53,29 @@
   font-size: var(--text-sm);
   width: 100%;
   min-width: 0; /* Safari flexbox fix */
+  box-sizing: border-box;
 }
 
 /* Truncate long names on mobile */
 .submit-form__elo-row > span:first-child {
-  min-width: 0;
+  min-width: 0; /* Critical for text truncation */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  flex: 1;
+  flex: 1 1 auto; /* Allow shrinking */
+  max-width: 60%; /* Ensure values have space on small screens */
 }
 
 .submit-form__elo-row > span:last-child,
 .submit-form__elo-row > strong {
-  flex-shrink: 0;
+  flex-shrink: 0; /* Values never shrink */
+  white-space: nowrap;
+}
+
+@media (min-width: 480px) {
+  .submit-form__elo-row > span:first-child {
+    max-width: 70%; /* More space for labels on larger screens */
+  }
 }
 
 .submit-form__elo-label {
