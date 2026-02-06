@@ -52,7 +52,7 @@ function Leaderboard({ sport: propSport, user }: LeaderboardProps) {
     leaderboardAPI.get(sport)
       .then(data => {
         if (isMounted.current) {
-          setLeaderboard(data || []);
+          setLeaderboard(data?.entries || []);
         }
       })
       .catch(err => {

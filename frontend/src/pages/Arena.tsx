@@ -12,6 +12,9 @@ import "./arena.css";
 type SortField = "rank" | "elo" | "matches" | "wins" | "winrate";
 type SortDirection = "asc" | "desc";
 
+const LEADERBOARD_INITIAL_LOAD = 50;
+const LEADERBOARD_LOAD_MORE = 25;
+
 interface OutletContext {
   user: User | null;
   openPlayer: (id: number) => void;
@@ -25,11 +28,15 @@ export default function Arena() {
     useOutletContext<OutletContext>();
 
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [total, setTotal] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortField, setSortField] = useState<SortField>("rank");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const [userRankData, setUserRankData] = useState<{ rank: number; elo: number } | null>(null);
 
   // Quick log state
   const [allUsers, setAllUsers] = useState<User[]>([]);
@@ -45,35 +52,68 @@ export default function Arena() {
   const isMounted = useRef(true);
   const quickLogRef = useRef<HTMLDivElement>(null);
 
-  // Fetch leaderboard
-  useEffect(() => {
-    isMounted.current = true;
-    setLoading(true);
+  // Load leaderboard with pagination
+  const loadLeaderboard = useCallback(async (reset: boolean = true) => {
+    if (reset) {
+      setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
     setError(null);
 
-    leaderboardAPI
-      .get(sport)
-      .then((data) => {
-        if (isMounted.current) {
-          setLeaderboard(data || []);
+    try {
+      const offset = reset ? 0 : leaderboard.length;
+      const limit = reset ? LEADERBOARD_INITIAL_LOAD : LEADERBOARD_LOAD_MORE;
+
+      const data = await leaderboardAPI.get(sport, limit, offset);
+
+      if (isMounted.current) {
+        if (reset) {
+          setLeaderboard(data.entries || []);
+        } else {
+          setLeaderboard(prev => [...prev, ...(data.entries || [])]);
         }
-      })
-      .catch((err) => {
-        if (isMounted.current) {
-          console.error("Failed to load leaderboard:", err);
-          setError("Failed to load leaderboard");
-        }
-      })
-      .finally(() => {
-        if (isMounted.current) {
-          setLoading(false);
-        }
-      });
+        setTotal(data.total);
+        setHasMore((offset + (data.entries?.length || 0)) < data.total);
+      }
+    } catch (err) {
+      if (isMounted.current) {
+        console.error('Failed to load leaderboard:', err);
+        setError('Failed to load leaderboard');
+      }
+    } finally {
+      if (isMounted.current) {
+        setLoading(false);
+        setLoadingMore(false);
+      }
+    }
+  }, [sport, leaderboard.length]);
+
+  // Fetch leaderboard on mount or sport change
+  useEffect(() => {
+    isMounted.current = true;
+    loadLeaderboard(true);
 
     return () => {
       isMounted.current = false;
     };
-  }, [sport, user?.id]);
+  }, [sport]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch user's rank separately
+  useEffect(() => {
+    if (!user) {
+      setUserRankData(null);
+      return;
+    }
+
+    leaderboardAPI.getUserRank(sport)
+      .then(data => {
+        if (isMounted.current) {
+          setUserRankData({ rank: data.rank, elo: data.elo });
+        }
+      })
+      .catch(err => console.error('Failed to load user rank:', err));
+  }, [sport, user]);
 
   // Fetch all users for opponent selection
   useEffect(() => {
@@ -145,13 +185,6 @@ export default function Arena() {
     return result;
   }, [leaderboard, debouncedSearchQuery, sortField, sortDirection]);
 
-  // Find user's rank
-  const userRank = useMemo(() => {
-    if (!user) return null;
-    const entry = leaderboard.find((e) => e.user.id === user.id);
-    return entry?.rank || null;
-  }, [leaderboard, user]);
-
   const userElo = useMemo(() => {
     if (!user) return null;
     // Use new sports map if available, falls back to legacy fields
@@ -221,9 +254,8 @@ export default function Arena() {
       setOpponentScore("");
       setOpponent(null);
 
-      // Refresh leaderboard
-      const data = await leaderboardAPI.get(sport);
-      setLeaderboard(data || []);
+      // Refresh leaderboard (reset to first page)
+      await loadLeaderboard(true);
 
       setTimeout(() => {
         setSubmitSuccess(false);
@@ -291,12 +323,12 @@ export default function Arena() {
             <div className="arena__status-left">
               <span className="arena__status-label">Your Rank</span>
               <span className="arena__status-value data">
-                {userRank ? `#${userRank}` : "—"}
+                {userRankData ? `#${userRankData.rank}` : "—"}
               </span>
             </div>
             <div className="arena__status-center">
               <span className="arena__status-label">ELO</span>
-              <span className="arena__status-value data">{userElo || 1000}</span>
+              <span className="arena__status-value data">{userRankData?.elo || userElo || 1000}</span>
             </div>
             <div className="arena__status-right">
               <button
@@ -575,6 +607,19 @@ export default function Arena() {
           </div>
         )}
       </div>
+
+      {/* Load More Button */}
+      {hasMore && !debouncedSearchQuery && (
+        <div className="arena__load-more-wrap">
+          <button
+            className="arena__load-more"
+            onClick={() => loadLeaderboard(false)}
+            disabled={loadingMore}
+          >
+            {loadingMore ? 'Loading...' : `Load more players (${total - leaderboard.length} remaining)`}
+          </button>
+        </div>
+      )}
 
       {/* Player panel */}
       {panelPlayerId && (

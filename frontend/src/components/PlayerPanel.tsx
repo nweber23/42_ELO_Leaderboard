@@ -65,7 +65,8 @@ export function PlayerPanel({
       let foundUser: User | null = null;
 
       leaderboards.forEach(({ sportId, leaderboard }) => {
-        const entry = leaderboard.find(
+        // leaderboard is now a PaginatedLeaderboard object with entries array
+        const entry = leaderboard.entries.find(
           (e: LeaderboardEntry) => e.user.id === playerId
         );
         if (entry) {
