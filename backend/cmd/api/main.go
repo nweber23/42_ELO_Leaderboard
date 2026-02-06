@@ -69,8 +69,8 @@ func main() {
 	userRepo := repositories.NewUserRepository(db)
 	matchRepo := repositories.NewMatchRepository(db)
 	commentRepo := repositories.NewCommentRepository(db)
-	adminRepo := repositories.NewAdminRepository(db)
 	userSportsRepo := repositories.NewUserSportsRepository(db)
+	adminRepo := repositories.NewAdminRepository(db, userSportsRepo)
 
 	// Initialize services
 	eloService := services.NewELOService(cfg.ELOKFactor)

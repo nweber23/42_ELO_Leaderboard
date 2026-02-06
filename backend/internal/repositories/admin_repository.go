@@ -10,11 +10,15 @@ import (
 )
 
 type AdminRepository struct {
-	db *sql.DB
+	db              *sql.DB
+	userSportsRepo  *UserSportsRepository
 }
 
-func NewAdminRepository(db *sql.DB) *AdminRepository {
-	return &AdminRepository{db: db}
+func NewAdminRepository(db *sql.DB, userSportsRepo *UserSportsRepository) *AdminRepository {
+	return &AdminRepository{
+		db:             db,
+		userSportsRepo: userSportsRepo,
+	}
 }
 
 // GetSystemHealth returns system health statistics
@@ -110,28 +114,16 @@ func (r *AdminRepository) SetAdmin(userID int, isAdmin bool) error {
 
 // AdjustELO manually adjusts a user's ELO
 func (r *AdminRepository) AdjustELO(userID int, sport string, newELO int, reason string, adminID int) (*models.ELOAdjustment, error) {
-	// Get current ELO
-	var oldELO int
-	var query string
-	if sport == models.SportTableTennis {
-		query = "SELECT table_tennis_elo FROM users WHERE id = $1"
-	} else {
-		query = "SELECT table_football_elo FROM users WHERE id = $1"
-	}
-	err := r.db.QueryRow(query, userID).Scan(&oldELO)
+	// Get current ELO from user_sports table
+	oldELO, err := r.userSportsRepo.GetUserELO(userID, sport)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get current ELO: %w", err)
 	}
 
-	// Update ELO
-	if sport == models.SportTableTennis {
-		query = "UPDATE users SET table_tennis_elo = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2"
-	} else {
-		query = "UPDATE users SET table_football_elo = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2"
-	}
-	_, err = r.db.Exec(query, newELO, userID)
+	// Update ELO in user_sports table
+	err = r.userSportsRepo.UpdateUserELO(nil, userID, sport, newELO)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to update ELO: %w", err)
 	}
 
 	// Record adjustment
@@ -425,11 +417,12 @@ func (r *AdminRepository) RevertMatch(matchID int) error {
 	// Get the match details
 	var match models.Match
 	err = tx.QueryRow(`
-		SELECT id, sport, player1_id, player2_id, player1_elo_before, player2_elo_before, status
+		SELECT id, sport, player1_id, player2_id, player1_elo_before, player2_elo_before,
+		       winner_id, status
 		FROM matches WHERE id = $1
 	`, matchID).Scan(
 		&match.ID, &match.Sport, &match.Player1ID, &match.Player2ID,
-		&match.Player1ELOBefore, &match.Player2ELOBefore, &match.Status,
+		&match.Player1ELOBefore, &match.Player2ELOBefore, &match.WinnerID, &match.Status,
 	)
 	if err != nil {
 		return err
@@ -440,23 +433,38 @@ func (r *AdminRepository) RevertMatch(matchID int) error {
 		return fmt.Errorf("can only revert confirmed matches")
 	}
 
-	// Restore player 1's ELO
-	var updateQuery string
-	if match.Sport == models.SportTableTennis {
-		updateQuery = "UPDATE users SET table_tennis_elo = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2"
-	} else {
-		updateQuery = "UPDATE users SET table_football_elo = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2"
+	// Ensure we have the ELO before values
+	if match.Player1ELOBefore == nil || match.Player2ELOBefore == nil {
+		return fmt.Errorf("cannot revert match: missing ELO before values")
 	}
 
-	_, err = tx.Exec(updateQuery, match.Player1ELOBefore, match.Player1ID)
+	// Restore player 1's ELO in user_sports table
+	err = r.userSportsRepo.UpdateUserELO(tx, match.Player1ID, match.Sport, *match.Player1ELOBefore)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to restore player1 ELO: %w", err)
 	}
 
-	// Restore player 2's ELO
-	_, err = tx.Exec(updateQuery, match.Player2ELOBefore, match.Player2ID)
+	// Restore player 2's ELO in user_sports table
+	err = r.userSportsRepo.UpdateUserELO(tx, match.Player2ID, match.Sport, *match.Player2ELOBefore)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to restore player2 ELO: %w", err)
+	}
+
+	// Decrement match statistics for both players
+	// Determine who won and who lost
+	player1Won := match.WinnerID == match.Player1ID
+	player2Won := match.WinnerID == match.Player2ID
+
+	// Decrement stats for player 1
+	err = r.userSportsRepo.DecrementMatchStats(tx, match.Player1ID, match.Sport, player1Won)
+	if err != nil {
+		return fmt.Errorf("failed to decrement player1 stats: %w", err)
+	}
+
+	// Decrement stats for player 2
+	err = r.userSportsRepo.DecrementMatchStats(tx, match.Player2ID, match.Sport, player2Won)
+	if err != nil {
+		return fmt.Errorf("failed to decrement player2 stats: %w", err)
 	}
 
 	// Delete the match
