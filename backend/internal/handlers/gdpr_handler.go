@@ -308,7 +308,7 @@ func (h *GDPRHandler) DeleteAccount(c *gin.Context) {
 	}
 
 	// Invalidate caches
-	h.matchService.InvalidateLeaderboardCache()
+	h.matchService.InvalidateAllLeaderboardCaches()
 
 	slog.Info("Account deleted successfully", "user_id", userID, "login", user.Login)
 

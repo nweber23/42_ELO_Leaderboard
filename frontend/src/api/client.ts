@@ -1,7 +1,8 @@
 import axios, { AxiosError } from 'axios';
 import type {
-  User, Match, LeaderboardEntry, Comment, SubmitMatchRequest,
-  SystemHealth, ELOAdjustment, AdminAuditLog, AdjustELORequest, BanUserRequest
+  User, Match, Comment, SubmitMatchRequest,
+  SystemHealth, ELOAdjustment, AdminAuditLog, AdjustELORequest, BanUserRequest,
+  PaginatedLeaderboard, UserRankResponse
 } from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
@@ -188,8 +189,21 @@ export const matchAPI = {
 
 // Leaderboard API
 export const leaderboardAPI = {
-  get: async (sport: string): Promise<LeaderboardEntry[]> => {
-    const { data } = await client.get(`/leaderboard/${sport}`);
+  get: async (
+    sport: string,
+    limit?: number,
+    offset?: number
+  ): Promise<PaginatedLeaderboard> => {
+    const params: any = {};
+    if (limit !== undefined) params.limit = limit;
+    if (offset !== undefined) params.offset = offset;
+
+    const { data } = await client.get(`/leaderboard/${sport}`, { params });
+    return data;
+  },
+
+  getUserRank: async (sport: string): Promise<UserRankResponse> => {
+    const { data } = await client.get(`/leaderboard/${sport}/rank`);
     return data;
   },
 };

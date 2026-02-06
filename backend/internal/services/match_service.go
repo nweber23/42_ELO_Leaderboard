@@ -227,7 +227,7 @@ func (s *MatchService) ConfirmMatch(matchID, userID int) error {
 	}
 
 	// Invalidate leaderboard cache since ELO changed
-	s.InvalidateLeaderboardCache()
+	s.InvalidateLeaderboardCache(match.Sport)
 
 	return nil
 }
@@ -279,83 +279,93 @@ func (s *MatchService) CancelMatch(matchID, userID int) error {
 	return s.matchRepo.CancelMatch(matchID)
 }
 
-// GetLeaderboard generates leaderboard for a sport
+// GetLeaderboard generates paginated leaderboard for a sport
 // Optimized with caching - regenerates every 5 minutes
-func (s *MatchService) GetLeaderboard(sport string) ([]models.LeaderboardEntry, error) {
-	cacheKey := "leaderboard:" + sport
+// Returns entries, total count, and error
+func (s *MatchService) GetLeaderboard(sport string, limit int, offset int) ([]models.LeaderboardEntry, int, error) {
+	cacheKey := fmt.Sprintf("leaderboard:%s:%d:%d", sport, limit, offset)
 
 	// Try to get from cache first
 	if cached, found := s.cache.Get(cacheKey); found {
-		if entries, ok := cached.([]models.LeaderboardEntry); ok {
-			return entries, nil
+		if data, ok := cached.(struct {
+			entries []models.LeaderboardEntry
+			total   int
+		}); ok {
+			return data.entries, data.total, nil
 		}
 	}
 
-	// Cache miss - fetch from database
-	entries, err := s.matchRepo.GetLeaderboardEntries(sport)
+	// Fetch total count
+	total, err := s.matchRepo.GetLeaderboardTotalCount(sport)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	// Sort by ELO (descending) with tiebreakers
-	sortLeaderboardByELO(entries)
+	// Cache miss - fetch paginated entries from database
+	entries, err := s.matchRepo.GetLeaderboardEntries(sport, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
 
-	// Assign ranks - same rank for tied ELO
+	// Assign ranks relative to offset (for paginated display)
 	for i := range entries {
-		if i == 0 {
-			entries[i].Rank = 1
-		} else if entries[i].ELO == entries[i-1].ELO {
-			// Same ELO = same rank
-			entries[i].Rank = entries[i-1].Rank
-		} else {
-			// Different ELO = position-based rank (accounts for ties above)
-			entries[i].Rank = i + 1
-		}
+		entries[i].Rank = offset + i + 1
 	}
 
 	// Store in cache
-	s.cache.Set(cacheKey, entries)
+	s.cache.Set(cacheKey, struct {
+		entries []models.LeaderboardEntry
+		total   int
+	}{entries, total})
 
-	return entries, nil
+	return entries, total, nil
 }
 
-// InvalidateLeaderboardCache clears the leaderboard cache
-// Should be called after match confirmations that affect ELO
-func (s *MatchService) InvalidateLeaderboardCache() {
-	s.cache.DeleteByPrefix("leaderboard:")
-}
+// GetUserLeaderboardRank returns the user's rank, ELO, and total player count for a sport
+func (s *MatchService) GetUserLeaderboardRank(userID int, sport string) (int, int, int, error) {
+	cacheKey := fmt.Sprintf("user_rank:%s:%d", sport, userID)
 
-// sortLeaderboardByELO sorts entries by ELO descending with tiebreakers
-// Tiebreaker order: ELO (desc) > Wins (desc) > MatchesPlayed (desc) > UserID (asc for consistency)
-func sortLeaderboardByELO(entries []models.LeaderboardEntry) {
-	// Use insertion sort for small slices, quicksort-like approach for larger ones
-	n := len(entries)
-	for i := 1; i < n; i++ {
-		key := entries[i]
-		j := i - 1
-		for j >= 0 && compareLeaderboardEntries(entries[j], key) < 0 {
-			entries[j+1] = entries[j]
-			j--
+	// Try to get from cache first
+	if cached, found := s.cache.Get(cacheKey); found {
+		if data, ok := cached.(struct {
+			rank  int
+			elo   int
+			total int
+		}); ok {
+			return data.rank, data.elo, data.total, nil
 		}
-		entries[j+1] = key
 	}
+
+	rank, elo, err := s.matchRepo.GetUserRank(userID, sport)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	total, err := s.matchRepo.GetLeaderboardTotalCount(sport)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	s.cache.Set(cacheKey, struct {
+		rank  int
+		elo   int
+		total int
+	}{rank, elo, total})
+
+	return rank, elo, total, nil
 }
 
-// compareLeaderboardEntries compares two entries for sorting
-// Returns positive if a should come before b, negative if b should come before a
-func compareLeaderboardEntries(a, b models.LeaderboardEntry) int {
-	// Primary: ELO descending
-	if a.ELO != b.ELO {
-		return a.ELO - b.ELO
-	}
-	// Secondary: Wins descending
-	if a.Wins != b.Wins {
-		return a.Wins - b.Wins
-	}
-	// Tertiary: Matches played descending (more active = higher)
-	if a.MatchesPlayed != b.MatchesPlayed {
-		return a.MatchesPlayed - b.MatchesPlayed
-	}
-	// Final tiebreaker: User ID ascending for consistent ordering
-	return b.User.ID - a.User.ID
+// InvalidateLeaderboardCache clears all leaderboard caches for a sport
+// Should be called after match confirmations that affect ELO
+func (s *MatchService) InvalidateLeaderboardCache(sport string) {
+	s.cache.DeleteByPrefix(fmt.Sprintf("leaderboard:%s:", sport))
+	s.cache.DeleteByPrefix(fmt.Sprintf("user_rank:%s:", sport))
 }
+
+// InvalidateAllLeaderboardCaches clears all leaderboard caches for all sports
+// Should be called when user data changes (creation, deletion, etc.)
+func (s *MatchService) InvalidateAllLeaderboardCaches() {
+	s.cache.DeleteByPrefix("leaderboard:")
+	s.cache.DeleteByPrefix("user_rank:")
+}
+

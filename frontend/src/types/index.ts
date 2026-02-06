@@ -61,6 +61,19 @@ export interface LeaderboardEntry {
   win_rate: number;
 }
 
+export interface PaginatedLeaderboard {
+  entries: LeaderboardEntry[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
+export interface UserRankResponse {
+  rank: number;
+  elo: number;
+  total_players: number;
+}
+
 export interface Comment {
   id: number;
   match_id: number;

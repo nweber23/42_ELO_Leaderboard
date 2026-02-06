@@ -147,6 +147,9 @@ func main() {
 		protected.GET("/auth/me", authHandler.Me)
 		protected.GET("/users", authHandler.GetUsers)
 
+		// User's rank in leaderboard (authenticated only)
+		protected.GET("/leaderboard/:sport/rank", middleware.RateLimitMiddleware(looseLimiter, middleware.IPKeyFunc), matchHandler.GetUserRank)
+
 		// GDPR endpoints (Art. 15 & 17) - 1 req/hour to prevent resource exhaustion and abuse
 		protected.GET("/users/me/data-export", middleware.RateLimitMiddleware(exportLimiter, middleware.UserOrIPKeyFunc), gdprHandler.ExportUserData)
 		protected.DELETE("/users/me/delete", middleware.RateLimitMiddleware(exportLimiter, middleware.UserOrIPKeyFunc), gdprHandler.DeleteAccount)

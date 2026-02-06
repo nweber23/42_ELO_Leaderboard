@@ -203,11 +203,12 @@ func (r *MatchRepository) DenyMatch(matchID int) error {
 	return err
 }
 
-// GetLeaderboardEntries retrieves all users with their match statistics in a single optimized query
+// GetLeaderboardEntries retrieves paginated users with their match statistics in a single optimized query
 // This eliminates the N+1 query problem by using aggregation
-func (r *MatchRepository) GetLeaderboardEntries(sport string) ([]models.LeaderboardEntry, error) {
-	// Single query that gets all users and their sport-specific statistics
+func (r *MatchRepository) GetLeaderboardEntries(sport string, limit int, offset int) ([]models.LeaderboardEntry, error) {
+	// Single query that gets paginated users and their sport-specific statistics
 	// Uses user_sports table for sport-specific ELO data
+	// Orders by ELO (desc), then wins (desc), then matches_played (desc)
 	query := `
 		SELECT
 			u.id,
@@ -227,9 +228,11 @@ func (r *MatchRepository) GetLeaderboardEntries(sport string) ([]models.Leaderbo
 		FROM users u
 		LEFT JOIN user_sports us ON u.id = us.user_id AND us.sport_id = $1
 		WHERE u.id != -1
+		ORDER BY current_elo DESC, wins DESC, matches_played DESC
+		LIMIT $2 OFFSET $3
 	`
 
-	rows, err := r.db.Query(query, sport)
+	rows, err := r.db.Query(query, sport, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -275,6 +278,44 @@ func (r *MatchRepository) GetLeaderboardEntries(sport string) ([]models.Leaderbo
 	}
 
 	return entries, rows.Err()
+}
+
+// GetLeaderboardTotalCount returns the total count of users for a sport
+func (r *MatchRepository) GetLeaderboardTotalCount(sport string) (int, error) {
+	query := `
+		SELECT COUNT(DISTINCT u.id)
+		FROM users u
+		WHERE u.id != -1
+	`
+	var count int
+	err := r.db.QueryRow(query).Scan(&count)
+	return count, err
+}
+
+// GetUserRank returns the rank and ELO of a user for a specific sport
+func (r *MatchRepository) GetUserRank(userID int, sport string) (int, int, error) {
+	query := `
+		WITH ranked_users AS (
+			SELECT
+				u.id,
+				COALESCE(us.current_elo, 1000) as elo,
+				ROW_NUMBER() OVER (
+					ORDER BY COALESCE(us.current_elo, 1000) DESC,
+							 COALESCE(us.wins, 0) DESC,
+							 COALESCE(us.matches_played, 0) DESC
+				) as rank
+			FROM users u
+			LEFT JOIN user_sports us ON u.id = us.user_id AND us.sport_id = $1
+			WHERE u.id != -1
+		)
+		SELECT rank, elo FROM ranked_users WHERE id = $2
+	`
+	var rank, elo int
+	err := r.db.QueryRow(query, sport, userID).Scan(&rank, &elo)
+	if err == sql.ErrNoRows {
+		return 0, 0, fmt.Errorf("user not found or no stats for sport")
+	}
+	return rank, elo, err
 }
 
 // CancelMatch cancels a pending match (by submitter)

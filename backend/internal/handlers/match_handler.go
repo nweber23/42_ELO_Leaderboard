@@ -184,7 +184,7 @@ func (h *MatchHandler) GetMatch(c *gin.Context) {
 	utils.RespondWithJSON(c, http.StatusOK, match)
 }
 
-// GetLeaderboard returns leaderboard for a sport
+// GetLeaderboard returns paginated leaderboard for a sport
 func (h *MatchHandler) GetLeaderboard(c *gin.Context) {
 	sport := c.Param("sport")
 
@@ -195,7 +195,15 @@ func (h *MatchHandler) GetLeaderboard(c *gin.Context) {
 		return
 	}
 
-	leaderboard, err := h.matchService.GetLeaderboard(sport)
+	// Parse pagination with defaults: 50 initial, 100 max
+	pagination := utils.ParsePaginationWithDefaults(
+		c.Query("limit"),
+		c.Query("offset"),
+		50,  // default limit for initial load
+		100, // max limit
+	)
+
+	leaderboard, total, err := h.matchService.GetLeaderboard(sport, pagination.Limit, pagination.Offset)
 	if err != nil {
 		utils.RespondWithError(c, http.StatusInternalServerError, err.Error(), err)
 		return
@@ -211,11 +219,51 @@ func (h *MatchHandler) GetLeaderboard(c *gin.Context) {
 		for i := range maskedLeaderboard {
 			maskedLeaderboard[i].User = maskUserData(maskedLeaderboard[i].User)
 		}
-		utils.RespondWithJSON(c, http.StatusOK, maskedLeaderboard)
+		utils.RespondWithJSON(c, http.StatusOK, gin.H{
+			"entries": maskedLeaderboard,
+			"total":   total,
+			"limit":   pagination.Limit,
+			"offset":  pagination.Offset,
+		})
 		return
 	}
 
-	utils.RespondWithJSON(c, http.StatusOK, leaderboard)
+	utils.RespondWithJSON(c, http.StatusOK, gin.H{
+		"entries": leaderboard,
+		"total":   total,
+		"limit":   pagination.Limit,
+		"offset":  pagination.Offset,
+	})
+}
+
+// GetUserRank returns the authenticated user's rank in a sport's leaderboard
+func (h *MatchHandler) GetUserRank(c *gin.Context) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		utils.RespondWithError(c, http.StatusUnauthorized, "unauthorized", nil)
+		return
+	}
+
+	sport := c.Param("sport")
+
+	// Validate sport exists and is active
+	_, err := h.sportService.GetSport(sport)
+	if err != nil {
+		utils.RespondWithError(c, http.StatusBadRequest, "invalid sport", nil)
+		return
+	}
+
+	rank, elo, total, err := h.matchService.GetUserLeaderboardRank(userID, sport)
+	if err != nil {
+		utils.RespondWithError(c, http.StatusInternalServerError, err.Error(), err)
+		return
+	}
+
+	utils.RespondWithJSON(c, http.StatusOK, gin.H{
+		"rank":           rank,
+		"elo":            elo,
+		"total_players":  total,
+	})
 }
 
 // maskUserData replaces personal information with anonymous data
