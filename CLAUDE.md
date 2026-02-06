@@ -70,8 +70,8 @@ Database migrations are embedded in Go code at `backend/internal/migrations/*.sq
 
 To reset the database:
 ```bash
-docker-compose down -v  # Removes volumes
-docker-compose up --build
+docker compose down -v  # Removes volumes
+docker compose up --build
 ```
 
 ## Architecture Overview
