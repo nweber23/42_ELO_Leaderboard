@@ -141,7 +141,7 @@ func (h *AuthHandler) Callback(c *gin.Context) {
 	}
 
 	// Invalidate leaderboard cache to ensure new/updated user appears immediately
-	h.matchService.InvalidateLeaderboardCache()
+	h.matchService.InvalidateAllLeaderboardCaches()
 
 	// Generate JWT
 	jwt, err := utils.GenerateJWT(user.ID, h.cfg.JWTSecret)
