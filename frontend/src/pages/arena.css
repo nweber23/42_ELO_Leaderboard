@@ -399,6 +399,8 @@
   flex: 1;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  /* Reserve space for scrollbar to prevent layout shift */
+  scrollbar-gutter: stable;
   /* Minimal margin on mobile to prevent overflow */
   margin-inline: var(--space-1);
 }
@@ -419,6 +421,7 @@
   width: 100%;
   border-collapse: collapse;
   font-size: var(--text-sm);
+  line-height: 1.4; /* Consistent line height prevents pixel shifts */
   /* Ensure table doesn't expand beyond container */
   max-width: 100%;
   table-layout: fixed; /* Fixed layout prevents overflow from long content */
@@ -507,6 +510,10 @@
     width: 48px; /* Desktop: 28px button + 12px padding + buffer */
     padding-inline: var(--space-3);
   }
+
+  .arena__td {
+    height: 56px; /* Slightly taller on desktop with more padding */
+  }
 }
 
 .arena__th--hide-mobile {
@@ -547,6 +554,7 @@
   padding: var(--space-2) var(--space-1\.5);
   vertical-align: middle;
   border-bottom: 1px solid var(--border-subtle);
+  height: 52px; /* Fixed height ensures all rows align perfectly */
 }
 
 .arena__td--rank {
@@ -557,10 +565,13 @@
 .arena__td--player {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   /* Reduce gap on mobile */
   gap: var(--space-2);
   /* Ensure text truncation works */
   min-width: 0;
+  width: 100%; /* Fill cell */
+  height: 100%; /* Fill cell height */
 }
 
 .arena__td--elo {
@@ -648,6 +659,10 @@
   height: 28px;
   border-radius: var(--radius-full);
   flex-shrink: 0;
+  display: block; /* Remove inline spacing */
+  aspect-ratio: 1; /* Ensure square */
+  object-fit: cover; /* Cover the entire area */
+  background: var(--bg-subtle); /* Placeholder color while loading */
 }
 
 @media (min-width: 640px) {
@@ -664,6 +679,8 @@
   min-width: 0; /* Critical: allows flex shrinking */
   flex: 1; /* Take available space */
   overflow: hidden; /* Ensure truncation works */
+  line-height: 1.2; /* Consistent line height */
+  justify-content: center; /* Center vertically */
 }
 
 .arena__player-name {
@@ -673,6 +690,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0; /* Allow shrinking below content size */
+  line-height: 1.3; /* Explicit line-height for text */
 }
 
 .arena__player-login {
@@ -682,6 +700,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0; /* Allow shrinking */
+  line-height: 1.2; /* Explicit line-height for text */
 }
 
 /* W/L separator */
@@ -728,4 +747,56 @@
   color: var(--fg-subtle);
   font-size: var(--text-sm);
   /* Already inside table-wrap which has margin, no need for additional */
+}
+
+/* ============================================
+   Load More Button
+   ============================================ */
+
+.arena__load-more-wrap {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-4) var(--space-2);
+  margin-top: var(--space-2);
+}
+
+@media (min-width: 768px) {
+  .arena__load-more-wrap {
+    padding: var(--space-6) 0;
+    margin-top: var(--space-4);
+  }
+}
+
+.arena__load-more {
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--fg-subtle);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-width: 200px;
+}
+
+.arena__load-more:hover:not(:disabled) {
+  color: var(--fg);
+  background: var(--bg);
+  border-color: var(--fg-faint);
+  transform: translateY(-1px);
+}
+
+.arena__load-more:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .arena__load-more {
+    width: 100%;
+    max-width: 300px;
+    padding: var(--space-3) var(--space-4);
+  }
 }
